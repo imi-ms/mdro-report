@@ -22,7 +22,7 @@ import java.net.InetAddress
 
 //TODO: Add remaining queries
 //TODO: Test dynamic architecture
-//TODO: Make header and footer sticky
+//TODO: Make header and footer "sticky"
 class LayoutTemplate(private val url: String) : Template<HTML> {
     val header = Placeholder<FlowContent>()
     val content = TemplatePlaceholder<OverviewTemplate>()
@@ -96,25 +96,15 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
 
 
             footer(classes = "footer") {
-//                div(classes = "container-fluid text-center text-md-left") {
-//                    div(classes = "row") {
-//                        div(classes = "col-md-6 mt-md-0 mt-3") {
-//                            h5 {
-//
-//                            }
-//                        }
-//                    }
-//                }
                 div(classes = "container") {
                     span(classes = "text-muted") {
-                        +"© 2022 Copyright"
+                        +"© 2022 Copyright "
                     }
                     a(href = "https://imi.uni-muenster.de") {
-                        +"IMI"
+                        +"Institut für Medizinische Informatik Münster"
                     }
                 }
             }
-//            script(src="https://code.jquery.com/jquery-3.3.1.slim.min.js") {}
             script(src = "/webjars/jquery/dist/jquery.min.js") {}
             script(src = "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js") {}
             script(src = "/webjars/bootstrap/dist/js/bootstrap.min.js") {}
@@ -150,6 +140,7 @@ val baseXClient = BaseXClient(
     database = "2021-copy3"
 )
 
+//TODO: Make a executable .war version
 fun main() {
     val server = createServer(baseXClient).start(wait = true)
 }
@@ -158,13 +149,22 @@ fun createServer(baseXClient: IBaseXClient, port: Int = 8080) = embeddedServer(N
     install(Webjars)
     install(StatusPages) {
         status(HttpStatusCode.NotFound) {
-            call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+            call.respondHtmlTemplate(
+                status = HttpStatusCode.NotFound,
+                template = LayoutTemplate(call.request.uri.removePrefix("/"))
+            ) {
                 header { +"404 Not Found" }
                 content { data { +"No route defined for URL! Pleaes switch URL on top" } }
             }
         }
         exception<Throwable>() { cause ->
-            call.respond(HttpStatusCode.InternalServerError, "" + cause.message)
+            call.respondHtmlTemplate(
+                status = HttpStatusCode.InternalServerError,
+                template = LayoutTemplate(call.request.uri.removePrefix("/"))
+            ) {
+                header { +"500 Internal Server Error" }
+                content { data { +"${cause.message}" } }
+            }
         }
     }
     routing {
@@ -172,7 +172,7 @@ fun createServer(baseXClient: IBaseXClient, port: Int = 8080) = embeddedServer(N
         intercept(ApplicationCallPipeline.Features) {
             val ip = InetAddress.getByName(call.request.local.remoteHost)
             if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
-                call.respondText("The request origin '$ip' is not a localhost address. ")
+                call.respondText("The request origin '$ip' is not a localhost address.")
                 this.finish()
             }
         }
@@ -201,9 +201,7 @@ fun createServer(baseXClient: IBaseXClient, port: Int = 8080) = embeddedServer(N
                 )
             )
             call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                header {
-                    +"MRGN-ÖGD-Report"
-                }
+                header { +"MRGN-ÖGD-Report" }
                 content {
                     data {
                         drawTable(tableData)
@@ -213,12 +211,10 @@ fun createServer(baseXClient: IBaseXClient, port: Int = 8080) = embeddedServer(N
         }
         get("/about") {
             call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                header {
-                    +"Über"
-                }
+                header { +"Über" }
                 content {
                     data {
-                        +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports."
+                        +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports anhand der Integration von ORBIS, OPUS-L und SeqSphere in der internen BaseX-Zwischenschicht des Medics."
                     }
                 }
             }
