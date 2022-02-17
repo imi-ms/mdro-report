@@ -10,13 +10,16 @@ object BaseXQueries {
 
 }
 
+/**
+ * Common interface for both REST and local BaseX instance
+ */
 interface IBaseXClient {
     fun close()
 
     suspend fun executeXQuery(xquery: String): String
 }
 
-class BaseXClient(
+class RestClient(
     private val baseURL: String,
     private val database: String,
     private val username: String,

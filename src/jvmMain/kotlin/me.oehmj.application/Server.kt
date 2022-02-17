@@ -1,8 +1,8 @@
 package me.oehmj.application
 
-import BaseXClient
 import BaseXQueries
 import IBaseXClient
+import RestClient
 import drawTable
 import io.ktor.application.*
 import io.ktor.features.*
@@ -133,7 +133,7 @@ class TableTemplate : Template<FlowContent> {
 }
 
 
-val baseXClient = BaseXClient(
+val baseXClient = RestClient(
     baseURL = "https://basex.ukmuenster.de/rest",
     username = "oehm",
     password = "M2QWcX7tJsLBPic",

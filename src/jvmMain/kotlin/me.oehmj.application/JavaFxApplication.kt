@@ -1,7 +1,7 @@
 package me.oehmj.application
 
 
-import BaseXClient
+import RestClient
 import javafx.application.Application
 import javafx.concurrent.Worker
 import javafx.fxml.FXMLLoader
@@ -32,7 +32,7 @@ class JavaFxApplication : Application() {
         if (!btnType.isPresent || btnType.get() == ButtonType.CANCEL) {
             stop()
         }
-        val basex = BaseXClient(
+        val basex = RestClient(
             (page.findChildById("server") as TextField).text,
             (page.findChildById("username") as TextField).text,
             (page.findChildById("password") as PasswordField).text,
