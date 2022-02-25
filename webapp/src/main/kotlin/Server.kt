@@ -1,9 +1,6 @@
-package me.oehmj.application
+package de.uni_muenster.imi.oegd.webapp
 
-import BaseXQueries
-import IBaseXClient
-import RestClient
-import drawTable
+import de.uni_muenster.imi.oegd.baseX.*
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.html.*
@@ -16,7 +13,6 @@ import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.webjars.*
 import kotlinx.html.*
-import parseCsv
 import java.net.InetAddress
 
 
@@ -132,6 +128,15 @@ class TableTemplate : Template<FlowContent> {
     }
 }
 
+class Server {
+    companion object {
+        @JvmStatic
+        fun main(args: Array<String>) {
+            val webappPort = findOpenPortInRange(8080..8888)
+            val server = createServer(baseXClient, webappPort!!).start(wait = true)
+        }
+    }
+}
 
 val baseXClient = RestClient(
     baseURL = "https://basex.ukmuenster.de/rest",
@@ -139,11 +144,6 @@ val baseXClient = RestClient(
     password = "M2QWcX7tJsLBPic",
     database = "2021-copy3"
 )
-
-//TODO: Make a executable .war version
-fun main() {
-    val server = createServer(baseXClient).start(wait = true)
-}
 
 fun createServer(baseXClient: IBaseXClient, port: Int = 8080) = embeddedServer(Netty, host = "127.0.0.1", port = port) {
     install(Webjars)
@@ -201,7 +201,62 @@ fun createServer(baseXClient: IBaseXClient, port: Int = 8080) = embeddedServer(N
                 )
             )
             call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                header { +"MRSA-ÖGD-Report" }
+                content {
+                    data {
+                        drawTable(tableData) //TODO: Fix classpath error for drawTable
+                    }
+                }
+            }
+        }
+        get("MRGN/list") {
+            val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
+            val tableData = parseCsv(
+                text,
+                listOf(
+                    "PID",
+                    "Abnahmezeitpunkt",
+                    "Probenart",
+                    "Einsender",
+                    "?",
+                    "Klasse",
+                    "Piperacillin und Tazobactam Ergebnis",
+                    "Cefotaxime Ergebnis",
+                    "cefTAZidime Ergebnis",
+                    "Cefepime Ergebnis",
+                    "Meropenem Ergebnis",
+                    "Imipenem Ergebnis",
+                    "Ciprofloxacin Ergebnis"
+                )
+            )
+            call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                 header { +"MRGN-ÖGD-Report" }
+                content {
+                    data {
+                        drawTable(tableData)
+                    }
+                }
+            }
+        }
+        get("VRE/list") {
+            val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
+            val tableData = parseCsv(
+                text,
+                listOf(
+                    "PID",
+                    "Abnahmezeitpunkt",
+                    "Probenart",
+                    "Einsender",
+                    "?",
+                    "Linezolid Ergebnis",
+                    "Tigecylin Ergebnis",
+                    "Vancomycin Ergebnis",
+                    "Teicoplanin Ergebnis",
+                    "Quinupristin und Dalfopristin Ergebnis"
+                )
+            )
+            call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                header { +"VRE-ÖGD-Report" }
                 content {
                     data {
                         drawTable(tableData)

@@ -1,4 +1,8 @@
+package de.uni_muenster.imi.oegd.baseX
+
 import kotlinx.html.*
+import java.io.IOException
+import java.net.ServerSocket
 
 fun FlowContent.drawTable(data: List<Map<String, String>>) {
     val keys = data.first().keys
@@ -34,5 +38,24 @@ fun parseCsv(text: String, headers: List<String>): List<Map<String, String>> {
                 }
             )
         }
+    }
+}
+
+
+fun findOpenPortInRange(portRange: ClosedRange<Int>): Int? {
+    for(i in portRange.start..portRange.endInclusive) {
+        if(isLocalPortFree(i)) {
+            return i
+        }
+    }
+    return null
+}
+
+private fun isLocalPortFree(port: Int): Boolean {
+    return try {
+        ServerSocket(port).close()
+        true;
+    } catch(e: IOException) {
+        false
     }
 }
