@@ -80,4 +80,7 @@ tasks.register<JPackageTask>("CreateEXE") {
 
     javaOptions = listOf("-Dfile.encoding=UTF-8")
     type = org.panteleyev.jpackage.ImageType.EXE
+
+    winDirChooser = true
+    winMenu = true
 }
