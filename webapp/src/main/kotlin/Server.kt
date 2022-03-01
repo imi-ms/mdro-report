@@ -26,9 +26,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
         head {
             meta(charset = "UTF-8")
             meta(name = "viewport", content = "width=device-width, initial-scale=1, shrink-to-fit=no")
-            title {
-                url
-            }
+            title { url }
             link(rel = "stylesheet", href = "/webjars/bootstrap/dist/css/bootstrap.min.css")
             link(rel = "stylesheet", href = "/static/custom-styles.css")
         }
@@ -102,6 +100,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
                 }
             }
             script(src = "/webjars/jquery/dist/jquery.min.js") {}
+            //TODO: Import popper from webjars
             script(src = "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js") {}
             script(src = "/webjars/bootstrap/dist/js/bootstrap.min.js") {}
         }
@@ -133,151 +132,166 @@ class Server {
         @JvmStatic
         fun main(args: Array<String>) {
             val webappPort = findOpenPortInRange(8080..8888)
+            val baseXClient = RestClient(
+                baseURL = "https://basex.ukmuenster.de/rest",
+                username = "oehm",
+                password = "M2QWcX7tJsLBPic",
+                database = "2021-copy3"
+            )
             val server = createServer(baseXClient, webappPort!!).start(wait = true)
         }
     }
 }
 
-val baseXClient = RestClient(
-    baseURL = "https://basex.ukmuenster.de/rest",
-    username = "oehm",
-    password = "M2QWcX7tJsLBPic",
-    database = "2021-copy3"
-)
-
-fun createServer(baseXClient: IBaseXClient, port: Int = 8080) = embeddedServer(Netty, host = "127.0.0.1", port = port) {
-    install(Webjars)
-    install(StatusPages) {
-        status(HttpStatusCode.NotFound) {
-            call.respondHtmlTemplate(
-                status = HttpStatusCode.NotFound,
-                template = LayoutTemplate(call.request.uri.removePrefix("/"))
-            ) {
-                header { +"404 Not Found" }
-                content { data { +"No route defined for URL! Pleaes switch URL on top" } }
-            }
-        }
-        exception<Throwable>() { cause ->
-            call.respondHtmlTemplate(
-                status = HttpStatusCode.InternalServerError,
-                template = LayoutTemplate(call.request.uri.removePrefix("/"))
-            ) {
-                header { +"500 Internal Server Error" }
-                content { data { +"${cause.message}" } }
-            }
-        }
+fun Application.warEntrypoint() {
+    val baseXClient = with(environment.config.config("BaseX")) {
+        RestClient(
+            baseURL = property("baseUrl").getString(),
+            username = property("username").getString(),
+            password = property("password").getString(),
+            database = property("database").getString()
+        )
     }
-    routing {
-        //Protect against non-localhost calls
-        intercept(ApplicationCallPipeline.Features) {
-            val ip = InetAddress.getByName(call.request.local.remoteHost)
-            if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
-                call.respondText("The request origin '$ip' is not a localhost address.")
-                this.finish()
-            }
-        }
-        get("/") {
-            call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                header { +"Willkommen" }
-                content {
-                    data { +"Bitte nutzen Sie die Navigationsleiste oben, um zwischen den verschiedenen Funktionen zu navigieren!" }
-                }
-            }
-        }
-        get("MRSA/list") {
-            val text = baseXClient.executeXQuery(BaseXQueries.getMRSA())
-            val tableData = parseCsv(
-                text,
-                listOf(
-                    "PID",
-                    "Abnahmezeitpunkt",
-                    "Probeart",
-                    "Infektion",
-                    "nosokomial?",
-                    "Einsender",
-                    "Einsender2",
-                    "Spa",
-                    "ClusterType"
-                )
-            )
-            call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                header { +"MRSA-ÖGD-Report" }
-                content {
-                    data {
-                        drawTable(tableData) //TODO: Fix classpath error for drawTable
-                    }
-                }
-            }
-        }
-        get("MRGN/list") {
-            val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
-            val tableData = parseCsv(
-                text,
-                listOf(
-                    "PID",
-                    "Abnahmezeitpunkt",
-                    "Probenart",
-                    "Einsender",
-                    "?",
-                    "Klasse",
-                    "Piperacillin und Tazobactam Ergebnis",
-                    "Cefotaxime Ergebnis",
-                    "cefTAZidime Ergebnis",
-                    "Cefepime Ergebnis",
-                    "Meropenem Ergebnis",
-                    "Imipenem Ergebnis",
-                    "Ciprofloxacin Ergebnis"
-                )
-            )
-            call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                header { +"MRGN-ÖGD-Report" }
-                content {
-                    data {
-                        drawTable(tableData)
-                    }
-                }
-            }
-        }
-        get("VRE/list") {
-            val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
-            val tableData = parseCsv(
-                text,
-                listOf(
-                    "PID",
-                    "Abnahmezeitpunkt",
-                    "Probenart",
-                    "Einsender",
-                    "?",
-                    "Linezolid Ergebnis",
-                    "Tigecylin Ergebnis",
-                    "Vancomycin Ergebnis",
-                    "Teicoplanin Ergebnis",
-                    "Quinupristin und Dalfopristin Ergebnis"
-                )
-            )
-            call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                header { +"VRE-ÖGD-Report" }
-                content {
-                    data {
-                        drawTable(tableData)
-                    }
-                }
-            }
-        }
-        get("/about") {
-            call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                header { +"Über" }
-                content {
-                    data {
-                        +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports anhand der Integration von ORBIS, OPUS-L und SeqSphere in der internen BaseX-Zwischenschicht des Medics."
-                    }
-                }
-            }
-        }
-
-        static("/static") {
-            resources()
-        }
-    }
+    application(baseXClient)()
 }
+
+fun createServer(baseXClient: IBaseXClient, port: Int = 8080) =
+    embeddedServer(Netty, host = "127.0.0.1", port = port, module = application(baseXClient))
+
+private fun application(baseXClient: IBaseXClient): Application.() -> Unit =
+    {
+        install(Webjars)
+        install(StatusPages) {
+            status(HttpStatusCode.NotFound) {
+                call.respondHtmlTemplate(
+                    status = HttpStatusCode.NotFound,
+                    template = LayoutTemplate(call.request.uri.removePrefix("/"))
+                ) {
+                    header { +"404 Not Found" }
+                    content { data { +"No route defined for URL! Pleaes switch URL on top" } }
+                }
+            }
+            exception<Throwable> { cause ->
+                call.respondHtmlTemplate(
+                    status = HttpStatusCode.InternalServerError,
+                    template = LayoutTemplate(call.request.uri.removePrefix("/"))
+                ) {
+                    header { +"500 Internal Server Error" }
+                    content { data { +"${cause.message}" } }
+                }
+            }
+        }
+        routing {
+            //Protect against non-localhost calls
+            intercept(ApplicationCallPipeline.Features) {
+                val ip = InetAddress.getByName(call.request.local.remoteHost)
+                if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
+                    call.respondText("The request origin '$ip' is not a localhost address.")
+                    this.finish()
+                }
+            }
+            get("/") {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"Willkommen" }
+                    content {
+                        data { +"Bitte nutzen Sie die Navigationsleiste oben, um zwischen den verschiedenen Funktionen zu navigieren!" }
+                    }
+                }
+            }
+            get("MRSA/list") {
+                val text = baseXClient.executeXQuery(BaseXQueries.getMRSA())
+                val tableData = parseCsv(
+                    text,
+                    listOf(
+                        "PID",
+                        "Abnahmezeitpunkt",
+                        "Probeart",
+                        "Infektion",
+                        "nosokomial?",
+                        "Einsender",
+                        "Einsender2",
+                        "Spa",
+                        "ClusterType"
+                    )
+                )
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"MRSA-ÖGD-Report" }
+                    content {
+                        data {
+                            drawTable(tableData) //TODO: Fix classpath error for drawTable
+                        }
+                    }
+                }
+            }
+            get("MRGN/list") {
+                val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
+                val tableData = parseCsv(
+                    text,
+                    listOf(
+                        "PID",
+                        "Abnahmezeitpunkt",
+                        "Probenart",
+                        "Einsender",
+                        "?",
+                        "Klasse",
+                        "Piperacillin und Tazobactam Ergebnis",
+                        "Cefotaxime Ergebnis",
+                        "cefTAZidime Ergebnis",
+                        "Cefepime Ergebnis",
+                        "Meropenem Ergebnis",
+                        "Imipenem Ergebnis",
+                        "Ciprofloxacin Ergebnis"
+                    )
+                )
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"MRGN-ÖGD-Report" }
+                    content {
+                        data {
+                            drawTable(tableData)
+                        }
+                    }
+                }
+            }
+            get("VRE/list") {
+                val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
+                val tableData = parseCsv(
+                    text,
+                    listOf(
+                        "PID",
+                        "Abnahmezeitpunkt",
+                        "Probenart",
+                        "Einsender",
+                        "?",
+                        "Linezolid Ergebnis",
+                        "Tigecylin Ergebnis",
+                        "Vancomycin Ergebnis",
+                        "Teicoplanin Ergebnis",
+                        "Quinupristin und Dalfopristin Ergebnis"
+                    )
+                )
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"VRE-ÖGD-Report" }
+                    content {
+                        data {
+                            drawTable(tableData)
+                        }
+                    }
+                }
+            }
+            get("/about") {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"Über" }
+                    content {
+                        data {
+                            +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports anhand der Integration von ORBIS, OPUS-L und SeqSphere in der internen BaseX-Zwischenschicht des Medics."
+                        }
+                    }
+                }
+            }
+
+            static("/static") {
+                resources()
+            }
+        }
+    }
 

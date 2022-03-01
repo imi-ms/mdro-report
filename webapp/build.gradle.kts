@@ -1,6 +1,11 @@
 plugins {
     kotlin("jvm")
     id("com.github.johnrengelman.shadow")
+    id("war")
+}
+
+war {
+    webAppDirName = "webapp"
 }
 
 kotlin {
@@ -24,6 +29,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-auth-jvm:$ktor_version")
     implementation("io.ktor:ktor-webjars:$ktor_version")
+    implementation("io.ktor:ktor-server-servlet:$ktor_version")
     //implementation("io.ktor:ktor-statuspages:$ktor_version")
     //webjars
     implementation("org.webjars.npm:jquery:3.3.1")
