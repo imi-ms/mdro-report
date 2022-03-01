@@ -5,8 +5,6 @@ import io.ktor.client.features.*
 import io.ktor.client.features.auth.*
 import io.ktor.client.features.auth.providers.*
 import io.ktor.client.request.*
-import org.basex.BaseXServer
-import org.basex.api.client.ClientSession
 import org.basex.core.Context
 import org.basex.core.cmd.*
 import java.io.File
@@ -60,23 +58,14 @@ class RestClient(
     }
 
 }
-class LocalBaseXClient(directory: File, port: Int = 8081) : IBaseXClient {
+class LocalBaseXClient(directory: File) : IBaseXClient {
 
-    private lateinit var session: ClientSession
     private val context: Context = Context()
-    private lateinit var server: BaseXServer
 
     init {
-        try {
-            this.server = BaseXServer("-p $port")
-            this.session = ClientSession("localhost", port, "admin", "admin")
-            CreateDB("LocalDB").execute(context)
-            processDirectory(directory, context)
-            Optimize().execute(context)
-
-        } catch (e: Exception) {
-            //TODO: Include Error in application (... please try again)
-        }
+        CreateDB("LocalDB").execute(context)
+        processDirectory(directory, context)
+        Optimize().execute(context)
     }
 
     override suspend fun executeXQuery(xquery: String): String {
@@ -84,7 +73,6 @@ class LocalBaseXClient(directory: File, port: Int = 8081) : IBaseXClient {
     }
 
     override fun close() {
-        server.stop()
         //Drop local DB
         DropDB("LocalDB").execute(context)
         context.close()
