@@ -34,11 +34,11 @@ dependencies {
 //CREATES EXECUTABLE JAR
 application {
     mainClass.set("de.uni_muenster.imi.oegd.application.Main")
-    /*applicationDefaultJvmArgs = listOf(
+    applicationDefaultJvmArgs = listOf(
         "--add-opens",
         "java.base/jdk.internal.misc=ALL-UNNAMED",
         "-Dio.netty.tryReflectionSetAccessible=true"
-    )*/
+    )
 }
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
