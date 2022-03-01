@@ -35,7 +35,7 @@ class Main {
 }
 
 class JavaFxApplication : Application() {
-    private val webappPort = findOpenPortInRange(8000..8080)
+    private val webappPort = findOpenPortInRange(1024..49151)
     private var server: NettyApplicationEngine? = null
     private lateinit var directory: File
 
@@ -63,17 +63,32 @@ class JavaFxApplication : Application() {
                     (page.findChildById("username") as TextField).text,
                     (page.findChildById("password") as PasswordField).text
                 )
+
                 server = createServer(basex, webappPort!!)
                 server!!.start()
 
                 startWebView(primaryStage)
             } else {
-                val localBaseXPort = findOpenPortInRange(8081..8888)
-                val basexLocal = LocalBaseXClient(directory, localBaseXPort!!)
-                server = createServer(basexLocal, webappPort!!)
-                server!!.start()
+                try {
+                    val baseXLocal = LocalBaseXClient(directory)
 
-                startWebView(primaryStage)
+                    server = createServer(baseXLocal, webappPort!!)
+                    server!!.start()
+
+                    startWebView(primaryStage)
+                }
+                catch (e: Exception) {
+
+                    val alert = Alert(Alert.AlertType.ERROR)
+                    alert.title = "Fehlermeldung"
+                    alert.headerText = "Etwas ist schief gelaufen."
+                    alert.contentText = "Möglicherweise handelt es sich bei den Dateien im von Ihnen angegebenen " +
+                            "Verzeichnis nicht um gültige BaseX Dateien. Starten Sie die Applikation erneut und " +
+                            "wählen ein gültiges Verzeichnis."
+
+                    alert.showAndWait()
+                    exitProcess(0)
+                }
             }
         }
 
