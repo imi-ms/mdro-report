@@ -52,10 +52,9 @@ class RestClient(
     }
 
     override suspend fun executeXQuery(xquery: String): String {
-        val adjustedXQuery = xquery.replace("\"REPLACED LATER\"", "")
         val result = this.client.post<String> {
             url("$baseURL/$database")
-            body = """<query> <text> <![CDATA[ $adjustedXQuery ]]> </text> </query>"""
+            body = """<query> <text> <![CDATA[ $xquery ]]> </text> </query>"""
         }
         return result
     }
