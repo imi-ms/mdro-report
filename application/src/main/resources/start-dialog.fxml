@@ -54,7 +54,7 @@
             </VBox.margin>
         </GridPane>
         <Separator prefWidth="200.0" />
-        <RadioButton id="radio_file" fx:id="radio_file" mnemonicParsing="false" text="Datei einlesen:" toggleGroup="$group1" VBox.vgrow="ALWAYS">
+        <RadioButton id="radio_file" fx:id="radio_file" mnemonicParsing="false" text="Verzeichnis einlesen:" toggleGroup="$group1" VBox.vgrow="ALWAYS">
             <VBox.margin>
                 <Insets />
             </VBox.margin>
@@ -65,7 +65,7 @@
         <HBox disable="${! radio_file.selected}" prefHeight="100.0" prefWidth="200.0" spacing="5.0">
             <children>
                 <Button id="button_file" mnemonicParsing="false" prefHeight="28.0" prefWidth="136.0" text="Durchsuchen..." />
-            <Label id="label_file" prefHeight="27.0" prefWidth="397.0" text="Keine Datei ausgewählt">
+            <Label id="label_file" prefHeight="27.0" prefWidth="397.0" text="Kein Verzeichnis ausgewählt">
                <HBox.margin>
                   <Insets left="10.0" />
                </HBox.margin>

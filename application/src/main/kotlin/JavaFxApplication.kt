@@ -15,7 +15,7 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.layout.StackPane
 import javafx.scene.web.WebView
-import javafx.stage.FileChooser
+import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
 import java.io.File
 import kotlin.system.exitProcess
@@ -37,8 +37,7 @@ class Main {
 class JavaFxApplication : Application() {
     private val webappPort = findOpenPortInRange(8000..8080)
     private var server: NettyApplicationEngine? = null
-    private val projectDirectory = System.getProperty("user.dir")
-    private var localFile: File? = null
+    private lateinit var directory: File
 
     override fun start(primaryStage: Stage) {
         val page =
@@ -48,16 +47,11 @@ class JavaFxApplication : Application() {
         primaryStage.show()
 
         (page.lookup("#button_file") as Button).onAction = EventHandler<ActionEvent> {
-            val fileChooser = FileChooser()
-            fileChooser.title = "Öffne XML Datei..."
-            localFile = fileChooser.showOpenDialog(primaryStage)
+            val directoryChooser = DirectoryChooser()
+            directoryChooser.title = "Wähle Verzeichnis mit XML Dateien..."
+            directory = directoryChooser.showDialog(primaryStage)
 
-            if(localFile != null) {
-
-                println(localFile!!.inputStream().readBytes().toString(Charsets.UTF_8))
-
-                (page.lookup("#label_file") as Label).text = localFile!!.name
-            }
+            (page.lookup("#label_file") as Label).text = directory.absolutePath
         }
 
         (page.lookup("#button_confirm") as Button).onAction = EventHandler<ActionEvent> {
@@ -75,7 +69,7 @@ class JavaFxApplication : Application() {
                 startWebView(primaryStage)
             } else {
                 val localBaseXPort = findOpenPortInRange(8081..8888)
-                val basexLocal = LocalBaseXClient(localFile!!, localBaseXPort!!)
+                val basexLocal = LocalBaseXClient(directory, localBaseXPort!!)
                 server = createServer(basexLocal, webappPort!!)
                 server!!.start()
 
