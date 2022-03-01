@@ -175,13 +175,13 @@ fun Application.warEntrypoint() {
             database = property("database").getString()
         )
     }
-    application(baseXClient)()
+    application(baseXClient, serverMode = true)()
 }
 
 fun createServer(baseXClient: IBaseXClient, port: Int = 8080) =
     embeddedServer(Netty, host = "127.0.0.1", port = port, module = application(baseXClient))
 
-private fun application(baseXClient: IBaseXClient): Application.() -> Unit =
+private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit =
     {
         install(Webjars)
         install(StatusPages) {
@@ -206,11 +206,16 @@ private fun application(baseXClient: IBaseXClient): Application.() -> Unit =
         }
         routing {
             //Protect against non-localhost calls
-            intercept(ApplicationCallPipeline.Features) {
-                val ip = InetAddress.getByName(call.request.local.remoteHost)
-                if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
-                    call.respondText("The request origin '$ip' is not a localhost address.")
-                    this.finish()
+            if (!serverMode) {
+                intercept(ApplicationCallPipeline.Features) {
+                    val ip = InetAddress.getByName(call.request.local.remoteHost)
+                    if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
+                        call.respondText(
+                            "The request origin '$ip' is not a localhost address.",
+                            status = HttpStatusCode.Unauthorized
+                        )
+                        this.finish()
+                    }
                 }
             }
             get("/") {

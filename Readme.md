@@ -9,14 +9,14 @@ Run
 
 * `./gradlew shadowJar` to create an executable .jar file.
 * `./gradlew CreateEXE` to create a Windows installer, that will also install JRE. Note you have to
-  install [WiX](https://github.com/wixtoolset/wix3) first
+  install [WiX](https://github.com/wixtoolset/wix3) first.
 
 If you only want to use the web interface and connect to a separate running BaseX-instance, run:
 
 * `./gradlew :webapp:war` to create a .war file.
 * `./gradlew :webapp:shadowJar` to create an executable .jar with built-in Netty server.
 
-### Tomcat Deployment
+### Server Deployment
 
 1. You need to have installed a BaseX instance, which is constantly fed the data from the ETL process.
 2. Setup Tomcat server, I strongly recommend also installing a reverse proxy with some sort of password protection.
