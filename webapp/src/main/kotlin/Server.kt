@@ -107,6 +107,29 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
     }
 }
 
+fun FlowContent.drawTable(data: List<Map<String, String>>) {
+    val keys = data.first().keys
+    table(classes = "table") {
+        thead {
+            tr {
+                for (columnName in keys) {
+                    th(scope = ThScope.col) { +columnName }
+                }
+            }
+        }
+        for (datum in data) {
+            tr {
+                for (key in keys) {
+                    td {
+                        +(datum[key] ?: "null")
+                    }
+                }
+
+            }
+        }
+    }
+}
+
 
 class OverviewTemplate : Template<FlowContent> {
     val data = Placeholder<FlowContent>()
@@ -218,7 +241,7 @@ private fun application(baseXClient: IBaseXClient): Application.() -> Unit =
                     header { +"MRSA-ÖGD-Report" }
                     content {
                         data {
-                            drawTable(tableData) //TODO: Fix classpath error for drawTable
+                            drawTable(tableData)
                         }
                     }
                 }
