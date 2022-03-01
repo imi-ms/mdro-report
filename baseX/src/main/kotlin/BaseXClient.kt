@@ -8,10 +8,9 @@ import io.ktor.client.request.*
 import org.basex.BaseXServer
 import org.basex.api.client.ClientSession
 import org.basex.core.Context
-import org.basex.core.cmd.CreateDB
-import org.basex.core.cmd.DropDB
-import org.basex.core.cmd.XQuery
+import org.basex.core.cmd.*
 import java.io.File
+import java.nio.file.Files
 
 /**
  * Common interface for both REST and local BaseX instance
@@ -53,25 +52,28 @@ class RestClient(
     }
 
     override suspend fun executeXQuery(xquery: String): String {
+        val adjustedXQuery = xquery.replace("\"REPLACED LATER\"", "")
         val result = this.client.post<String> {
             url("$baseURL/$database")
-            body = """<query> <text> <![CDATA[ $xquery ]]> </text> </query>"""
+            body = """<query> <text> <![CDATA[ $adjustedXQuery ]]> </text> </query>"""
         }
         return result
     }
 
 }
-class LocalBaseXClient(file: File, port: Int = 8081) : IBaseXClient { //TODO: Custom Port not working
+class LocalBaseXClient(directory: File, port: Int = 8081) : IBaseXClient {
 
     private lateinit var session: ClientSession
     private val context: Context = Context()
-    private val server: BaseXServer = BaseXServer()
+    private lateinit var server: BaseXServer
 
     init {
         try {
+            this.server = BaseXServer("-p $port")
             this.session = ClientSession("localhost", port, "admin", "admin")
-            val result = send(session, "XQUERY for \$x in doc('${file.absolutePath}') return \$x")
-            CreateDB("LocalDB", result).execute(context)
+            CreateDB("LocalDB").execute(context)
+            processDirectory(directory, context)
+            Optimize().execute(context)
 
         } catch (e: Exception) {
             //TODO: Include Error in application (... please try again)
@@ -89,7 +91,10 @@ class LocalBaseXClient(file: File, port: Int = 8081) : IBaseXClient { //TODO: Cu
         context.close()
     }
 
-    private fun send(session: ClientSession, command: String): String {
-        return session.execute(command)
+
+    private fun processDirectory(directory: File, context: Context){
+        directory.walk()
+            .filter { item -> Files.isRegularFile(item.toPath())}
+            .forEach { Add("", it.absolutePath).execute(context) }
     }
 }
