@@ -33,7 +33,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
         body {
             nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
                 a(classes = "navbar-brand", href = "/") {
-                    +"ÖGD-Tool"
+                    +"MD-Report"
                 }
                 button(classes = "navbar-toggler") {
                     attributes["data-toggle"] = "collapse"
@@ -131,6 +131,25 @@ fun FlowContent.drawTable(data: List<Map<String, String>>) {
 }
 
 
+fun FlowContent.drawTable2(data: List<Pair<String, String>>) {
+    table(classes = "table") {
+        for (datum in data) {
+            tr {
+                th { +datum.first }
+                td {
+                    title = datum.first
+                    +datum.second
+                    unsafe { +"<i>ich bin kursiv</i>" }
+                }
+            }
+        }
+    }
+}
+
+abstract class OverviewEntry(val title: String, val tooltip: String, val data: String) {
+}
+
+
 class OverviewTemplate : Template<FlowContent> {
     val data = Placeholder<FlowContent>()
 
@@ -155,13 +174,14 @@ class Server {
         @JvmStatic
         fun main(args: Array<String>) {
             val webappPort = findOpenPortInRange(8080..8888)
+            //TODO: Config via command line parameters
             val baseXClient = RestClient(
                 baseURL = "https://basex.ukmuenster.de/rest",
                 username = "oehm",
                 password = "M2QWcX7tJsLBPic",
                 database = "2021-copy3"
             )
-            val server = createServer(baseXClient, webappPort!!).start(wait = true)
+            createServer(baseXClient, webappPort!!).start(wait = true)
         }
     }
 }
@@ -226,6 +246,29 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                     }
                 }
             }
+            get("MRSA/overview") {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"MRSA: Übersicht" }
+                    content {
+                        data {
+                            drawTable2(
+                                listOf(
+                                    "stationäre Fälle gesamt pro Erfassungszeitraum" to "fallzahlen.xq",
+                                    "stationäre Falltage gesamt pro Erfassungszeitraum" to "Falltage.xq",
+                                    "Anzahl der Nasenabstriche bzw. kombinierte Nasen/Rachenabstiche pro Erfassungszeitraum " to "nasenabstriche.xq",
+                                    "Anzahl aller S. aureus aus Blutkulturen (MSSA und MRSA)" to "mssa_bk.xq",
+                                    "Anzahl MRSA aus Blutkulturen" to "mrsa_bk.xq",
+                                    "Gesamtanzahl aller Fälle mit Methicillin Resistenten S. aureus (MRSA)" to "count(falliste)",
+                                    "Anzahl der importierten MRSA Fälle" to "count(falliste)",
+                                    "Anzahl nosokomialer MRSA Fälle" to "count(falliste)",
+                                    "stationäre Falltage von MRSA-Fällen" to "fallzahlen.xq",
+                                )
+                            )
+                        }
+                    }
+                }
+            }
+
             get("MRSA/list") {
                 val text = baseXClient.executeXQuery(BaseXQueries.getMRSA())
                 val tableData = parseCsv(
@@ -243,10 +286,27 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                     )
                 )
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRSA-ÖGD-Report" }
+                    header { +"MRSA Fallliste" }
                     content {
                         data {
                             drawTable(tableData)
+                        }
+                    }
+                }
+            }
+            get("MRGN/overview") {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"MRGN Übersicht" }
+                    content {
+                        data {
+                            drawTable2(
+                                listOf(
+                                    "stationäre Fälle gesamt pro Erfassungszeitraum" to "fallzahlen.xq",
+                                    "stationäre Falltage gesamt pro Erfassungszeitraum" to "Falltage.xq",
+                                    "Anzahl der 3MRGN Fälle" to "count(falliste)",
+                                    "Anzahl der 4MRGN Fälle" to "count(falliste)",
+                                )
+                            )
                         }
                     }
                 }
@@ -272,10 +332,32 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                     )
                 )
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRGN-ÖGD-Report" }
+                    header { +"MRGN Fallliste" }
                     content {
                         data {
                             drawTable(tableData)
+                        }
+                    }
+                }
+            }
+            get("VRE/overview") {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"VRE Übersicht" }
+                    content {
+                        data {
+                            drawTable2(
+                                listOf(
+                                    "stationäre Fälle gesamt pro Erfassungszeitraum" to "fallzahlen.xq",
+                                    "stationäre Falltage gesamt pro Erfassungszeitraum" to "Falltage.xq",
+                                    "Anzahl der gesamten E.faecalis Fälle (resistente und sensible)" to "anzahlEfaecalis.xq",
+                                    "Anzahl der VRE E.faecalis Fälle" to "count(falliste) wo erreger = e.faecalis",
+                                    "Anzahl der gesamten E.faecium Fälle (resistente und sensible)" to "count(falliste) wo erreger = e.faecalis",
+                                    "Anzahl der VRE E.faecium Fälle" to "count(falliste) wo erreger = e.faecalis",
+                                    "Anzahl sonstiger VRE Fälle" to "count(falliste) wo erreger != e.faecalis oder e.faecium",
+                                    "Anzahl E.faecium Fälle (inkl. Vancomycin empfindliche und resistente Isolate) in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)" to "efaecium_bk.xq",
+                                    "Anzahl der VRE-E.faecium Fälle in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)" to "vre_bk.xq",
+                                )
+                            )
                         }
                     }
                 }

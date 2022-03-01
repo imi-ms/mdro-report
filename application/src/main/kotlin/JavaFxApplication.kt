@@ -1,6 +1,8 @@
 package de.uni_muenster.imi.oegd.application
 
-import de.uni_muenster.imi.oegd.baseX.*
+import de.uni_muenster.imi.oegd.baseX.LocalBaseXClient
+import de.uni_muenster.imi.oegd.baseX.RestClient
+import de.uni_muenster.imi.oegd.baseX.findOpenPortInRange
 import de.uni_muenster.imi.oegd.webapp.createServer
 import io.ktor.server.netty.*
 import javafx.application.Application
@@ -115,14 +117,16 @@ class JavaFxApplication : Application() {
     }
 
     private fun startWebView(primaryStage: Stage) {
-        primaryStage.title = "ÖGD-Report-Tool"
+        primaryStage.title = "MD-Report"
         val webView = WebView()
         val indicator = ProgressIndicator()
         primaryStage.scene = Scene(StackPane(webView, indicator), 1280.0, 800.0)
         webView.engine.load("http://localhost:$webappPort/")
+        webView.isContextMenuEnabled = false
+
         indicator.visibleProperty()
             .bind(webView.engine.loadWorker.stateProperty().isEqualTo(Worker.State.RUNNING))
-        webView.contextMenuEnabledProperty().set(false)
+
         primaryStage.show()
         primaryStage.centerOnScreen()
     }

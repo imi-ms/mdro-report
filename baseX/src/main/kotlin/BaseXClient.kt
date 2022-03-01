@@ -13,9 +13,7 @@ import java.nio.file.Files
 /**
  * Common interface for both REST and local BaseX instance
  */
-interface IBaseXClient {
-    fun close()
-
+interface IBaseXClient : AutoCloseable {
     suspend fun executeXQuery(xquery: String): String
 }
 
@@ -24,34 +22,25 @@ class RestClient(
     private val database: String,
     private val username: String,
     private val password: String
-) :
-    IBaseXClient {
-    private val client = getConnection()
+) : IBaseXClient {
+    private val client = HttpClient {
+        install(Auth) {
+            basic {
+                credentials { BasicAuthCredentials(this@RestClient.username, this@RestClient.password) }
+                sendWithoutRequest { true }
+            }
+        }
+        install(HttpTimeout) {
+            requestTimeoutMillis = 60_000
+        }
+    }
 
     override fun close() {
         client.close()
     }
 
-    private fun getConnection(): HttpClient {
-        val that = this
-        return HttpClient {
-            install(Auth) {
-                basic {
-                    credentials {
-                        BasicAuthCredentials(that.username, that.password)
-                    }
-                    sendWithoutRequest { true }
-                }
-            }
-            install(HttpTimeout) {
-                requestTimeoutMillis = 60000
-            }
-        }
-    }
-
     override suspend fun executeXQuery(xquery: String): String {
-        val result = this.client.post<String> {
-            url("$baseURL/$database")
+        val result = this.client.post<String>("$baseURL/$database") {
             body = """<query> <text> <![CDATA[ $xquery ]]> </text> </query>"""
         }
         return result

@@ -1,4 +1,4 @@
-# ÖGD Report Tool
+# MD-Report
 
 This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html).
@@ -24,3 +24,7 @@ If you only want to use the web interface and connect to a separate running Base
    execute `./gradlew :webapp:war`. <br>
    **Or**: Download .war file from releases, unzip, edit `WEB-INF/classes/application.conf`, rezip and deploy.
 4. Have fun!
+
+## XML Format description
+
+//TODO //TODO: Testdata is also provided here: 
