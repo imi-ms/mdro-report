@@ -247,7 +247,7 @@ private fun application(baseXClient: IBaseXClient): Application.() -> Unit =
                 }
             }
             get("MRGN/list") {
-                val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
+                val text = baseXClient.executeXQuery(BaseXQueries.getMRGN())
                 val tableData = parseCsv(
                     text,
                     listOf(
