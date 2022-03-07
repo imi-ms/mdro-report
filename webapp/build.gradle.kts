@@ -34,6 +34,8 @@ dependencies {
     //webjars
     implementation("org.webjars.npm:jquery:3.3.1")
     implementation("org.webjars.npm:bootstrap:4.3.1")
+    implementation("org.webjars.npm:bootstrap-icons:1.8.1")
+    implementation("org.webjars.npm:popper.js:1.16.1")
     implementation(project(":baseX"))
 }
 
