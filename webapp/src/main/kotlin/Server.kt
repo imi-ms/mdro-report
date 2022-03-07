@@ -16,7 +16,6 @@ import kotlinx.html.*
 import java.net.InetAddress
 
 
-//TODO: Add remaining queries
 //TODO: Test dynamic architecture
 //TODO: Make header and footer "sticky"
 class LayoutTemplate(private val url: String) : Template<HTML> {
@@ -28,7 +27,13 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
             meta(name = "viewport", content = "width=device-width, initial-scale=1, shrink-to-fit=no")
             title { url }
             link(rel = "stylesheet", href = "/webjars/bootstrap/dist/css/bootstrap.min.css")
+            link(rel = "stylesheet", href = "/webjars/bootstrap-icons/font/bootstrap-icons.css")
             link(rel = "stylesheet", href = "/static/custom-styles.css")
+
+            script(src = "/webjars/jquery/dist/jquery.min.js") {}
+            //script(src = "/webjars/popper.js/dist/popper.min.js") {} //TODO: Popper needed?
+            script(src = "/webjars/bootstrap/dist/js/bootstrap.min.js") {}
+
         }
         body {
             nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
@@ -99,10 +104,6 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
                     }
                 }
             }
-            script(src = "/webjars/jquery/dist/jquery.min.js") {}
-            //TODO: Import popper from webjars
-            script(src = "https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js") {}
-            script(src = "/webjars/bootstrap/dist/js/bootstrap.min.js") {}
         }
     }
 }
@@ -131,23 +132,57 @@ fun FlowContent.drawTable(data: List<Map<String, String>>) {
 }
 
 
-fun FlowContent.drawTable2(data: List<Pair<String, String>>) {
+fun FlowContent.drawTable2(data: List<OverviewEntry>) {
     table(classes = "table") {
-        for (datum in data) {
+        data.forEachIndexed { index, entry ->
             tr {
-                th { +datum.first }
+                th { +entry.title }
                 td {
-                    title = datum.first
-                    +datum.second
-                    unsafe { +"<i>ich bin kursiv</i>" }
+                    span{+entry.data}
+                    button(classes = "btn btn-link") {
+                        attributes["data-toggle"] = "modal"
+                        attributes["data-target"] = "#query-modal-$index"
+                        i {
+                            attributes["class"] = "bi bi-info-circle"
+                        }
+                    }
+                    div(classes = "modal fade") {
+                        attributes["id"] = "query-modal-$index"
+                        attributes["tabindex"] = "-1"
+                        attributes["role"] = "dialog"
+                        attributes["aria-labelledby"] = "#query-modal-$index-title"
+                        attributes["aria-hidden"] = "true"
+                        div(classes = "modal-dialog modal-lg") {
+                            attributes["role"] = "document"
+                            div(classes = "modal-content") {
+                                div(classes = "modal-header") {
+                                    h5(classes = "modal-title") {
+                                        attributes["id"] = "query-modal-$index-title"
+                                        +"${entry.title} - Query"
+                                    }
+                                    button(classes = "close") {
+                                        attributes["type"] = "button"
+                                        attributes["data-dismiss"] = "modal"
+                                        attributes["aria-label"] = "close"
+                                        span {
+                                            attributes["aria-hidden"] = "true"
+                                            +"×"
+                                        }
+                                    }
+                                }
+                                div(classes = "modal-body") {
+                                    +entry.query
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-abstract class OverviewEntry(val title: String, val tooltip: String, val data: String) {
-}
+abstract class OverviewEntry(val title: String, val query: String, val data: String) {}
 
 
 class OverviewTemplate : Template<FlowContent> {
@@ -247,44 +282,19 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 }
             }
             get("MRSA/overview") {
+                val overviewContent = WebappComponents.getMRSAOverview(baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Übersicht" }
                     content {
                         data {
-                            drawTable2(
-                                listOf(
-                                    "stationäre Fälle gesamt pro Erfassungszeitraum" to "fallzahlen.xq",
-                                    "stationäre Falltage gesamt pro Erfassungszeitraum" to "Falltage.xq",
-                                    "Anzahl der Nasenabstriche bzw. kombinierte Nasen/Rachenabstiche pro Erfassungszeitraum " to "nasenabstriche.xq",
-                                    "Anzahl aller S. aureus aus Blutkulturen (MSSA und MRSA)" to "mssa_bk.xq",
-                                    "Anzahl MRSA aus Blutkulturen" to "mrsa_bk.xq",
-                                    "Gesamtanzahl aller Fälle mit Methicillin Resistenten S. aureus (MRSA)" to "count(falliste)",
-                                    "Anzahl der importierten MRSA Fälle" to "count(falliste)",
-                                    "Anzahl nosokomialer MRSA Fälle" to "count(falliste)",
-                                    "stationäre Falltage von MRSA-Fällen" to "fallzahlen.xq",
-                                )
-                            )
+                            drawTable2(overviewContent)
                         }
                     }
                 }
             }
-
             get("MRSA/list") {
                 val text = baseXClient.executeXQuery(BaseXQueries.getMRSA())
-                val tableData = parseCsv(
-                    text,
-                    listOf(
-                        "PID",
-                        "Abnahmezeitpunkt",
-                        "Probeart",
-                        "Infektion",
-                        "nosokomial?",
-                        "Einsender",
-                        "Einsender2",
-                        "Spa",
-                        "ClusterType"
-                    )
-                )
+                val tableData = WebappComponents.getMRSACSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA Fallliste" }
                     content {
@@ -295,42 +305,19 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 }
             }
             get("MRGN/overview") {
+                val overviewContent = WebappComponents.getMRGNOverview(baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRGN Übersicht" }
                     content {
                         data {
-                            drawTable2(
-                                listOf(
-                                    "stationäre Fälle gesamt pro Erfassungszeitraum" to "fallzahlen.xq",
-                                    "stationäre Falltage gesamt pro Erfassungszeitraum" to "Falltage.xq",
-                                    "Anzahl der 3MRGN Fälle" to "count(falliste)",
-                                    "Anzahl der 4MRGN Fälle" to "count(falliste)",
-                                )
-                            )
+                            drawTable2(overviewContent)
                         }
                     }
                 }
             }
             get("MRGN/list") {
                 val text = baseXClient.executeXQuery(BaseXQueries.getMRGN())
-                val tableData = parseCsv(
-                    text,
-                    listOf(
-                        "PID",
-                        "Abnahmezeitpunkt",
-                        "Probenart",
-                        "Einsender",
-                        "?",
-                        "Klasse",
-                        "Piperacillin und Tazobactam Ergebnis",
-                        "Cefotaxime Ergebnis",
-                        "cefTAZidime Ergebnis",
-                        "Cefepime Ergebnis",
-                        "Meropenem Ergebnis",
-                        "Imipenem Ergebnis",
-                        "Ciprofloxacin Ergebnis"
-                    )
-                )
+                val tableData = WebappComponents.getMRGACSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRGN Fallliste" }
                     content {
@@ -341,44 +328,19 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 }
             }
             get("VRE/overview") {
+                val overviewContent = WebappComponents.getVREOverview(baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE Übersicht" }
                     content {
                         data {
-                            drawTable2(
-                                listOf(
-                                    "stationäre Fälle gesamt pro Erfassungszeitraum" to "fallzahlen.xq",
-                                    "stationäre Falltage gesamt pro Erfassungszeitraum" to "Falltage.xq",
-                                    "Anzahl der gesamten E.faecalis Fälle (resistente und sensible)" to "anzahlEfaecalis.xq",
-                                    "Anzahl der VRE E.faecalis Fälle" to "count(falliste) wo erreger = e.faecalis",
-                                    "Anzahl der gesamten E.faecium Fälle (resistente und sensible)" to "count(falliste) wo erreger = e.faecalis",
-                                    "Anzahl der VRE E.faecium Fälle" to "count(falliste) wo erreger = e.faecalis",
-                                    "Anzahl sonstiger VRE Fälle" to "count(falliste) wo erreger != e.faecalis oder e.faecium",
-                                    "Anzahl E.faecium Fälle (inkl. Vancomycin empfindliche und resistente Isolate) in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)" to "efaecium_bk.xq",
-                                    "Anzahl der VRE-E.faecium Fälle in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)" to "vre_bk.xq",
-                                )
-                            )
+                            drawTable2(overviewContent)
                         }
                     }
                 }
             }
             get("VRE/list") {
                 val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
-                val tableData = parseCsv(
-                    text,
-                    listOf(
-                        "PID",
-                        "Abnahmezeitpunkt",
-                        "Probenart",
-                        "Einsender",
-                        "?",
-                        "Linezolid Ergebnis",
-                        "Tigecylin Ergebnis",
-                        "Vancomycin Ergebnis",
-                        "Teicoplanin Ergebnis",
-                        "Quinupristin und Dalfopristin Ergebnis"
-                    )
-                )
+                val tableData = WebappComponents.getVRECSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE-ÖGD-Report" }
                     content {
