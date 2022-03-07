@@ -27,3 +27,13 @@ body {
     width: auto;
     padding: 0 15px;
 }
+
+.modal-body {
+    white-space: pre-line;
+    font-size: .8em;
+}
+
+.overview-result {
+    color: black;
+    text-decoration-style: dotted;
+}
