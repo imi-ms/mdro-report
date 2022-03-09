@@ -1,17 +1,30 @@
 /* Sticky footer styles
 -------------------------------------------------- */
-html {
-    position: relative;
-    min-height: 100%;
+html, body {
+    height: 100%;
+    margin: 0
 }
 
-body {
-    margin-bottom: 60px; /* Margin bottom by footer height */
+.wrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.content {
+    flex: 1;
+    overflow: scroll;
+    padding-top: 20px;
+}
+
+.sticky-tr {
+    position: sticky;
+    top: -21px; /*Bug with JavaFX Webengine where 1px of content was visible between divs*/
+    background-color: white;
+    box-shadow: 0 5px 5px -5px rgba(0, 0, 0, 0.3);
 }
 
 .footer {
-    position: absolute;
-    bottom: 0;
     width: 100%;
     height: 60px; /* Set the fixed height of the footer here */
     line-height: 60px; /* Vertically center the text there */
@@ -24,7 +37,7 @@ body {
 /* Not required for template or sticky footer method. */
 
 .container {
-    width: auto;
+    max-width: 95%;
     padding: 0 15px;
 }
 
@@ -37,3 +50,5 @@ body {
     color: black;
     text-decoration-style: dotted;
 }
+
+

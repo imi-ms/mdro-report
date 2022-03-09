@@ -36,71 +36,75 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
 
         }
         body {
-            nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
-                a(classes = "navbar-brand", href = "/") {
-                    +"MD-Report"
-                }
-                button(classes = "navbar-toggler") {
-                    attributes["data-toggle"] = "collapse"
-                    attributes["data-target"] = "#navbarNav"
-                    attributes["aria-controls"] = "navbarNav"
-                    attributes["aria-expanded"] = "false"
-                    attributes["aria-label"] = "Toggle navigation"
-                    span(classes = "navbar-toggler-icon")
-                }
-                div(classes = "collapse navbar-collapse") {
-                    id = "navbarNav"
-                    ul(classes = "navbar-nav") {
-                        for (germ in sequenceOf("MRSA", "MRGN", "VRE")) {
-                            li(classes = "nav-item dropdown") {
-                                if (url.startsWith(germ)) {
+            div(classes = "wrapper") {
+                nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
+                    a(classes = "navbar-brand", href = "/") {
+                        +"MD-Report"
+                    }
+                    button(classes = "navbar-toggler") {
+                        attributes["data-toggle"] = "collapse"
+                        attributes["data-target"] = "#navbarNav"
+                        attributes["aria-controls"] = "navbarNav"
+                        attributes["aria-expanded"] = "false"
+                        attributes["aria-label"] = "Toggle navigation"
+                        span(classes = "navbar-toggler-icon")
+                    }
+                    div(classes = "collapse navbar-collapse") {
+                        id = "navbarNav"
+                        ul(classes = "navbar-nav") {
+                            for (germ in sequenceOf("MRSA", "MRGN", "VRE")) {
+                                li(classes = "nav-item dropdown") {
+                                    if (url.startsWith(germ)) {
+                                        classes += "active"
+                                    }
+//                                attributes["aria-haspopup"] = "true"
+                                    a(classes = "nav-link dropdown-toggle", href = "#") {
+                                        id = "navbar$germ"
+                                        role = "button"
+                                        attributes["data-toggle"] = "dropdown"
+                                        attributes["aria-expanded"] = "false"
+                                        +germ
+                                    }
+                                    div(classes = "dropdown-menu") {
+                                        attributes["aria-labelledby"] = "navbar$germ"
+                                        a(classes = "dropdown-item", href = "/$germ/overview") { +"Übersicht $germ" }
+                                        a(classes = "dropdown-item", href = "/$germ/list") { +"Fallliste" }
+                                    }
+                                }
+                            }
+
+                            li(classes = "nav-item") {
+                                if (url.startsWith("about")) {
                                     classes += "active"
                                 }
-//                                attributes["aria-haspopup"] = "true"
-                                a(classes = "nav-link dropdown-toggle", href = "#") {
-                                    id = "navbar$germ"
-                                    role = "button"
-                                    attributes["data-toggle"] = "dropdown"
-                                    attributes["aria-expanded"] = "false"
-                                    +germ
-                                }
-                                div(classes = "dropdown-menu") {
-                                    attributes["aria-labelledby"] = "navbar$germ"
-                                    a(classes = "dropdown-item", href = "/$germ/overview") { +"Übersicht $germ" }
-                                    a(classes = "dropdown-item", href = "/$germ/list") { +"Fallliste" }
+                                a(classes = "nav-link", href = "/about") {
+                                    +"Über"
                                 }
                             }
                         }
 
-                        li(classes = "nav-item") {
-                            if (url.startsWith("about")) {
-                                classes += "active"
-                            }
-                            a(classes = "nav-link", href = "/about") {
-                                +"Über"
-                            }
+                    }
+                }
+
+                main(classes = "content") {
+                    role = "main"
+                    div(classes = "container") {
+                        h1 {
+                            insert(header)
                         }
+                        insert(OverviewTemplate(), content)
                     }
-
                 }
-            }
-
-            main(classes = "container") {
-                role = "main"
-                h1 {
-                    insert(header)
-                }
-                insert(OverviewTemplate(), content)
-            }
 
 
-            footer(classes = "footer") {
-                div(classes = "container") {
-                    span(classes = "text-muted") {
-                        +"© 2022 Copyright "
-                    }
-                    a(href = "https://imi.uni-muenster.de") {
-                        +"Institut für Medizinische Informatik Münster"
+                footer(classes = "footer") {
+                    div(classes = "container") {
+                        span(classes = "text-muted") {
+                            +"© 2022 Copyright "
+                        }
+                        a(href = "https://imi.uni-muenster.de") {
+                            +"Institut für Medizinische Informatik Münster"
+                        }
                     }
                 }
             }
@@ -112,7 +116,7 @@ fun FlowContent.drawTable(data: List<Map<String, String>>) {
     val keys = data.first().keys
     table(classes = "table") {
         thead {
-            tr {
+            tr(classes = "sticky-tr"){
                 for (columnName in keys) {
                     th(scope = ThScope.col) { +columnName }
                 }
