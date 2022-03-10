@@ -13,7 +13,7 @@ html, body {
 
 .content {
     flex: 1;
-    overflow: scroll;
+    overflow: auto;
     padding-top: 20px;
 }
 
@@ -44,11 +44,6 @@ html, body {
 .modal-body {
     white-space: pre-line;
     font-size: .8em;
-}
-
-.overview-result {
-    color: black;
-    text-decoration-style: dotted;
 }
 
 
