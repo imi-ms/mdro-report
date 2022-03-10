@@ -35,8 +35,6 @@ dependencies {
 application {
     mainClass.set("de.uni_muenster.imi.oegd.application.Main")
     applicationDefaultJvmArgs = listOf(
-        "--add-opens",
-        "java.base/jdk.internal.misc=ALL-UNNAMED",
         "-Dio.netty.tryReflectionSetAccessible=true"
     )
 }
@@ -56,7 +54,7 @@ tasks.register<JPackageTask>("CreateAppImage") {
     input ="$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "ÖGD-Report Tool - Linux"
+    appName = "ÖGD-Report Tool"
     vendor = "de.uni_muenster.imi"
 
     mainJar = tasks.jar.get().archiveFileName.get()
@@ -84,3 +82,5 @@ tasks.register<JPackageTask>("CreateEXE") {
     winDirChooser = true
     winMenu = true
 }
+
+tasks.getByPath("build").finalizedBy("CreateAppImage")
