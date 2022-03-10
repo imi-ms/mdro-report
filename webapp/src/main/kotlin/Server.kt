@@ -17,7 +17,6 @@ import java.net.InetAddress
 
 
 //TODO: Test dynamic architecture
-//TODO: Make header and footer "sticky"
 class LayoutTemplate(private val url: String) : Template<HTML> {
     val header = Placeholder<FlowContent>()
     val content = TemplatePlaceholder<OverviewTemplate>()
@@ -213,12 +212,30 @@ class Server {
         @JvmStatic
         fun main(args: Array<String>) {
             val webappPort = findOpenPortInRange(8080..8888)
-            //TODO: Config via command line parameters
+            val url: String
+            val username: String
+            val password: String
+            val database: String
+            if(args.isNotEmpty()) {
+                url = args[0]
+                username = args[1]
+                password = args[2]
+                database = args[3]
+            } else {
+                println("Bitte gib eine BaseX URL an: ")
+                url = readLine()!!
+                println("Bitte gib deinen Usernamen an: ")
+                username = readLine()!!
+                password = System.console()?.readPassword("Bitte gib das Passwort ein: \n")!!.concatToString()
+                println("Bitte gib die Datenbank an: ")
+                database = readLine()!!
+            }
+
             val baseXClient = RestClient(
-                baseURL = "https://basex.ukmuenster.de/rest",
-                username = "oehm",
-                password = "M2QWcX7tJsLBPic",
-                database = "2021-copy3"
+                baseURL = url,
+                username = username,
+                password = password,
+                database = database
             )
             createServer(baseXClient, webappPort!!).start(wait = true)
         }
