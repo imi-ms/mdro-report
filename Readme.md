@@ -27,4 +27,112 @@ If you only want to use the web interface and connect to a separate running Base
 
 ## XML Format description
 
-//TODO //TODO: Testdata is also provided here: 
+//TODO: Testdata is also provided here: 
+
+- The basic patient record will follow a specific XML format that will look similar to this example: 
+  
+  ```XML
+  <patient birthYear="2000" sex="M" id="123456">
+    <identifier system="SYSTEM" key="PID" value="123456"/>
+    <identifier system="SYSTEM" key="PERSNR" value="123456"/>
+    <case id="123456" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" type="S" admissionCause="V" admissionReason301="01" dischargeType301="01" state="E">
+        <identifier system="SYSTEM" key="FALLID" value="123456"/>
+        <identifier system="SYSTEM" key="FALLNR" value="123456"/>
+        <location id="111111" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" clinic="CLINIC" clinicP21="0100" ward="WARD"/>
+        <location id="111112"/>
+        <!--...-->
+        <location id="111113"/>
+  
+        <procedure id="123456" from="2022-03-10T10:10:10" importance="N">
+            <!--list of procedures follows-->
+        </procedure>
+        <labReport id="123456" source="SOURCE">
+            <comment>This is a comment</comment>
+            <request from="2022-03-10T10:10:10" sender="SENDER">VRE</request>
+            <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">
+                <comment>A comment for the sample</comment>
+                <analysis OPUS="avre" display="Selektivagar VRE">
+                    <result OPUS="positiv" openTerm="pos"/>
+                </analysis>
+                <germ id="123456" number="1" SNOMED="90272000" openTerm="enco.faci" display="Enterococcus faecium">
+                    <comment>A comment for the germ detection</comment>
+                    <analysis><!--further analysis--></analysis>
+                    <!--...-->
+                    <!--antibiotic tests against the sample-->
+                    <antibiotic LOINC="18862-3" openTerm="amoxi.cil   clav.aci" display="Amoxicillin/Clavulansäure">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18864-9" openTerm="ampi.cil" display="Ampicillin">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18865-6" openTerm="ampi.cil   sul.bac" display="Ampicillin/Sulbactam">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18906-8" openTerm="cipro.flox" display="Ciprofloxacin">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="20629-2" openTerm="levo.flox" display="Levofloxacin">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="29258-1" openTerm="line.zol" display="Linezolid">
+                        <result string="R" LOINC="LA24225-7"/>
+                    </antibiotic>
+                    <antibiotic display="Norfloxacin">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18969-6" openTerm="pipera.cil" display="Piperacillin">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18970-4" openTerm="pipera.cil   tazo.bac" display="Piperacillin/Tazobactam">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18989-4" openTerm="teico" display="Teicoplanin">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="42357-4" openTerm="tige.cyc" display="Tigecyclin">
+                        <result string="R" LOINC="LA24225-7"/>
+                    </antibiotic>
+                    <antibiotic LOINC="19000-9" openTerm="vanco.myc" display="Vancomycin">
+                        <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                </germ>
+            </sample>
+        </labReport>
+    </case>
+  </patient>
+  ```
+
+
+In order to be usable for this project the record has to at least contain the following objects: 
+- A patient with an id `<patient id="">`
+- A corresponding case with an id `<case id="">`
+- A lab report for this case with an id `<labReport id="">...</labReport>`
+- The lab report has to contain information about the sender of the request
+    ```XML
+    <request from="2022-03-10T10:10:10" sender="SENDER">VRE</request>
+    ```
+- The lab report has to contain information about the sample. It will display the sample type and time the sample was collected  
+    ```XML
+    <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">...</sample>
+    ```
+- The sample has to contain a positive analysis for MRSA, MRGA or VRE 
+
+  ```XML
+  <analysis OPUS="avre" display="Selektivagar VRE">
+      <result OPUS="positiv" openTerm="pos"/>
+  </analysis>
+  ```
+
+- The lab report has to have a germ with an id and the antibiotics analysis
+  ```XML
+      <germ id="" SNOMED="" openTerm="" display="">
+          <antibiotic LOINC="" openTerm="" display="">
+              <result string="" LOINC=""/>
+          </antibiotic>
+          ....
+          <antibiotic></antibiotic>
+      </germ>
+  ```
+    
+  
+
