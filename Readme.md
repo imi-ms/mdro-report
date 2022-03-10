@@ -115,7 +115,7 @@ In order to be usable for this project the record has to at least contain the fo
     ```XML
     <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">...</sample>
     ```
-- The sample has to contain a positive analysis for MRSA, MRGA or VRE 
+- The sample has to contain a positive analysis for MRSA, MRGN or VRE 
 
   ```XML
   <analysis OPUS="avre" display="Selektivagar VRE">
