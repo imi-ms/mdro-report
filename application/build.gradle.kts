@@ -33,5 +33,5 @@ dependencies {
 
 javafx {
     modules("javafx.base","javafx.controls","javafx.fxml",
-        "javafx.graphics","javafx.media","javafx.swing","javafx.web") //TODO: Reduce modules
+        "javafx.graphics","javafx.web")
 }
