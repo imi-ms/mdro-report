@@ -29,13 +29,14 @@ dependencies {
     implementation("io.ktor:ktor-client-auth-jvm:$ktor_version")
     implementation("io.ktor:ktor-webjars:$ktor_version")
     implementation("io.ktor:ktor-server-servlet:$ktor_version")
+    implementation(project(":baseX"))
+    implementation(project(":common"))
+
     //webjars
     implementation("org.webjars.npm:jquery:3.3.1")
     implementation("org.webjars.npm:bootstrap:4.3.1")
     implementation("org.webjars.npm:bootstrap-icons:1.8.1")
     implementation("org.webjars.npm:popper.js:1.16.1")
-    implementation(project(":baseX"))
-    implementation(project(":common"))
 }
 
 tasks {
@@ -43,6 +44,6 @@ tasks {
         manifest {
             attributes(Pair("Main-Class", "de.uni_muenster.imi.oegd.webapp.ServerKt"))
         }
-        archiveFileName.set("MDReport-Netty.jar")
+        archiveFileName.set("MDReport-Light.jar")
     }
 }

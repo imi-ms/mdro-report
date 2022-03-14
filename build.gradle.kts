@@ -96,6 +96,6 @@ tasks.getByPath("build").finalizedBy("CreateAppImage")
 
 tasks {
     shadowJar {
-        archiveFileName.set("MDReport-JavaFX.jar")
+        archiveFileName.set("MDReport-Full.jar")
     }
 }

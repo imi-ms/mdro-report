@@ -5,6 +5,19 @@ to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html).
 
 # TODO Include fancy screenshot and concept art
 
+# TODO Licence
+
+## Download
+
+You can download the pre-build binaries
+from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/MeDIC/etl/oegd-report/-/releases). You can
+decide between a
+
+* Pre-build executable .jar file (*MDReport-Full.jar*, requires an installation of JRE)
+* an installer, which install MDReport alongside its own JRE
+* A .jar file, that does not include BaseX or JavaFX (*MDReport-Light.jar*, requires separately installed JRE and BaseX,
+  run with command line)
+
 ## Building
 
 Run
@@ -106,11 +119,13 @@ In order to be usable for this project the record has to at least contain the fo
     ```XML
     <request from="2022-03-10T10:10:10" sender="SENDER">VRE</request>
     ```
-- The lab report has to contain information about the sample. It will display the sample type and time the sample was collected  
+- The lab report has to contain information about the sample. It will display the sample type and time the sample was
+  collected
     ```XML
     <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">...</sample>
     ```
-- The sample has to contain a positive analysis for MRSA, MRGN or VRE 
+- The sample has to contain a positive analysis for MRSA, MRGN or VRE //TODO: Muss es nicht, wird dann nur nicht
+  gezaehlt
 
   ```XML
   <analysis OPUS="avre" display="Selektivagar VRE">
@@ -127,7 +142,6 @@ In order to be usable for this project the record has to at least contain the fo
           ....
       </germ>
   ```
-
 `antibiotic/result/@string` might be "R" (resistent), "S" (sensibel) or "I" (intermediär)
 
     
