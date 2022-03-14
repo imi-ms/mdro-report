@@ -3,6 +3,8 @@
 This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html).
 
+# TODO Include fancy screenshot and concept art
+
 ## Building
 
 Run
@@ -33,19 +35,12 @@ If you only want to use the web interface and connect to a separate running Base
   
   ```XML
   <patient birthYear="2000" sex="M" id="123456">
-    <identifier system="SYSTEM" key="PID" value="123456"/>
-    <identifier system="SYSTEM" key="PERSNR" value="123456"/>
     <case id="123456" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" type="S" admissionCause="V" admissionReason301="01" dischargeType301="01" state="E">
-        <identifier system="SYSTEM" key="FALLID" value="123456"/>
-        <identifier system="SYSTEM" key="FALLNR" value="123456"/>
         <location id="111111" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" clinic="CLINIC" clinicP21="0100" ward="WARD"/>
         <location id="111112"/>
         <!--...-->
         <location id="111113"/>
   
-        <procedure id="123456" from="2022-03-10T10:10:10" importance="N">
-            <!--list of procedures follows-->
-        </procedure>
         <labReport id="123456" source="SOURCE">
             <comment>This is a comment</comment>
             <request from="2022-03-10T10:10:10" sender="SENDER">VRE</request>

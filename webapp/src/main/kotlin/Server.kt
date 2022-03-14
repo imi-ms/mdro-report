@@ -1,9 +1,9 @@
 package de.uni_muenster.imi.oegd.webapp
 
-import de.uni_muenster.imi.oegd.baseX.BaseXQueries
-import de.uni_muenster.imi.oegd.baseX.IBaseXClient
-import de.uni_muenster.imi.oegd.baseX.RestClient
-import de.uni_muenster.imi.oegd.baseX.findOpenPortInRange
+import de.uni_muenster.imi.oegd.common.BaseXQueries
+import de.uni_muenster.imi.oegd.common.IBaseXClient
+import de.uni_muenster.imi.oegd.common.RestClient
+import de.uni_muenster.imi.oegd.common.findOpenPortInRange
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.html.*
@@ -15,39 +15,34 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.webjars.*
+import mu.KotlinLogging
 import java.net.InetAddress
 
 
-class OverviewEntry(val title: String, val query: String, val data: String)
+private val log = KotlinLogging.logger { }
 
-
-
-
-class Server {
-    companion object {
-
-        /**
-         * Entry point for running .jar file with internal Netty server
-         */
-        @JvmStatic
-        fun main(args: Array<String>) {
-            fun askUser(message: String): String {
-                println(message)
-                return readLine()!!
-            }
-
-            val webappPort = findOpenPortInRange(8080..8888) ?: error("No free port available!")
-
-            val baseXClient = RestClient(
-                baseURL = args.getOrNull(0) ?: askUser("Bitte gib eine BaseX URL an: "),
-                username = args.getOrNull(1) ?: askUser("Bitte gib deinen Usernamen an: "),
-                password = args.getOrNull(2) ?: System.console()?.readPassword("Bitte gib das Passwort ein: \n")!!
-                    .concatToString(),
-                database = args.getOrNull(3) ?: askUser("Bitte gib die Datenbank an: ")
-            )
-            createServer(baseXClient, webappPort).start(wait = true)
-        }
+/**
+ * Entry point for running .jar file with internal Netty server
+ */
+fun main(args: Array<String>) {
+    fun askUser(message: String): String {
+        println(message)
+        return readLine()!!
     }
+
+    val webappPort = findOpenPortInRange(8080..8888) ?: error("No free port available!")
+
+    val baseXClient = RestClient(
+        baseURL = args.getOrNull(0) ?: askUser("Bitte gib eine BaseX URL an: "),
+        username = args.getOrNull(1) ?: askUser("Bitte gib deinen Usernamen an: "),
+        password = args.getOrNull(2) ?: System.console()?.readPassword("Bitte gib das Passwort ein: \n")!!
+            .concatToString(),
+        database = args.getOrNull(3) ?: askUser("Bitte gib die Datenbank an: ")
+    )
+
+    log.info { "Starting local server on port $webappPort" }
+
+    createServer(baseXClient, webappPort).start(wait = true)
 }
 
 /**

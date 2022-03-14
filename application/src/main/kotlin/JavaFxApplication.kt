@@ -1,9 +1,9 @@
 package de.uni_muenster.imi.oegd.application
 
-import de.uni_muenster.imi.oegd.baseX.IBaseXClient
 import de.uni_muenster.imi.oegd.baseX.LocalBaseXClient
-import de.uni_muenster.imi.oegd.baseX.RestClient
-import de.uni_muenster.imi.oegd.baseX.findOpenPortInRange
+import de.uni_muenster.imi.oegd.common.IBaseXClient
+import de.uni_muenster.imi.oegd.common.RestClient
+import de.uni_muenster.imi.oegd.common.findOpenPortInRange
 import de.uni_muenster.imi.oegd.webapp.createServer
 import io.ktor.server.netty.*
 import javafx.application.Application
@@ -102,6 +102,7 @@ class JavaFxApplication : Application() {
     override fun stop(): Nothing {
         super.stop()
         Platform.exit()
+        server?.stop(1000, 1000)
         exitProcess(0)
     }
 

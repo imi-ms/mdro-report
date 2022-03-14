@@ -1,8 +1,8 @@
 package de.uni_muenster.imi.oegd.webapp
 
-import de.uni_muenster.imi.oegd.baseX.BaseXQueries
-import de.uni_muenster.imi.oegd.baseX.IBaseXClient
-import de.uni_muenster.imi.oegd.baseX.parseCsv
+import de.uni_muenster.imi.oegd.common.BaseXQueries
+import de.uni_muenster.imi.oegd.common.IBaseXClient
+import de.uni_muenster.imi.oegd.common.parseCsv
 
 object WebappComponents {
     fun getMRSACSV(mrsaList: String): List<Map<String, String>> {

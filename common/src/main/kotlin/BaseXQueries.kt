@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.oegd.baseX
+package de.uni_muenster.imi.oegd.common
 
 object BaseXQueries {
 
