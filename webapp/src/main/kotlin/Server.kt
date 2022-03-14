@@ -1,6 +1,9 @@
 package de.uni_muenster.imi.oegd.webapp
 
-import de.uni_muenster.imi.oegd.baseX.*
+import de.uni_muenster.imi.oegd.baseX.BaseXQueries
+import de.uni_muenster.imi.oegd.baseX.IBaseXClient
+import de.uni_muenster.imi.oegd.baseX.RestClient
+import de.uni_muenster.imi.oegd.baseX.findOpenPortInRange
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.html.*
@@ -12,179 +15,11 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.webjars.*
-import kotlinx.html.*
+import kotlinx.html.FlowContent
+import kotlinx.html.article
+import kotlinx.html.p
 import java.net.InetAddress
 
-
-class LayoutTemplate(private val url: String) : Template<HTML> {
-    val header = Placeholder<FlowContent>()
-    val content = TemplatePlaceholder<OverviewTemplate>()
-    override fun HTML.apply() {
-        head {
-            meta(charset = "UTF-8")
-            meta(name = "viewport", content = "width=device-width, initial-scale=1, shrink-to-fit=no")
-            title { url }
-            link(rel = "stylesheet", href = "/webjars/bootstrap/dist/css/bootstrap.min.css")
-            link(rel = "stylesheet", href = "/webjars/bootstrap-icons/font/bootstrap-icons.css")
-            link(rel = "stylesheet", href = "/static/custom-styles.css")
-
-            script(src = "/webjars/jquery/dist/jquery.min.js") {}
-            //script(src = "/webjars/popper.js/dist/popper.min.js") {} //TODO: Popper needed?
-            script(src = "/webjars/bootstrap/dist/js/bootstrap.min.js") {}
-
-        }
-        body {
-            div(classes = "wrapper") {
-                nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
-                    a(classes = "navbar-brand", href = "/") {
-                        +"MD-Report"
-                    }
-                    button(classes = "navbar-toggler") {
-                        attributes["data-toggle"] = "collapse"
-                        attributes["data-target"] = "#navbarNav"
-                        attributes["aria-controls"] = "navbarNav"
-                        attributes["aria-expanded"] = "false"
-                        attributes["aria-label"] = "Toggle navigation"
-                        span(classes = "navbar-toggler-icon")
-                    }
-                    div(classes = "collapse navbar-collapse") {
-                        id = "navbarNav"
-                        ul(classes = "navbar-nav") {
-                            for (germ in sequenceOf("MRSA", "MRGN", "VRE")) {
-                                li(classes = "nav-item dropdown") {
-                                    if (url.startsWith(germ)) {
-                                        classes += "active"
-                                    }
-//                                attributes["aria-haspopup"] = "true"
-                                    a(classes = "nav-link dropdown-toggle", href = "#") {
-                                        id = "navbar$germ"
-                                        role = "button"
-                                        attributes["data-toggle"] = "dropdown"
-                                        attributes["aria-expanded"] = "false"
-                                        +germ
-                                    }
-                                    div(classes = "dropdown-menu") {
-                                        attributes["aria-labelledby"] = "navbar$germ"
-                                        a(classes = "dropdown-item", href = "/$germ/overview") { +"Übersicht $germ" }
-                                        a(classes = "dropdown-item", href = "/$germ/list") { +"Fallliste" }
-                                    }
-                                }
-                            }
-
-                            li(classes = "nav-item") {
-                                if (url.startsWith("about")) {
-                                    classes += "active"
-                                }
-                                a(classes = "nav-link", href = "/about") {
-                                    +"Über"
-                                }
-                            }
-                        }
-
-                    }
-                }
-
-                main(classes = "content") {
-                    role = "main"
-                    div(classes = "container") {
-                        h1 {
-                            insert(header)
-                        }
-                        insert(OverviewTemplate(), content)
-                    }
-                }
-
-
-                footer(classes = "footer") {
-                    div(classes = "container") {
-                        span(classes = "text-muted") {
-                            +"© 2022 Copyright "
-                        }
-                        a(href = "https://imi.uni-muenster.de") {
-                            +"Institut für Medizinische Informatik Münster"
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-fun FlowContent.drawTable(data: List<Map<String, String>>) {
-    val keys = data.first().keys
-    table(classes = "table") {
-        thead {
-            tr(classes = "sticky-tr"){
-                for (columnName in keys) {
-                    th(scope = ThScope.col) { +columnName }
-                }
-            }
-        }
-        for (datum in data) {
-            tr {
-                for (key in keys) {
-                    td {
-                        +(datum[key] ?: "null")
-                    }
-                }
-
-            }
-        }
-    }
-}
-
-
-fun FlowContent.drawTable2(data: List<OverviewEntry>) {
-    table(classes = "table") {
-        data.forEachIndexed { index, entry ->
-            tr {
-                th { +entry.title }
-                td {
-                    span { +entry.data }
-                    button(classes = "btn btn-link text-muted") {
-                        attributes["data-toggle"] = "modal"
-                        attributes["data-target"] = "#query-modal-$index"
-                        i {
-                            attributes["class"] = "bi bi-info-circle"
-                        }
-                    }
-                    div(classes = "modal fade") {
-                        attributes["id"] = "query-modal-$index"
-                        attributes["tabindex"] = "-1"
-                        attributes["role"] = "dialog"
-                        attributes["aria-labelledby"] = "#query-modal-$index-title"
-                        attributes["aria-hidden"] = "true"
-                        div(classes = "modal-dialog modal-lg") {
-                            attributes["role"] = "document"
-                            div(classes = "modal-content") {
-                                div(classes = "modal-header") {
-                                    h5(classes = "modal-title") {
-                                        attributes["id"] = "query-modal-$index-title"
-                                        +"${entry.title} - Query"
-                                    }
-                                    button(classes = "close") {
-                                        attributes["type"] = "button"
-                                        attributes["data-dismiss"] = "modal"
-                                        attributes["aria-label"] = "close"
-                                        span {
-                                            attributes["aria-hidden"] = "true"
-                                            +"×"
-                                        }
-                                    }
-                                }
-                                div(classes = "modal-body") {
-                                    pre {
-                                        +entry.query
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
 
 class OverviewEntry(val title: String, val query: String, val data: String)
 
@@ -210,39 +45,40 @@ class TableTemplate : Template<FlowContent> {
 
 class Server {
     companion object {
+
+        /**
+         * Entry point for running .jar file with internal Netty server
+         */
         @JvmStatic
         fun main(args: Array<String>) {
-            val webappPort = findOpenPortInRange(8080..8888)
-            val url: String
-            val username: String
-            val password: String
-            val database: String
-            if(args.isNotEmpty()) {
-                url = args[0]
-                username = args[1]
-                password = args[2]
-                database = args[3]
-            } else {
-                println("Bitte gib eine BaseX URL an: ")
-                url = readLine()!!
-                println("Bitte gib deinen Usernamen an: ")
-                username = readLine()!!
-                password = System.console()?.readPassword("Bitte gib das Passwort ein: \n")!!.concatToString()
-                println("Bitte gib die Datenbank an: ")
-                database = readLine()!!
+            fun askUser(message: String): String {
+                println(message)
+                return readLine()!!
             }
 
+            val webappPort = findOpenPortInRange(8080..8888) ?: error("No free port available!")
+
             val baseXClient = RestClient(
-                baseURL = url,
-                username = username,
-                password = password,
-                database = database
+                baseURL = args.getOrNull(0) ?: askUser("Bitte gib eine BaseX URL an: "),
+                username = args.getOrNull(1) ?: askUser("Bitte gib deinen Usernamen an: "),
+                password = args.getOrNull(2) ?: System.console()?.readPassword("Bitte gib das Passwort ein: \n")!!
+                    .concatToString(),
+                database = args.getOrNull(3) ?: askUser("Bitte gib die Datenbank an: ")
             )
-            createServer(baseXClient, webappPort!!).start(wait = true)
+            createServer(baseXClient, webappPort).start(wait = true)
         }
     }
 }
 
+/**
+ * Create Netty server (.jar deployment or JavaFX GUI)
+ */
+fun createServer(baseXClient: IBaseXClient, port: Int = 8080) =
+    embeddedServer(Netty, host = "127.0.0.1", port = port, module = application(baseXClient))
+
+/**
+ * Entrypoint for deployment as .war file (Tomcat, ...)
+ */
 fun Application.warEntrypoint() {
     val baseXClient = with(environment.config.config("BaseX")) {
         RestClient(
@@ -255,8 +91,6 @@ fun Application.warEntrypoint() {
     application(baseXClient, serverMode = true)()
 }
 
-fun createServer(baseXClient: IBaseXClient, port: Int = 8080) =
-    embeddedServer(Netty, host = "127.0.0.1", port = port, module = application(baseXClient))
 
 private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit =
     {
@@ -268,7 +102,7 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                     template = LayoutTemplate(call.request.uri.removePrefix("/"))
                 ) {
                     header { +"404 Not Found" }
-                    content { data { +"No route defined for URL! Pleaes switch URL on top" } }
+                    content { data { +"No route defined for URL!" } }
                 }
             }
             exception<Throwable> { cause ->
@@ -282,7 +116,7 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
             }
         }
         routing {
-            //Protect against non-localhost calls
+            //Protect against non-localhost calls, avoid leaking data to unauthorized persons
             if (!serverMode) {
                 intercept(ApplicationCallPipeline.Features) {
                     val ip = InetAddress.getByName(call.request.local.remoteHost)
@@ -309,7 +143,7 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                     header { +"MRSA: Übersicht" }
                     content {
                         data {
-                            drawTable2(overviewContent)
+                            drawOverviewTable(overviewContent)
                         }
                     }
                 }
@@ -318,10 +152,10 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 val text = baseXClient.executeXQuery(BaseXQueries.getMRSA())
                 val tableData = WebappComponents.getMRSACSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRSA Fallliste" }
+                    header { +"MRSA: Fallliste" }
                     content {
                         data {
-                            drawTable(tableData)
+                            drawCaseList(tableData)
                         }
                     }
                 }
@@ -329,10 +163,10 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
             get("MRGN/overview") {
                 val overviewContent = WebappComponents.getMRGNOverview(baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRGN Übersicht" }
+                    header { +"MRGN: Übersicht" }
                     content {
                         data {
-                            drawTable2(overviewContent)
+                            drawOverviewTable(overviewContent)
                         }
                     }
                 }
@@ -341,10 +175,10 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 val text = baseXClient.executeXQuery(BaseXQueries.getMRGN())
                 val tableData = WebappComponents.getMRGACSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRGN Fallliste" }
+                    header { +"MRGN: Fallliste" }
                     content {
                         data {
-                            drawTable(tableData)
+                            drawCaseList(tableData)
                         }
                     }
                 }
@@ -352,10 +186,10 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
             get("VRE/overview") {
                 val overviewContent = WebappComponents.getVREOverview(baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"VRE Übersicht" }
+                    header { +"VRE: Übersicht" }
                     content {
                         data {
-                            drawTable2(overviewContent)
+                            drawOverviewTable(overviewContent)
                         }
                     }
                 }
@@ -364,10 +198,10 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
                 val tableData = WebappComponents.getVRECSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"VRE-ÖGD-Report" }
+                    header { +"VRE: Fallliste" }
                     content {
                         data {
-                            drawTable(tableData)
+                            drawCaseList(tableData)
                         }
                     }
                 }
