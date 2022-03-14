@@ -77,15 +77,23 @@ object WebappComponents {
         val mrsaImported = DataProcessor.countMRSAImported(fallliste)
 
         return listOf(
-            object: OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen){},
-            object: OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage){},
-            object: OverviewEntry("Anzahl der Nasenabstriche bzw. kombinierte Nasen/Rachenabstiche pro Erfassungszeitraum", BaseXQueries.getNasenRachenAbstriche(), nasenrachenabstriche){},
-            object: OverviewEntry("Anzahl aller S. aureus aus Blutkulturen (MSSA und MRSA)", BaseXQueries.getMSSABK(), mssabk){},
-            object: OverviewEntry("Anzahl MRSA aus Blutkulturen", BaseXQueries.getMRSABK(), mrsabk){},
-            object: OverviewEntry("Gesamtanzahl aller Fälle mit Methicillin Resistenten S. aureus (MRSA)", BaseXQueries.getMRSA(), "$mrsaTotal"){},
-            object: OverviewEntry("Anzahl der importierten MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaImported"){},
-            object: OverviewEntry("Anzahl nosokomialer MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaNosokomial"){},
-            object: OverviewEntry("stationäre Falltage von MRSA-Fällen", BaseXQueries.getFallzahlen(), fallzahlen){}
+            OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen),
+            OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage),
+            OverviewEntry(
+                "Anzahl der Nasenabstriche bzw. kombinierte Nasen/Rachenabstiche pro Erfassungszeitraum",
+                BaseXQueries.getNasenRachenAbstriche(),
+                nasenrachenabstriche
+            ),
+            OverviewEntry("Anzahl aller S. aureus aus Blutkulturen (MSSA und MRSA)", BaseXQueries.getMSSABK(), mssabk),
+            OverviewEntry("Anzahl MRSA aus Blutkulturen", BaseXQueries.getMRSABK(), mrsabk),
+            OverviewEntry(
+                "Gesamtanzahl aller Fälle mit Methicillin Resistenten S. aureus (MRSA)",
+                BaseXQueries.getMRSA(),
+                "$mrsaTotal"
+            ),
+            OverviewEntry("Anzahl der importierten MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaImported"),
+            OverviewEntry("Anzahl nosokomialer MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaNosokomial"),
+            OverviewEntry("stationäre Falltage von MRSA-Fällen", BaseXQueries.getFallzahlen(), fallzahlen)
         )
     }
 
@@ -97,10 +105,10 @@ object WebappComponents {
         val mrgn4Cases = DataProcessor.countMRGN4Cases(fallliste)
 
         return listOf(
-            object: OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen){},
-            object: OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage){},
-            object: OverviewEntry("Anzahl der 3MRGN Fälle", BaseXQueries.getMRGN(), "$mrgn3Cases"){},
-            object: OverviewEntry("Anzahl der 4MRGN Fälle", BaseXQueries.getMRGN(), "$mrgn4Cases"){},
+            OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen),
+            OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage),
+            OverviewEntry("Anzahl der 3MRGN Fälle", BaseXQueries.getMRGN(), "$mrgn3Cases"),
+            OverviewEntry("Anzahl der 4MRGN Fälle", BaseXQueries.getMRGN(), "$mrgn4Cases"),
         )
     }
 
@@ -117,16 +125,31 @@ object WebappComponents {
         val numVREEfaecium = baseXClient.executeXQuery(BaseXQueries.getVREBK())
 
         return listOf(
-            object: OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen){},
-            object: OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage){},
-            object: OverviewEntry("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)", BaseXQueries.getAnzahlEFaecalis(), numEfaecalis) {},
-            object: OverviewEntry("Anzahl der VRE E.faecalis Fälle", BaseXQueries.getVRE(), "$numEfaecalisResistant") {},
-            object: OverviewEntry("Anzahl der gesamten E.faecium Fälle (resistente und sensible)", BaseXQueries.getVRE(), "$numEfaeciumTotal") {},
-            object: OverviewEntry("Anzahl der VRE E.faecium Fälle", BaseXQueries.getVRE(), "$numEfaeciumResistant") {},
-            object: OverviewEntry("Anzahl sonstiger VRE Fälle", BaseXQueries.getVRE(), "$numOtherCases") {},
-            object: OverviewEntry("Anzahl E.faecium Fälle (inkl. Vancomycin empfindliche und resistente Isolate) in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)", BaseXQueries.getEfaeciumBK(), numEfaecium) {},
-            object: OverviewEntry("Anzahl der VRE-E.faecium Fälle in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)", BaseXQueries.getVREBK(), numVREEfaecium) {}
-
+            OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen),
+            OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage),
+            OverviewEntry(
+                "Anzahl der gesamten E.faecalis Fälle (resistente und sensible)",
+                BaseXQueries.getAnzahlEFaecalis(),
+                numEfaecalis
+            ),
+            OverviewEntry("Anzahl der VRE E.faecalis Fälle", BaseXQueries.getVRE(), "$numEfaecalisResistant"),
+            OverviewEntry(
+                "Anzahl der gesamten E.faecium Fälle (resistente und sensible)",
+                BaseXQueries.getVRE(),
+                "$numEfaeciumTotal"
+            ),
+            OverviewEntry("Anzahl der VRE E.faecium Fälle", BaseXQueries.getVRE(), "$numEfaeciumResistant"),
+            OverviewEntry("Anzahl sonstiger VRE Fälle", BaseXQueries.getVRE(), "$numOtherCases"),
+            OverviewEntry(
+                "Anzahl E.faecium Fälle (inkl. Vancomycin empfindliche und resistente Isolate) in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)",
+                BaseXQueries.getEfaeciumBK(),
+                numEfaecium
+            ),
+            OverviewEntry(
+                "Anzahl der VRE-E.faecium Fälle in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)",
+                BaseXQueries.getVREBK(),
+                numVREEfaecium
+            )
         )
     }
 }

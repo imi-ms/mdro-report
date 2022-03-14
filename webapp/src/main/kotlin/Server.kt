@@ -16,7 +16,6 @@ import kotlinx.html.*
 import java.net.InetAddress
 
 
-//TODO: Test dynamic architecture
 class LayoutTemplate(private val url: String) : Template<HTML> {
     val header = Placeholder<FlowContent>()
     val content = TemplatePlaceholder<OverviewTemplate>()
@@ -141,8 +140,8 @@ fun FlowContent.drawTable2(data: List<OverviewEntry>) {
             tr {
                 th { +entry.title }
                 td {
-                    span{+entry.data}
-                    button(classes = "btn btn-link") {
+                    span { +entry.data }
+                    button(classes = "btn btn-link text-muted") {
                         attributes["data-toggle"] = "modal"
                         attributes["data-target"] = "#query-modal-$index"
                         i {
@@ -174,7 +173,9 @@ fun FlowContent.drawTable2(data: List<OverviewEntry>) {
                                     }
                                 }
                                 div(classes = "modal-body") {
-                                    +entry.query
+                                    pre {
+                                        +entry.query
+                                    }
                                 }
                             }
                         }
@@ -185,7 +186,7 @@ fun FlowContent.drawTable2(data: List<OverviewEntry>) {
     }
 }
 
-abstract class OverviewEntry(val title: String, val query: String, val data: String) {}
+class OverviewEntry(val title: String, val query: String, val data: String)
 
 
 class OverviewTemplate : Template<FlowContent> {

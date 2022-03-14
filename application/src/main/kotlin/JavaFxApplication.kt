@@ -15,6 +15,7 @@ import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
+import javafx.scene.image.Image
 import javafx.scene.layout.StackPane
 import javafx.scene.web.WebView
 import javafx.stage.DirectoryChooser
@@ -42,11 +43,12 @@ class JavaFxApplication : Application() {
     private lateinit var directory: File
 
     override fun start(primaryStage: Stage) {
-        val page =
-            FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"))
-
+        val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"))
         primaryStage.scene = Scene(page)
+        primaryStage.title = "MD-Report"
+        primaryStage.icons.add(Image("icon.png"))
         primaryStage.show()
+
 
         (page.lookup("#button_file") as Button).onAction = EventHandler<ActionEvent> {
             val directoryChooser = DirectoryChooser()
@@ -117,7 +119,6 @@ class JavaFxApplication : Application() {
     }
 
     private fun startWebView(primaryStage: Stage) {
-        primaryStage.title = "MD-Report"
         val webView = WebView()
         val indicator = ProgressIndicator()
         primaryStage.scene = Scene(StackPane(webView, indicator), 1280.0, 800.0)

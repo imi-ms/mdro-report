@@ -51,11 +51,11 @@ task("copyJar", Copy::class) {
 tasks.register<JPackageTask>("CreateAppImage") {
     dependsOn("build", "copyDependencies", "copyJar")
 
-    input ="$buildDir/jars"
+    input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "ÖGD-Report Tool"
-    vendor = "de.uni_muenster.imi"
+    appName = "MD Report"
+    vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.jar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
@@ -67,11 +67,11 @@ tasks.register<JPackageTask>("CreateAppImage") {
 tasks.register<JPackageTask>("CreateEXE") {
     dependsOn("build", "copyDependencies", "copyJar")
 
-    input ="$buildDir/jars"
+    input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "ÖGD-Report Tool - Windows"
-    vendor = "de.uni_muenster.imi"
+    appName = "MD Report"
+    vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.jar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
