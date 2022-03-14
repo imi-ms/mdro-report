@@ -15,33 +15,13 @@ import io.ktor.routing.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import io.ktor.webjars.*
-import kotlinx.html.FlowContent
-import kotlinx.html.article
-import kotlinx.html.p
 import java.net.InetAddress
 
 
 class OverviewEntry(val title: String, val query: String, val data: String)
 
 
-class OverviewTemplate : Template<FlowContent> {
-    val data = Placeholder<FlowContent>()
 
-    override fun FlowContent.apply() {
-        insert(data)
-    }
-}
-
-class TableTemplate : Template<FlowContent> {
-    val articleText = Placeholder<FlowContent>()
-    override fun FlowContent.apply() {
-        article {
-            p {
-                insert(articleText)
-            }
-        }
-    }
-}
 
 class Server {
     companion object {
@@ -102,7 +82,7 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                     template = LayoutTemplate(call.request.uri.removePrefix("/"))
                 ) {
                     header { +"404 Not Found" }
-                    content { data { +"No route defined for URL!" } }
+                    content { +"No route defined for URL!" }
                 }
             }
             exception<Throwable> { cause ->
@@ -111,7 +91,7 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                     template = LayoutTemplate(call.request.uri.removePrefix("/"))
                 ) {
                     header { +"500 Internal Server Error" }
-                    content { data { +"${cause.message}" } }
+                    content { +"${cause.message}" }
                 }
             }
         }
@@ -133,7 +113,7 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"Willkommen" }
                     content {
-                        data { +"Bitte nutzen Sie die Navigationsleiste oben, um zwischen den verschiedenen Funktionen zu navigieren!" }
+                        +"Bitte nutzen Sie die Navigationsleiste oben, um zwischen den verschiedenen Funktionen zu navigieren!"
                     }
                 }
             }
@@ -141,11 +121,7 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 val overviewContent = WebappComponents.getMRSAOverview(baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Übersicht" }
-                    content {
-                        data {
-                            drawOverviewTable(overviewContent)
-                        }
-                    }
+                    content { drawOverviewTable(overviewContent) }
                 }
             }
             get("MRSA/list") {
@@ -153,22 +129,14 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 val tableData = WebappComponents.getMRSACSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Fallliste" }
-                    content {
-                        data {
-                            drawCaseList(tableData)
-                        }
-                    }
+                    content { drawCaseList(tableData) }
                 }
             }
             get("MRGN/overview") {
                 val overviewContent = WebappComponents.getMRGNOverview(baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRGN: Übersicht" }
-                    content {
-                        data {
-                            drawOverviewTable(overviewContent)
-                        }
-                    }
+                    content { drawOverviewTable(overviewContent) }
                 }
             }
             get("MRGN/list") {
@@ -176,22 +144,14 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 val tableData = WebappComponents.getMRGACSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRGN: Fallliste" }
-                    content {
-                        data {
-                            drawCaseList(tableData)
-                        }
-                    }
+                    content { drawCaseList(tableData) }
                 }
             }
             get("VRE/overview") {
                 val overviewContent = WebappComponents.getVREOverview(baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE: Übersicht" }
-                    content {
-                        data {
-                            drawOverviewTable(overviewContent)
-                        }
-                    }
+                    content { drawOverviewTable(overviewContent) }
                 }
             }
             get("VRE/list") {
@@ -199,20 +159,14 @@ private fun application(baseXClient: IBaseXClient, serverMode: Boolean = false):
                 val tableData = WebappComponents.getVRECSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE: Fallliste" }
-                    content {
-                        data {
-                            drawCaseList(tableData)
-                        }
-                    }
+                    content { drawCaseList(tableData) }
                 }
             }
             get("/about") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"Über" }
                     content {
-                        data {
-                            +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports anhand der Integration von ORBIS, OPUS-L und SeqSphere in der internen BaseX-Zwischenschicht des Medics."
-                        }
+                        +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports anhand der Integration von ORBIS, OPUS-L und SeqSphere in der internen BaseX-Zwischenschicht des Medics."
                     }
                 }
             }

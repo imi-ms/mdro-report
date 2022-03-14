@@ -3,9 +3,10 @@ package de.uni_muenster.imi.oegd.webapp
 import io.ktor.html.*
 import kotlinx.html.*
 
+
 class LayoutTemplate(private val url: String) : Template<HTML> {
     val header = Placeholder<FlowContent>()
-    val content = TemplatePlaceholder<OverviewTemplate>()
+    val content = Placeholder<FlowContent>()
     override fun HTML.apply() {
         head {
             meta(charset = "UTF-8")
@@ -77,7 +78,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
                         h1 {
                             insert(header)
                         }
-                        insert(OverviewTemplate(), content)
+                        insert(content)
                     }
                 }
 
@@ -96,6 +97,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
         }
     }
 }
+
 
 fun FlowContent.drawCaseList(data: List<Map<String, String>>) {
     val keys = data.first().keys
