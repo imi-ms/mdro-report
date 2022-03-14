@@ -1,5 +1,6 @@
 package de.uni_muenster.imi.oegd.application
 
+import de.uni_muenster.imi.oegd.baseX.IBaseXClient
 import de.uni_muenster.imi.oegd.baseX.LocalBaseXClient
 import de.uni_muenster.imi.oegd.baseX.RestClient
 import de.uni_muenster.imi.oegd.baseX.findOpenPortInRange
@@ -11,7 +12,6 @@ import javafx.concurrent.Worker
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.fxml.FXMLLoader
-import javafx.scene.Node
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
@@ -38,7 +38,7 @@ class Main {
 }
 
 class JavaFxApplication : Application() {
-    private val webappPort = findOpenPortInRange(1024..49151)
+    private val webappPort = findOpenPortInRange(1024..49151) ?: error("Cannot find free port for internal webserver!")
     private var server: NettyApplicationEngine? = null
     private lateinit var directory: File
 
@@ -59,41 +59,34 @@ class JavaFxApplication : Application() {
         }
 
         (page.lookup("#button_confirm") as Button).onAction = EventHandler<ActionEvent> {
+            val basex: IBaseXClient
             if ((page.lookup("#radio_basex") as RadioButton).isSelected) {
-
-                val basex = RestClient(
-                    (page.findChildById("server") as TextField).text,
-                    (page.findChildById("database") as TextField).text,
-                    (page.findChildById("username") as TextField).text,
-                    (page.findChildById("password") as PasswordField).text
+                basex = RestClient(
+                    (page.lookup("#server") as TextField).text,
+                    (page.lookup("#database") as TextField).text,
+                    (page.lookup("#username") as TextField).text,
+                    (page.lookup("#password") as PasswordField).text
                 )
 
-                server = createServer(basex, webappPort!!)
-                server!!.start()
-
-                startWebView(primaryStage)
             } else {
                 try {
-                    val baseXLocal = LocalBaseXClient(directory)
-
-                    server = createServer(baseXLocal, webappPort!!)
-                    server!!.start()
-
-                    startWebView(primaryStage)
-                }
-                catch (e: Exception) {
-
-                    val alert = Alert(Alert.AlertType.ERROR)
-                    alert.title = "Fehlermeldung"
-                    alert.headerText = "Etwas ist schief gelaufen."
-                    alert.contentText = "Möglicherweise handelt es sich bei den Dateien im von Ihnen angegebenen " +
-                            "Verzeichnis nicht um gültige BaseX Dateien. Starten Sie die Applikation erneut und " +
-                            "wählen ein gültiges Verzeichnis."
-
-                    alert.showAndWait()
-                    exitProcess(0)
+                    basex = LocalBaseXClient(directory)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Alert(Alert.AlertType.ERROR).apply {
+                        title = "Fehlermeldung"
+                        headerText = "Etwas ist schief gelaufen."
+                        contentText = "Möglicherweise handelt es sich bei den Dateien im von Ihnen angegebenen " +
+                                "Verzeichnis nicht um gültige BaseX Dateien. Starten Sie die Applikation erneut und " +
+                                "wählen ein gültiges Verzeichnis!"
+                    }.showAndWait()
+                    stop()
                 }
             }
+            server = createServer(basex, webappPort)
+            server!!.start()
+
+            startWebView(primaryStage)
         }
 
         (page.lookup("#button_cancel") as Button).onAction = EventHandler<ActionEvent> {
@@ -106,7 +99,7 @@ class JavaFxApplication : Application() {
         super.init()
     }
 
-    override fun stop() {
+    override fun stop(): Nothing {
         super.stop()
         Platform.exit()
         exitProcess(0)
@@ -135,19 +128,3 @@ class JavaFxApplication : Application() {
 
 }
 
-fun Node.findChildById(id: String): Node? {
-    if (this.id == id) {
-        return this
-    }
-    if (this !is Parent) {
-        return null
-    }
-    for (node in this.childrenUnmodifiable) {
-        val result = node.findChildById(id)
-        if (result != null) {
-            return result
-        }
-
-    }
-    return null
-}
