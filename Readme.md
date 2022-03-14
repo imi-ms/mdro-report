@@ -116,25 +116,25 @@ In order to be usable for this project the record has to at least contain the fo
 - A corresponding case with an id `<case id="">`
 - A lab report for this case with an id `<labReport id="">...</labReport>`
 - The lab report has to contain information about the sender of the request
-    ```XML
+    ```xml
     <request from="2022-03-10T10:10:10" sender="SENDER">VRE</request>
     ```
 - The lab report has to contain information about the sample. It will display the sample type and time the sample was
   collected
-    ```XML
+    ```xml
     <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">...</sample>
     ```
 - The sample has to contain a positive analysis for MRSA, MRGN or VRE //TODO: Muss es nicht, wird dann nur nicht
   gezaehlt
 
-  ```XML
+  ```xml
   <analysis OPUS="avre" display="Selektivagar VRE">
       <result OPUS="positiv" openTerm="pos"/>
   </analysis>
   ```
 
 - The lab report has to have a germ with an id and the antibiotics analysis
-  ```XML
+  ```xml
       <germ id="" SNOMED="" openTerm="" display="">
           <antibiotic LOINC="" openTerm="" display="">
               <result string="" LOINC=""/>
