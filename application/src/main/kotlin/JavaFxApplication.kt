@@ -20,6 +20,7 @@ import javafx.scene.layout.StackPane
 import javafx.scene.web.WebView
 import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import kotlin.system.exitProcess
 
@@ -67,7 +68,15 @@ class JavaFxApplication : Application() {
                     (page.lookup("#username") as TextField).text,
                     (page.lookup("#password") as PasswordField).text
                 )
-
+                try {
+                    assert("Test" == runBlocking { basex.executeXQuery("\"Test\"") })
+                } catch (e: Exception) {
+                    Alert(Alert.AlertType.ERROR).apply {
+                        title = "Fehlermeldung"
+                        headerText = "Etwas ist schief gelaufen. Bitte überprüfen Sie die Zugangsdaten!"
+                        contentText = "$e"
+                    }.showAndWait()
+                }
             } else {
                 try {
                     basex = LocalBaseXClient(directory)

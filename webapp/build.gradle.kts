@@ -43,6 +43,6 @@ tasks {
         manifest {
             attributes(Pair("Main-Class", "de.uni_muenster.imi.oegd.webapp.ServerKt"))
         }
-        archiveFileName.set("MDReport.jar")
+        archiveFileName.set("MDReport-Netty.jar")
     }
 }

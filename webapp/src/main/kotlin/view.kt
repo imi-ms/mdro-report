@@ -17,7 +17,6 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
             link(rel = "stylesheet", href = "/static/custom-styles.css")
 
             script(src = "/webjars/jquery/dist/jquery.min.js") {}
-            //script(src = "/webjars/popper.js/dist/popper.min.js") {} //TODO: Popper needed?
             script(src = "/webjars/bootstrap/dist/js/bootstrap.min.js") {}
 
         }

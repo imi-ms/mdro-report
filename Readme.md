@@ -125,9 +125,11 @@ In order to be usable for this project the record has to at least contain the fo
               <result string="" LOINC=""/>
           </antibiotic>
           ....
-          <antibiotic></antibiotic>
       </germ>
   ```
+
+`antibiotic/result/@string` might be "R" (resistent), "S" (sensibel) or "I" (intermediär)
+
     
   
 

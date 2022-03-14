@@ -1,6 +1,6 @@
 import org.panteleyev.jpackage.JPackageTask
 
-System.setProperty( "user.dir", project.projectDir.toString() )
+System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
     kotlin("jvm") version "1.6.10"
@@ -23,7 +23,6 @@ java {
 
 repositories {
     mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/kotlinx-html/maven")
 }
 
 dependencies {
@@ -31,12 +30,12 @@ dependencies {
     implementation(project(":application"))
 }
 
+// Add logging dependencies to all subprojects
 subprojects {
     plugins.withType(JavaPlugin::class) {
         dependencies {
             implementation("ch.qos.logback:logback-classic:1.2.3")
             implementation("io.github.microutils:kotlin-logging:2.1.21")
-
         }
     }
 }
@@ -94,3 +93,9 @@ tasks.register<JPackageTask>("CreateEXE") {
 }
 
 tasks.getByPath("build").finalizedBy("CreateAppImage")
+
+tasks {
+    shadowJar {
+        archiveFileName.set("MDReport-JavaFX.jar")
+    }
+}
