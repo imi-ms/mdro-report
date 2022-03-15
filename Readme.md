@@ -60,47 +60,47 @@ If you only want to use the web interface and connect to a separate running Base
             <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">
                 <comment>A comment for the sample</comment>
                 <analysis OPUS="avre" display="Selektivagar VRE">
-                    <result OPUS="positiv" openTerm="pos"/>
+                    <result OPUS="positiv" />
                 </analysis>
-                <germ id="123456" number="1" SNOMED="90272000" openTerm="enco.faci" display="Enterococcus faecium">
+                <germ id="123456" number="1" SNOMED="90272000" display="Enterococcus faecium">
                     <comment>A comment for the germ detection</comment>
                     <analysis><!--further analysis--></analysis>
                     <!--...-->
                     <!--antibiotic tests against the sample-->
-                    <antibiotic LOINC="18862-3" openTerm="amoxi.cil   clav.aci" display="Amoxicillin/Clavulansäure">
+                    <antibiotic LOINC="18862-3" display="Amoxicillin/Clavulansäure">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="18864-9" openTerm="ampi.cil" display="Ampicillin">
+                    <antibiotic LOINC="18864-9" display="Ampicillin">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="18865-6" openTerm="ampi.cil   sul.bac" display="Ampicillin/Sulbactam">
+                    <antibiotic LOINC="18865-6" display="Ampicillin/Sulbactam">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="18906-8" openTerm="cipro.flox" display="Ciprofloxacin">
+                    <antibiotic LOINC="18906-8" display="Ciprofloxacin">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="20629-2" openTerm="levo.flox" display="Levofloxacin">
+                    <antibiotic LOINC="20629-2" display="Levofloxacin">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="29258-1" openTerm="line.zol" display="Linezolid">
+                    <antibiotic LOINC="29258-1" display="Linezolid">
                         <result string="R" LOINC="LA24225-7"/>
                     </antibiotic>
                     <antibiotic display="Norfloxacin">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="18969-6" openTerm="pipera.cil" display="Piperacillin">
+                    <antibiotic LOINC="18969-6" display="Piperacillin">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="18970-4" openTerm="pipera.cil   tazo.bac" display="Piperacillin/Tazobactam">
+                    <antibiotic LOINC="18970-4" display="Piperacillin/Tazobactam">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="18989-4" openTerm="teico" display="Teicoplanin">
+                    <antibiotic LOINC="18989-4" display="Teicoplanin">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="42357-4" openTerm="tige.cyc" display="Tigecyclin">
+                    <antibiotic LOINC="42357-4" display="Tigecyclin">
                         <result string="R" LOINC="LA24225-7"/>
                     </antibiotic>
-                    <antibiotic LOINC="19000-9" openTerm="vanco.myc" display="Vancomycin">
+                    <antibiotic LOINC="19000-9" display="Vancomycin">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
                 </germ>
@@ -129,14 +129,14 @@ In order to be usable for this project the record has to at least contain the fo
 
   ```xml
   <analysis OPUS="avre" display="Selektivagar VRE">
-      <result OPUS="positiv" openTerm="pos"/>
+      <result OPUS="positiv" />
   </analysis>
   ```
 
 - The lab report has to have a germ with an id and the antibiotics analysis
   ```xml
-      <germ id="" SNOMED="" openTerm="" display="">
-          <antibiotic LOINC="" openTerm="" display="">
+      <germ id="" SNOMED="" display="">
+          <antibiotic LOINC="" display="">
               <result string="" LOINC=""/>
           </antibiotic>
           ....
