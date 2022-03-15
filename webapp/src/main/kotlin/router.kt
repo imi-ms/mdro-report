@@ -117,4 +117,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 resources()
             }
         }
+        environment.monitor.subscribe(ApplicationStopping) {
+            baseXClient.close()
+        }
     }
