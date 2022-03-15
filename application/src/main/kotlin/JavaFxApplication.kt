@@ -46,7 +46,7 @@ class JavaFxApplication : Application() {
     override fun start(primaryStage: Stage) {
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"))
         primaryStage.scene = Scene(page)
-        primaryStage.title = "MD-Report"
+        primaryStage.title = "MDReport"
         primaryStage.icons.add(Image("icon.png"))
         primaryStage.show()
 

@@ -24,7 +24,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
             div(classes = "wrapper") {
                 nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
                     a(classes = "navbar-brand", href = "/") {
-                        +"MD-Report"
+                        +"MDReport"
                     }
                     button(classes = "navbar-toggler") {
                         attributes["data-toggle"] = "collapse"
@@ -124,11 +124,10 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>) {
 
 fun FlowContent.drawOverviewTable(data: List<OverviewEntry>) {
     table(classes = "table") {
-        data.forEachIndexed { index, entry ->
+        for ((index, entry) in data.withIndex()) {
             tr {
                 th {
                     span { +entry.title }
-
                 }
                 td {
                     span { +entry.data }
@@ -139,10 +138,7 @@ fun FlowContent.drawOverviewTable(data: List<OverviewEntry>) {
     }
 }
 
-private fun FlowContent.drawInfoModal(
-    index: Int,
-    entry: OverviewEntry
-) {
+private fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
     button(classes = "btn btn-link text-muted") {
         attributes["data-toggle"] = "modal"
         attributes["data-target"] = "#query-modal-$index"
@@ -151,7 +147,7 @@ private fun FlowContent.drawInfoModal(
         }
     }
     div(classes = "modal fade") {
-        attributes["id"] = "query-modal-$index"
+        id = "query-modal-$index"
         attributes["tabindex"] = "-1"
         attributes["role"] = "dialog"
         attributes["aria-labelledby"] = "#query-modal-$index-title"
@@ -161,7 +157,7 @@ private fun FlowContent.drawInfoModal(
             div(classes = "modal-content") {
                 div(classes = "modal-header") {
                     h5(classes = "modal-title") {
-                        attributes["id"] = "query-modal-$index-title"
+                        id = "query-modal-$index-title"
                         +"${entry.title} - Query"
                     }
                     button(classes = "close", type = ButtonType.button) {

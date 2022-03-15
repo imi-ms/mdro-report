@@ -1,4 +1,4 @@
-# MD-Report
+# MDReport
 
 This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html).
@@ -9,14 +9,14 @@ to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html).
 
 ## Download
 
-You can download the pre-build binaries
-from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/MeDIC/etl/oegd-report/-/releases). You can
+You can download the pre-built binaries from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/MeDIC/etl/oegd-report/-/releases). You can
 decide between a
 
 * Pre-build executable .jar file (*MDReport-Full.jar*, requires an installation of JRE)
 * an installer, which install MDReport alongside its own JRE
 * A .jar file, that does not include BaseX or JavaFX (*MDReport-Light.jar*, requires separately installed JRE and BaseX,
-  run with command line)
+  run with command line to set connection data)
+* A .war file for server deployment (tested with tomcat, usage instructions see below)
 
 ## Building
 
@@ -31,9 +31,9 @@ If you only want to use the web interface and connect to a separate running Base
 * `./gradlew :webapp:war` to create a .war file.
 * `./gradlew :webapp:shadowJar` to create an executable .jar with built-in Netty server.
 
-### Server Deployment
+## Server Deployment
 
-1. You need to have installed a BaseX instance, which is constantly fed the data from the ETL process.
+1. Prerequisite: You need to have installed a BaseX instance, which is constantly fed the data from the ETL process.
 2. Setup Tomcat server, I strongly recommend also installing a reverse proxy with some sort of password protection.
 3. **Either**: Checkout the source code, edit `webapp/src/main/resources/application.conf`,
    execute `./gradlew :webapp:war`. <br>
@@ -45,8 +45,8 @@ If you only want to use the web interface and connect to a separate running Base
 //TODO: Testdata is also provided here: 
 
 - The basic patient record will follow a specific XML format that will look similar to this example: 
-  
-  ```XML
+
+  ```xml
   <patient birthYear="2000" sex="M" id="123456">
     <case id="123456" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" type="S" admissionCause="V" admissionReason301="01" dischargeType301="01" state="E">
         <location id="111111" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" clinic="CLINIC" clinicP21="0100" ward="WARD"/>

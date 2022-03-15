@@ -63,7 +63,7 @@ tasks.register<JPackageTask>("CreateAppImage") {
     input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "MD Report"
+    appName = "MDReport"
     vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.jar.get().archiveFileName.get()
@@ -79,7 +79,7 @@ tasks.register<JPackageTask>("CreateEXE") {
     input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "MD Report"
+    appName = "MDReport"
     vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.jar.get().archiveFileName.get()
