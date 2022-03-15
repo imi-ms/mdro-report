@@ -15,7 +15,7 @@ object WebappComponents {
                 "Infektion",
                 "nosokomial?",
                 "Einsender",
-                "Einsender2",
+                "Fachabteilung zum Abnahmezeitpunkt",
                 "Spa",
                 "ClusterType"
             )
@@ -30,7 +30,7 @@ object WebappComponents {
                 "Abnahmezeitpunkt",
                 "Probenart",
                 "Einsender",
-                "Einsender2",
+                "Fachabteilung zum Abnahmezeitpunkt",
                 "Klasse",
                 "Piperacillin und Tazobactam Ergebnis",
                 "Cefotaxime Ergebnis",
@@ -51,7 +51,7 @@ object WebappComponents {
                 "Abnahmezeitpunkt",
                 "Probenart",
                 "Einsender",
-                "Einsender2",
+                "Fachabteilung zum Abnahmezeitpunkt",
                 "Erreger",
                 "Linezolid Ergebnis",
                 "Tigecylin Ergebnis",
