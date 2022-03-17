@@ -9,7 +9,7 @@ object WebappComponents {
         return parseCsv(
             mrsaList,
             listOf(
-                "PID",
+                "FallID",
                 "Abnahmezeitpunkt",
                 "Probeart",
                 "Infektion",
@@ -26,7 +26,7 @@ object WebappComponents {
         return parseCsv(
             mrgaList,
             listOf(
-                "PID",
+                "FallID",
                 "Abnahmezeitpunkt",
                 "Probenart",
                 "Einsender",
@@ -47,7 +47,7 @@ object WebappComponents {
         return parseCsv(
             vreList,
             listOf(
-                "PID",
+                "FallID",
                 "Abnahmezeitpunkt",
                 "Probenart",
                 "Einsender",
