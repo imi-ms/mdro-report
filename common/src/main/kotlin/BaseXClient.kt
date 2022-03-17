@@ -30,7 +30,7 @@ class RestClient(
             }
         }
         install(HttpTimeout) {
-            requestTimeoutMillis = 60_000
+            requestTimeoutMillis = Long.MAX_VALUE
         }
     }
 
