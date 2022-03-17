@@ -7,7 +7,7 @@ where $x/@bodySiteDisplay="Nase" or $x/@bodySiteDisplay="Nase und Rachen" or $x/
 let $ids:=$x/../../@id
 group by $ids
 return
-<patientID>{$x/../../@id}</patientID>
+<patientID>{data($x/../../@id)}</patientID>
 }
 </naserachen>
 
