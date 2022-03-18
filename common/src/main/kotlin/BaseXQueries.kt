@@ -16,7 +16,13 @@ object BaseXQueries {
 
     fun getMSSABK() = javaClass.classLoader.getResourceAsStream("queries/mssa_bk.xq")!!.readBytes().toString(Charsets.UTF_8)
 
-    fun getNasenRachenAbstriche() = javaClass.classLoader.getResourceAsStream("queries/naserachenabstrich.xq")!!.readBytes().toString(Charsets.UTF_8)
+    fun getNasenRachenAbstriche() =
+        javaClass.classLoader.getResourceAsStream("queries/naserachenabstrich.xq")!!.readBytes()
+            .toString(Charsets.UTF_8)
+
+    fun getNasenRachenAbstriche2() =
+        javaClass.classLoader.getResourceAsStream("queries/nasenrachenabstrich2.xq")!!.readBytes()
+            .toString(Charsets.UTF_8)
 
     fun getAnzahlEFaecalis() = javaClass.classLoader.getResourceAsStream("queries/anzahlEfaecalis.xq")!!.readBytes().toString(Charsets.UTF_8)
 
