@@ -1,36 +1,22 @@
 package de.uni_muenster.imi.oegd.common
 
 object BaseXQueries {
+    fun getMRSA() = readFile("mrsa_excelv3.xq")
+    fun getMRGN() = readFile("mrgn_excelv3.xq")
+    fun getVRE() = readFile("vre_excelv2.xq")
+    fun getFalltage() = readFile("Falltage.xq")
+    fun getFallzahlen() = readFile("fallzahlen.xq")
+    fun getMRSABK() = readFile("mrsa_bk.xq")
+    fun getMSSABK() = readFile("mssa_bk.xq")
+    fun getNasenRachenAbstriche() = readFile("naserachenabstrich.xq")
+    fun getNasenRachenAbstriche2() = readFile("nasenrachenabstrich2.xq")
+    fun getAnzahlEFaecalis() = readFile("anzahlEfaecalis.xq")
+    fun getEfaeciumBK() = readFile("efaecium_bk.xq")
+    fun getVREBK() = readFile("vre_bk.xq")
 
-    fun getMRSA() = javaClass.classLoader.getResourceAsStream("queries/mrsa_excelv3.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getMRGN() = javaClass.classLoader.getResourceAsStream("queries/mrgn_excelv3.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getVRE() = javaClass.classLoader.getResourceAsStream("queries/vre_excelv2.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getFalltage() = javaClass.classLoader.getResourceAsStream("queries/Falltage.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getFallzahlen() = javaClass.classLoader.getResourceAsStream("queries/fallzahlen.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getMRSABK() = javaClass.classLoader.getResourceAsStream("queries/mrsa_bk.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getMSSABK() = javaClass.classLoader.getResourceAsStream("queries/mssa_bk.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getNasenRachenAbstriche() =
-        javaClass.classLoader.getResourceAsStream("queries/naserachenabstrich.xq")!!.readBytes()
+    private fun readFile(filename: String) =
+        javaClass.classLoader.getResourceAsStream("queries/$filename")!!.readBytes()
             .toString(Charsets.UTF_8)
-
-    fun getNasenRachenAbstriche2() =
-        javaClass.classLoader.getResourceAsStream("queries/nasenrachenabstrich2.xq")!!.readBytes()
-            .toString(Charsets.UTF_8)
-
-    fun getAnzahlEFaecalis() = javaClass.classLoader.getResourceAsStream("queries/anzahlEfaecalis.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getEfaeciumBK() = javaClass.classLoader.getResourceAsStream("queries/efaecium_bk.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-    fun getVREBK() = javaClass.classLoader.getResourceAsStream("queries/vre_bk.xq")!!.readBytes().toString(Charsets.UTF_8)
-
-
 }
 
 
