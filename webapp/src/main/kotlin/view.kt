@@ -57,15 +57,9 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
                                     }
                                 }
                             }
-
-                            li(classes = "nav-item") {
-                                if (url.startsWith("about")) {
-                                    classes += "active"
-                                }
-                                a(classes = "nav-link", href = "/about") {
-                                    +"Über"
-                                }
-                            }
+                            navItem("download", "Download Report")
+                            navItem("statistic", "Statistik")
+                            navItem("about", "Über")
                         }
 
                     }
@@ -95,10 +89,38 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
             }
         }
     }
+
+    private fun UL.navItem(href: String, label: String) {
+        li(classes = "nav-item") {
+            if (url.startsWith("$href")) {
+                classes += "active"
+            }
+            a(classes = "nav-link", href = "/$href") {
+                +label
+            }
+        }
+    }
 }
 
 
-fun FlowContent.drawCaseList(data: List<Map<String, String>>) {
+fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String) {
+    div(classes = "btn-toolbar") {
+        span {
+            +"Bericht erstellt: $lastUpdate"
+        }
+        form(action = "list/invalidate-cache", method = FormMethod.post) {
+            button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
+                +"Neu erstellen"
+            }
+        }
+    }
+
+
+    if (data.isEmpty()) {
+        +"Falliste ist leer"
+        return
+    }
+
     val keys = data.first().keys
     table(classes = "table") {
         thead {
@@ -122,7 +144,16 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>) {
 }
 
 
-fun FlowContent.drawOverviewTable(data: List<OverviewEntry>) {
+fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String = "foo") {
+    span {
+        +"Bericht erstellt: $lastUpdate"
+    }
+    form(action = "overview/invalidate-cache", method = FormMethod.post) {
+        button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
+            +"Neu erstellen"
+        }
+    }
+
     table(classes = "table") {
         for ((index, entry) in data.withIndex()) {
             tr {

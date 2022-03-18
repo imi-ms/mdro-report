@@ -27,7 +27,7 @@ fun main(args: Array<String>) {
         username = args.getOrNull(1) ?: askUser("Bitte geben Sie den BaseX-Benutzer an: "),
         password = args.getOrNull(2) ?: System.console()?.readPassword("Bitte geben Sie das Passwort ein: \n")!!
             .concatToString(),
-        database = args.getOrNull(3) ?: askUser("Bitte gib Sie den Datenbanknamen an: ")
+        database = args.getOrNull(3) ?: askUser("Bitte geben Sie den Datenbanknamen an: ")
     )
 
     log.info { "Starting local server on port $webappPort" }

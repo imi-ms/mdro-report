@@ -2,7 +2,7 @@ package de.uni_muenster.imi.oegd.webapp
 
 
 import de.uni_muenster.imi.oegd.common.BaseXQueries
-import de.uni_muenster.imi.oegd.common.Germtype
+import de.uni_muenster.imi.oegd.common.GermType
 import de.uni_muenster.imi.oegd.common.IBaseXClient
 import io.ktor.application.*
 import io.ktor.features.*
@@ -13,6 +13,8 @@ import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.webjars.*
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.net.InetAddress
 
 val cachingUtility = CachingUtility()
@@ -27,10 +29,11 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     template = LayoutTemplate(call.request.uri.removePrefix("/"))
                 ) {
                     header { +"404 Not Found" }
-                    content { +"No route defined for URL!" }
+                    content { +"No route defined for URL: ${call.request.uri}" }
                 }
             }
             exception<Throwable> { cause ->
+                cause.printStackTrace()
                 call.respondHtmlTemplate(
                     status = HttpStatusCode.InternalServerError,
                     template = LayoutTemplate(call.request.uri.removePrefix("/"))
@@ -62,9 +65,18 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     }
                 }
             }
+            post("{germ}/overview/invalidate-cache") {
+                val germ = GermType.valueOf(call.parameters["germ"]!!)
+                cachingUtility.clearOverviewCache(germ)
+                call.respondRedirect("/$germ/overview")
+            }
+            post("{germ}/list/invalidate-cache") {
+                val germ = GermType.valueOf(call.parameters["germ"]!!)
+                cachingUtility.clearCaseListCache(germ)
+                call.respondRedirect("/$germ/list")
+            }
             get("MRSA/overview") {
                 val overviewContent = WebappComponents.getMRSAOverview(baseXClient)
-                cachingUtility.cache(Germtype.MRSA, overviewContent)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Übersicht" }
                     content { drawOverviewTable(overviewContent) }
@@ -75,22 +87,21 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val tableData = WebappComponents.getMRSACSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Fallliste" }
-                    content { drawCaseList(tableData) }
+                    content { drawCaseList(tableData, "Please Fix!") }
                 }
             }
             get("MRGN/overview") {
-                val overviewContent = WebappComponents.getMRGNOverview(baseXClient)
+                val (overviewEntries, lastUpdate) = getOverviewEntries(GermType.MRGN, baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRGN: Übersicht" }
-                    content { drawOverviewTable(overviewContent) }
+                    content { drawOverviewTable(overviewEntries, lastUpdate) }
                 }
             }
             get("MRGN/list") {
-                val text = baseXClient.executeXQuery(BaseXQueries.getMRGN())
-                val tableData = WebappComponents.getMRGACSV(text)
+                val (caseList, lastUpdate) = getCaseList(GermType.MRGN, baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRGN: Fallliste" }
-                    content { drawCaseList(tableData) }
+                    content { drawCaseList(caseList, lastUpdate) }
                 }
             }
             get("VRE/overview") {
@@ -105,8 +116,26 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val tableData = WebappComponents.getVRECSV(text)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE: Fallliste" }
-                    content { drawCaseList(tableData) }
+                    content { drawCaseList(tableData, "foo") }
                 }
+            }
+            get("/statistic") {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"Statistik" }
+                    content { +"Upload files or select stored cache files:" }
+                }
+            }
+            get("/download") {
+                //TODO: Cache everything
+                call.response.header(
+                    HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
+                        ContentDisposition.Parameters.FileName, "foo.mdreport" //TODO: Use database / year name
+                    ).toString()
+                )
+                call.respondText(
+                    Json.encodeToString(cachingUtility.getCache()),
+                    contentType = ContentType.Application.Json
+                )
             }
             get("/about") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
@@ -125,3 +154,30 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             baseXClient.close()
         }
     }
+
+private suspend fun getCaseList(
+    germ: GermType,
+    baseXClient: IBaseXClient
+): Pair<List<Map<String, String>>, String> {
+    if (cachingUtility.getGermForGermtype(germ)?.caseListTimeCreated == null) {
+        val text = baseXClient.executeXQuery(BaseXQueries.getMRGN()) //TODO: Edit here
+        val tableData = WebappComponents.getMRGACSV(text) //TODO: Edit here
+        cachingUtility.cache(germ, tableData)
+    }
+    val (_, _, _, caseList, lastUpdate) = cachingUtility.getGermForGermtype(germ)!!
+
+    return caseList!! to lastUpdate!!
+}
+
+private suspend fun getOverviewEntries(
+    germ: GermType,
+    baseXClient: IBaseXClient
+): Pair<List<OverviewEntry>, String> {
+    if (cachingUtility.getGermForGermtype(germ)?.overviewTimeCreated == null) {
+        val overviewContent = WebappComponents.getMRGNOverview(baseXClient) //TODO: Edit here
+        cachingUtility.cache(germ, overviewContent)
+    }
+    val (_, overviewEntries, lastUpdate, _, _) = cachingUtility.getGermForGermtype(germ)!!
+
+    return overviewEntries!! to lastUpdate!!
+}
