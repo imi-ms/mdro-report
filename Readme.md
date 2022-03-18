@@ -48,7 +48,7 @@ If you only want to use the web interface and connect to a separate running Base
 
   ```xml
   <patient birthYear="2000" sex="M" id="123456">
-    <case id="123456" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" type="S" admissionCause="V" admissionReason301="01" dischargeType301="01" state="E">
+    <case id="123456" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" type="S"  state="E">
         <location id="111111" from="2022-03-10T10:10:10" till="2022-03-10T10:10:10" clinic="CLINIC" clinicP21="0100" ward="WARD"/>
         <location id="111112"/>
         <!--...-->
@@ -112,8 +112,9 @@ If you only want to use the web interface and connect to a separate running Base
 
 
 In order to be usable for this project the record has to at least contain the following objects: 
+
 - A patient with an id `<patient id="">`
-- A corresponding case with an id `<case id="">`
+- A corresponding case with an id `<case id="" type="S">`. Type "S" tags inpatient cases ("**s**tationär").
 - A lab report for this case with an id `<labReport id="">...</labReport>`
 - The lab report has to contain information about the sender of the request
     ```xml
@@ -144,6 +145,6 @@ In order to be usable for this project the record has to at least contain the fo
   ```
 `antibiotic/result/@string` might be "R" (resistent), "S" (sensibel) or "I" (intermediär)
 
-    
-  
+## Acknowledgement
 
+Supported by BMBF grant No. 01ZZ1802V (HiGHmed/Münster) 
