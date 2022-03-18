@@ -1,5 +1,6 @@
 plugins {
     kotlin("jvm")
+    kotlin("plugin.serialization")
     id("com.github.johnrengelman.shadow")
     id("war")
 }
@@ -29,6 +30,7 @@ dependencies {
     implementation("io.ktor:ktor-client-auth-jvm:$ktor_version")
     implementation("io.ktor:ktor-webjars:$ktor_version")
     implementation("io.ktor:ktor-server-servlet:$ktor_version")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
     implementation(project(":baseX"))
     implementation(project(":common"))
 

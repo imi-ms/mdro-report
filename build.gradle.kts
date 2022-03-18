@@ -4,6 +4,7 @@ System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
     kotlin("jvm") version "1.6.10"
+    kotlin("plugin.serialization") version "1.6.10"
     id("java")
     id("application")
     id("org.openjfx.javafxplugin") version "0.0.12"

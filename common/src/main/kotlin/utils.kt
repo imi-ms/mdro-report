@@ -2,6 +2,14 @@ package de.uni_muenster.imi.oegd.common
 
 import java.net.ServerSocket
 
+class GlobalData {
+    companion object {
+        lateinit var database: String
+        lateinit var url: String
+        var isLocal: Boolean = false
+    }
+}
+
 fun parseCsv(text: String, headers: List<String>, separator: String = "||"): List<Map<String, String>> {
     return buildList {
         for (line in text.lineSequence()) {
@@ -14,6 +22,12 @@ fun parseCsv(text: String, headers: List<String>, separator: String = "||"): Lis
             )
         }
     }
+}
+
+enum class Germtype(val germtype: String) {
+    MRSA("MRSA"),
+    MRGA("MRGA"),
+    VRE("VRE")
 }
 
 

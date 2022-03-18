@@ -2,6 +2,7 @@ package de.uni_muenster.imi.oegd.webapp
 
 
 import de.uni_muenster.imi.oegd.common.BaseXQueries
+import de.uni_muenster.imi.oegd.common.Germtype
 import de.uni_muenster.imi.oegd.common.IBaseXClient
 import io.ktor.application.*
 import io.ktor.features.*
@@ -13,6 +14,8 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.webjars.*
 import java.net.InetAddress
+
+val cachingUtility = CachingUtility()
 
 fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit =
     {
@@ -61,6 +64,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             get("MRSA/overview") {
                 val overviewContent = WebappComponents.getMRSAOverview(baseXClient)
+                cachingUtility.cache(Germtype.MRSA, overviewContent)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Übersicht" }
                     content { drawOverviewTable(overviewContent) }
