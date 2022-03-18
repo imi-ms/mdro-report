@@ -73,9 +73,11 @@ class JavaFxApplication : Application() {
                 } catch (e: Exception) {
                     Alert(Alert.AlertType.ERROR).apply {
                         title = "Fehlermeldung"
-                        headerText = "Etwas ist schief gelaufen. Bitte überprüfen Sie die Zugangsdaten!"
+                        headerText =
+                            "Etwas ist schief gelaufen. Bitte überprüfen Sie die Verbindung zum BaseX-Server und die Zugangsdaten!"
                         contentText = "$e"
                     }.showAndWait()
+                    return@EventHandler
                 }
             } else {
                 try {
