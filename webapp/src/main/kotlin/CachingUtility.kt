@@ -48,7 +48,7 @@ class CachingUtility() {
     fun getOverviewEntryOrNull(germ: Germtype): List<OverviewEntry>? {
         if(cacheExists()){
             val cache = getCache()
-            val germCache = getGermCacheForGermtype(cache, germ)
+            val germCache = getGermCacheForGermtype(cache, germ) ?: return null
             if(germCache.overviewEntries.isNotEmpty()) {
                 return germCache.overviewEntries
             }
@@ -59,7 +59,7 @@ class CachingUtility() {
     fun getCaseListOrNull(germ: Germtype): List<Map<String, String>>? {
         if(cacheExists()){
             val cache = getCache()
-            val germCache = getGermCacheForGermtype(cache, germ)
+            val germCache = getGermCacheForGermtype(cache, germ) ?: return null
             if(germCache.caseList.isNotEmpty()) {
                 return germCache.caseList
             }
@@ -149,21 +149,24 @@ class CachingUtility() {
     }
 
     private fun cacheExists(): Boolean {
-        return File("${GlobalData.database}.mdreport").exists()
+        return File("${GlobalData.database}.mdreport").exists() //TODO: Add caching path as property
     }
 
     private fun writeCache(cache: CacheData) {
         val json = Json.encodeToString(cache)
-        File("${GlobalData.database}.mdreport").writeText(json)
+        File("${GlobalData.database}.mdreport").writeText(json) //TODO: Add caching path as property
     }
 
     private fun getCache(): CacheData {
-        val json = File("${GlobalData.database}.mdreport").readBytes().toString()
+        val json = File("${GlobalData.database}.mdreport").readText() //TODO: Add caching path as property
         return Json.decodeFromString(json)
     }
 
-    private fun getGermCacheForGermtype(cache: CacheData, germ: Germtype): GermCache {
-        return cache.germCache.filter { it.type == germ.germtype }[0] //Only once in cache
+    private fun getGermCacheForGermtype(cache: CacheData, germ: Germtype): GermCache? {
+        try {
+            return cache.germCache.filter { it.type == germ.germtype }[0] //Only once in cache if exists
+        } catch (_: Exception) { }
+        return null
     }
 
 

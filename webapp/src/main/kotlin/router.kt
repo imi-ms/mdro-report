@@ -63,49 +63,72 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             get("MRSA/overview") {
-                val overviewContent = WebappComponents.getMRSAOverview(baseXClient)
-                cachingUtility.cache(Germtype.MRSA, overviewContent)
+                var overviewContent = cachingUtility.getOverviewEntryOrNull(Germtype.MRSA)
+                if(overviewContent == null)  {
+                    overviewContent = WebappComponents.getMRSAOverview(baseXClient)
+                    cachingUtility.cache(Germtype.MRSA, overviewContent!!)
+                }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Übersicht" }
-                    content { drawOverviewTable(overviewContent) }
+                    content { drawOverviewTable(overviewContent!!) }
                 }
             }
             get("MRSA/list") {
-                val text = baseXClient.executeXQuery(BaseXQueries.getMRSA())
-                val tableData = WebappComponents.getMRSACSV(text)
+                var caseList = cachingUtility.getCaseListOrNull(Germtype.MRSA)
+                if(caseList == null) {
+                    val text = baseXClient.executeXQuery(BaseXQueries.getMRSA())
+                    caseList = WebappComponents.getMRSACSV(text)
+                    cachingUtility.cache(Germtype.MRSA, caseList!!)
+                }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Fallliste" }
-                    content { drawCaseList(tableData) }
+                    content { drawCaseList(caseList!!) }
                 }
             }
             get("MRGN/overview") {
-                val overviewContent = WebappComponents.getMRGNOverview(baseXClient)
+                var overviewContent = cachingUtility.getOverviewEntryOrNull(Germtype.MRGN)
+                if(overviewContent == null) {
+                    overviewContent = WebappComponents.getMRGNOverview(baseXClient)
+                    cachingUtility.cache(Germtype.MRGN, overviewContent!!)
+                }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRGN: Übersicht" }
-                    content { drawOverviewTable(overviewContent) }
+                    content { drawOverviewTable(overviewContent!!) }
                 }
             }
             get("MRGN/list") {
-                val text = baseXClient.executeXQuery(BaseXQueries.getMRGN())
-                val tableData = WebappComponents.getMRGACSV(text)
+                var caseList = cachingUtility.getCaseListOrNull(Germtype.MRGN)
+                if(caseList == null) {
+                    val text = baseXClient.executeXQuery(BaseXQueries.getMRGN())
+                    caseList = WebappComponents.getMRGACSV(text)
+                    cachingUtility.cache(Germtype.MRGN, caseList!!)
+                }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRGN: Fallliste" }
-                    content { drawCaseList(tableData) }
+                    content { drawCaseList(caseList!!) }
                 }
             }
             get("VRE/overview") {
-                val overviewContent = WebappComponents.getVREOverview(baseXClient)
+                var overviewContent = cachingUtility.getOverviewEntryOrNull(Germtype.VRE)
+                if(overviewContent == null) {
+                    overviewContent = WebappComponents.getVREOverview(baseXClient)
+                    cachingUtility.cache(Germtype.VRE, overviewContent!!)
+                }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE: Übersicht" }
-                    content { drawOverviewTable(overviewContent) }
+                    content { drawOverviewTable(overviewContent!!) }
                 }
             }
             get("VRE/list") {
-                val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
-                val tableData = WebappComponents.getVRECSV(text)
+                var caseList = cachingUtility.getCaseListOrNull(Germtype.VRE)
+                if(caseList == null) {
+                    val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
+                    caseList = WebappComponents.getVRECSV(text)
+                    cachingUtility.cache(Germtype.VRE, caseList!!)
+                }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE: Fallliste" }
-                    content { drawCaseList(tableData) }
+                    content { drawCaseList(caseList!!) }
                 }
             }
             get("/about") {

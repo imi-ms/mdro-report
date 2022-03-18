@@ -26,7 +26,7 @@ fun parseCsv(text: String, headers: List<String>, separator: String = "||"): Lis
 
 enum class Germtype(val germtype: String) {
     MRSA("MRSA"),
-    MRGA("MRGA"),
+    MRGN("MRGN"),
     VRE("VRE")
 }
 
