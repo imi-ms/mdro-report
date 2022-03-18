@@ -87,11 +87,11 @@ class CachingUtility() {
 
     private fun writeCache(cache: CacheData) {
         val json = Json.encodeToString(cache)
-        File("${GlobalData.database}.mdreport").writeText(json)
+        File("${GlobalData.database}.mdreport").writeText(json) //TODO: Add caching path as property
     }
 
-    fun getCache(): CacheData {
-        val json = File("${GlobalData.database}.mdreport").readText()
+    private fun getCache(): CacheData {
+        val json = File("${GlobalData.database}.mdreport").readText() //TODO: Add caching path as property
         return Json.decodeFromString(json)
     }
 
