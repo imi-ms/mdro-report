@@ -90,7 +90,7 @@ class CachingUtility() {
         File("${GlobalData.database}.mdreport").writeText(json) //TODO: Add caching path as property
     }
 
-    private fun getCache(): CacheData {
+    fun getCache(): CacheData {
         val json = File("${GlobalData.database}.mdreport").readText() //TODO: Add caching path as property
         return Json.decodeFromString(json)
     }

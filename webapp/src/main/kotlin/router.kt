@@ -1,7 +1,6 @@
 package de.uni_muenster.imi.oegd.webapp
 
 
-import de.uni_muenster.imi.oegd.common.BaseXQueries
 import de.uni_muenster.imi.oegd.common.GermType
 import de.uni_muenster.imi.oegd.common.IBaseXClient
 import io.ktor.application.*
@@ -76,18 +75,17 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondRedirect("/$germ/list")
             }
             get("MRSA/overview") {
-                val overviewContent = WebappComponents.getMRSAOverview(baseXClient)
+                val (overviewContent, lastUpdate) = getOverviewEntries(GermType.MRSA, baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Übersicht" }
-                    content { drawOverviewTable(overviewContent) }
+                    content { drawOverviewTable(overviewContent, lastUpdate) }
                 }
             }
             get("MRSA/list") {
-                val text = baseXClient.executeXQuery(BaseXQueries.getMRSA())
-                val tableData = WebappComponents.getMRSACSV(text)
+                val (tableData, lastUpdate) = getCaseList(GermType.MRSA, baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"MRSA: Fallliste" }
-                    content { drawCaseList(tableData, "Please Fix!") }
+                    content { drawCaseList(tableData, lastUpdate) }
                 }
             }
             get("MRGN/overview") {
@@ -105,18 +103,17 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             get("VRE/overview") {
-                val overviewContent = WebappComponents.getVREOverview(baseXClient)
+                val (overviewContent, lastUpdate) = getOverviewEntries(GermType.VRE, baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE: Übersicht" }
-                    content { drawOverviewTable(overviewContent) }
+                    content { drawOverviewTable(overviewContent, lastUpdate) }
                 }
             }
             get("VRE/list") {
-                val text = baseXClient.executeXQuery(BaseXQueries.getVRE())
-                val tableData = WebappComponents.getVRECSV(text)
+                val (tableData, lastUpdate) = getCaseList(GermType.VRE, baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"VRE: Fallliste" }
-                    content { drawCaseList(tableData, "foo") }
+                    content { drawCaseList(tableData, lastUpdate) }
                 }
             }
             get("/statistic") {
@@ -160,8 +157,7 @@ private suspend fun getCaseList(
     baseXClient: IBaseXClient
 ): Pair<List<Map<String, String>>, String> {
     if (cachingUtility.getGermForGermtype(germ)?.caseListTimeCreated == null) {
-        val text = baseXClient.executeXQuery(BaseXQueries.getMRGN()) //TODO: Edit here
-        val tableData = WebappComponents.getMRGACSV(text) //TODO: Edit here
+        val tableData = WebappComponents.getCaseList(baseXClient, germ)
         cachingUtility.cache(germ, tableData)
     }
     val (_, _, _, caseList, lastUpdate) = cachingUtility.getGermForGermtype(germ)!!
@@ -174,7 +170,7 @@ private suspend fun getOverviewEntries(
     baseXClient: IBaseXClient
 ): Pair<List<OverviewEntry>, String> {
     if (cachingUtility.getGermForGermtype(germ)?.overviewTimeCreated == null) {
-        val overviewContent = WebappComponents.getMRGNOverview(baseXClient) //TODO: Edit here
+        val overviewContent = WebappComponents.getOverview(baseXClient, germ)
         cachingUtility.cache(germ, overviewContent)
     }
     val (_, overviewEntries, lastUpdate, _, _) = cachingUtility.getGermForGermtype(germ)!!

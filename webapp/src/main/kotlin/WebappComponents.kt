@@ -1,10 +1,25 @@
 package de.uni_muenster.imi.oegd.webapp
 
 import de.uni_muenster.imi.oegd.common.BaseXQueries
+import de.uni_muenster.imi.oegd.common.GermType
 import de.uni_muenster.imi.oegd.common.IBaseXClient
 import de.uni_muenster.imi.oegd.common.parseCsv
 
 object WebappComponents {
+    suspend fun getCaseList(basexClient: IBaseXClient, germ: GermType) =
+        when (germ) {
+            GermType.MRSA -> getMRSACSV(basexClient.executeXQuery(BaseXQueries.getMRSA()))
+            GermType.MRGN -> getMRGACSV(basexClient.executeXQuery(BaseXQueries.getMRGN()))
+            GermType.VRE -> getVRECSV(basexClient.executeXQuery(BaseXQueries.getVRE()))
+        }
+
+    suspend fun getOverview(basexClient: IBaseXClient, germ: GermType) =
+        when (germ) {
+            GermType.MRSA -> getMRSAOverview(basexClient)
+            GermType.MRGN -> getMRGNOverview(basexClient)
+            GermType.VRE -> getVREOverview(basexClient)
+        }
+
     fun getMRSACSV(mrsaList: String): List<Map<String, String>> {
         return parseCsv(
             mrsaList,
