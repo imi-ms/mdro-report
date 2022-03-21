@@ -22,7 +22,7 @@ class CachingUtility() {
     @JvmName("cacheOverview")
     fun cache(germ: GermType, data: List<OverviewEntry>) {
         val cache = if (cacheExists()) getCache() else createCache()
-        cache.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.findOrCreateByType(germ).apply {
             overviewEntries = data
             overviewTimeCreated = LocalDateTime.now().toString()
@@ -34,7 +34,7 @@ class CachingUtility() {
     fun cache(germ: GermType, data: List<Map<String, String>>) {
         val cache = if (cacheExists()) getCache() else createCache()
 
-        cache.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.findOrCreateByType(germ).apply {
             caseList = data
             caseListTimeCreated = LocalDateTime.now().toString()
@@ -46,7 +46,7 @@ class CachingUtility() {
     fun clearCaseListCache(germ: GermType) {
         val cache = if (cacheExists()) getCache() else createCache()
 
-        cache.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.findOrCreateByType(germ).apply {
             caseList = null
             caseListTimeCreated = null
@@ -58,7 +58,7 @@ class CachingUtility() {
     fun clearOverviewCache(germ: GermType) {
         val cache = if (cacheExists()) getCache() else createCache()
 
-        cache.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.findOrCreateByType(germ).apply {
             overviewEntries = null
             overviewTimeCreated = null
@@ -90,13 +90,16 @@ class CachingUtility() {
         File("${GlobalData.database}.mdreport").writeText(json) //TODO: Add caching path as property
     }
 
-    fun getCache(): CacheData {
-        val json = File("${GlobalData.database}.mdreport").readText() //TODO: Add caching path as property
-        return Json.decodeFromString(json)
+    fun getCache(): CacheData? {
+        if(cacheExists()) {
+            val json = File("${GlobalData.database}.mdreport").readText() //TODO: Add caching path as property
+            return Json.decodeFromString(json)
+        }
+        return null
     }
 
     fun getGermForGermtype(germ: GermType): GermInfo? {
-        return getCache().germCache.find { it.type == germ.germtype }
+        return getCache()?.germCache?.find { it.type == germ.germtype }
     }
 
 
