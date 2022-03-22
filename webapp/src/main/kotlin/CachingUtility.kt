@@ -71,6 +71,11 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         writeCache(cache)
     }
 
+    fun uploadExistingCache(cache: String) {
+        File(cacheDirectory).mkdirs()
+        File(cacheDirectory, cacheFilename).writeText(cache)
+    }
+
 
     private fun createCache(): CacheData {
         return CacheData(

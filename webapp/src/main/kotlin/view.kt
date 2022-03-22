@@ -1,5 +1,7 @@
 package de.uni_muenster.imi.oegd.webapp
 
+import de.uni_muenster.imi.oegd.common.GlobalData
+import io.ktor.client.request.forms.*
 import io.ktor.html.*
 import kotlinx.html.*
 
@@ -57,11 +59,14 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
                                     }
                                 }
                             }
-                            navItem("download", "Download Report")
                             navItem("statistic", "Statistik")
                             navItem("about", "Über")
                         }
-
+                    }
+                    div(classes = "navbar float-left"){
+                        ul(classes = "navbar-nav"){
+                            drawSettingsModal()
+                        }
                     }
                 }
 
@@ -97,6 +102,39 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
             }
             a(classes = "nav-link", href = "/$href") {
                 +label
+            }
+        }
+    }
+}
+
+fun FlowContent.drawIndex() {
+    div(classes = "mb-5") {
+        +"Bitte nutzen Sie die Navigationsleiste oben, um zwischen den verschiedenen Funktionen zu navigieren!"
+    }
+
+    div {
+        table(classes = "table") {
+            tr{
+                td {
+                    attributes["colspan"] = "2"
+                    +"Aktuelle Einstellungen"
+                }
+            }
+            tr {
+                td { +"Nutzer: " }
+                td { +GlobalData.user }
+            }
+            tr {
+                td { +"URL: " }
+                td { +GlobalData.url }
+            }
+            tr {
+                td { +"Datenbank: " }
+                td { +GlobalData.database }
+            }
+            tr {
+                td { +"Jahr: " }
+                td { +GlobalData.year }
             }
         }
     }
@@ -200,9 +238,106 @@ private fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
                         }
                     }
                 }
-                div(classes = "modal-body") {
+                div(classes = "modal-body modal-query") {
                     pre {
                         +(entry.query + "\n")
+                    }
+                }
+            }
+        }
+    }
+}
+
+private fun FlowContent.drawSettingsModal() {
+    button(classes="btn") {
+        attributes["data-toggle"] = "modal"
+        attributes["data-target"] = "#settings-modal"
+        i(classes="bi bi-gear-fill") {  }
+    }
+
+    div(classes = "modal fade") {
+        id = "settings-modal"
+        attributes["tabindex"] = "-1"
+        attributes["role"] = "dialog"
+        attributes["aria-labelledby"] = "#settings-title"
+        attributes["aria-hidden"] = "true"
+        div(classes = "modal-dialog modal-dialog-slideout modal-md") {
+            attributes["role"] = "document"
+            div(classes = "modal-content") {
+                div(classes = "modal-header") {
+                    h5(classes = "modal-title") {
+                        id = "settings-title"
+                        +"Einstellungen"
+                    }
+                    button(classes = "close", type = ButtonType.button) {
+                        attributes["data-dismiss"] = "modal"
+                        attributes["aria-label"] = "close"
+                        span {
+                            attributes["aria-hidden"] = "true"
+                            +"×"
+                        }
+                    }
+                }
+                div(classes = "modal-body") {
+                    form(action = "/settings/save", method = FormMethod.post) {
+                        div(classes = "form-group") {
+                            label {
+                                attributes["for"] = "inputDatabase"
+                                +"Datenbank"
+                            }
+                            input(type = InputType.text) {
+                                id = "inputDatabase"
+                                classes = setOf("form-control")
+                                name = "database"
+                                value = GlobalData.database
+                                if(GlobalData.isLocal) {
+                                    disabled = true
+                                }
+                            }
+                        }
+                        div(classes = "form-group") {
+                            label {
+                                attributes["for"] = "inputYear"
+                                +"Jahr"
+                            }
+                            input(type = InputType.text) {
+                                id = "inputYear"
+                                classes = setOf("form-control")
+                                name = "year"
+                                value = GlobalData.year
+                            }
+                        }
+                        div(classes = "form-group") {
+                            button(classes = "btn btn-light") {
+                                attributes["data-dismiss"] = "modal"
+                                +"Abbrechen"
+                            }
+                            button(type = ButtonType.submit, classes = "btn btn-secondary ml-2") {
+                                +"Änderungen übernehmen"
+                            }
+                        }
+                    }
+                    hr {}
+                    form(action = "/settings/uploadCache", method = FormMethod.post, encType = FormEncType.multipartFormData) {
+                        div(classes = "form-group") {
+                            label {
+                                attributes["for"] = "inputCache"
+                                +"Cache Datei hochladen"
+                            }
+                            input(type = InputType.file) {
+                                classes = setOf("form-control-file")
+                                id = "inputCache"
+                                name = "uploadedCache"
+                            }
+                        }
+                        div(classes = "form-group") {
+                            button(type = ButtonType.submit, classes = "btn btn-secondary mt-2") {
+                                +"Cache hochladen"
+                            }
+                            a(href = "/settings/downloadCache", classes = "btn btn-secondary mt-2 ml-2") {
+                                +"Aktuellen Cache herunterladen"
+                            }
+                        }
                     }
                 }
             }

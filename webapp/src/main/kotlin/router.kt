@@ -2,6 +2,7 @@ package de.uni_muenster.imi.oegd.webapp
 
 
 import de.uni_muenster.imi.oegd.common.GermType
+import de.uni_muenster.imi.oegd.common.GlobalData
 import de.uni_muenster.imi.oegd.common.IBaseXClient
 import io.ktor.application.*
 import io.ktor.features.*
@@ -14,8 +15,12 @@ import io.ktor.routing.*
 import io.ktor.webjars.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import mu.KotlinLogging
+import java.io.File
 import java.net.InetAddress
+import java.nio.charset.StandardCharsets
 
+private val log = KotlinLogging.logger {  }
 
 fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit =
     {
@@ -59,9 +64,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("/") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"Willkommen" }
-                    content {
-                        +"Bitte nutzen Sie die Navigationsleiste oben, um zwischen den verschiedenen Funktionen zu navigieren!"
-                    }
+                    content {drawIndex()}
                 }
             }
             post("{germ}/overview/invalidate-cache") {
@@ -73,6 +76,26 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val germ = GermType.valueOf(call.parameters["germ"]!!)
                 cachingUtility.clearCaseListCache(germ)
                 call.respondRedirect("/$germ/list")
+            }
+            post("/settings/save") {
+                updateGlobalData(call.receiveParameters())
+                call.respondRedirect("/")
+            }
+            post("/settings/uploadCache") {
+                uploadCache(call.receiveMultipart(), cachingUtility)
+                call.respondRedirect("/")
+            }
+            get("/settings/downloadCache") {
+                //TODO: Cache everything
+                call.response.header(
+                    HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
+                        ContentDisposition.Parameters.FileName, "foo.mdreport" //TODO: Use database / year name
+                    ).toString()
+                )
+                call.respondText(
+                    Json.encodeToString(cachingUtility.getCache()),
+                    contentType = ContentType.Application.Json
+                ) //TODO: Works in browser, does not work in JavaFX app
             }
             get("MRSA/overview") {
                 val (overviewContent, lastUpdate) = cachingUtility.getOverviewEntries(GermType.MRSA, baseXClient)
@@ -122,18 +145,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     content { +"Upload files or select stored cache files:" }
                 }
             }
-            get("/download") {
-                //TODO: Cache everything
-                call.response.header(
-                    HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
-                        ContentDisposition.Parameters.FileName, "foo.mdreport" //TODO: Use database / year name
-                    ).toString()
-                )
-                call.respondText(
-                    Json.encodeToString(cachingUtility.getCache()),
-                    contentType = ContentType.Application.Json
-                )
-            }
             get("/about") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"Über" }
@@ -176,4 +187,24 @@ private suspend fun CachingUtility.getOverviewEntries(
     val (_, overviewEntries, lastUpdate, _, _) = this.getGermForGermtype(germ)!!
 
     return overviewEntries!! to lastUpdate!!
+}
+
+private fun updateGlobalData(parameters: Parameters) {
+    GlobalData.database = parameters["database"].toString()
+    GlobalData.year = parameters["year"].toString()
+    log.info("User updated settings. New parameters: database - ${GlobalData.database} | year - ${GlobalData.year}")
+}
+
+private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: CachingUtility) {
+    var fileBytes: ByteArray? = null
+    multipartdata.forEachPart { part ->
+        if(part is PartData.FileItem) {
+            fileBytes = part.streamProvider().readBytes()
+
+        }
+    }
+    if (fileBytes != null) {
+        val newCache = String(fileBytes!!, StandardCharsets.UTF_8)
+        cachingUtility.uploadExistingCache(newCache)
+    }
 }
