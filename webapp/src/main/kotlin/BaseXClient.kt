@@ -1,5 +1,7 @@
 package de.uni_muenster.imi.oegd.common
 
+import de.uni_muenster.imi.oegd.webapp.BasexInfo
+import de.uni_muenster.imi.oegd.webapp.RestConnectionInfo
 import io.ktor.client.*
 import io.ktor.client.features.*
 import io.ktor.client.features.auth.*
@@ -11,6 +13,7 @@ import io.ktor.client.request.*
  */
 interface IBaseXClient : AutoCloseable {
     suspend fun executeXQuery(xquery: String): String
+    fun getInfo(): BasexInfo
 }
 
 /**
@@ -40,8 +43,11 @@ class RestClient(
 
     override suspend fun executeXQuery(xquery: String): String {
         return this.client.post<String>("$baseURL/$database") {
-            body = """<query> <text> <![CDATA[ $xquery ]]> </text> </query>"""
+            body = """<query><text><![CDATA[ $xquery ]]></text></query>"""
         }
     }
+
+    override fun getInfo() = RestConnectionInfo(baseURL, database)
+
 
 }

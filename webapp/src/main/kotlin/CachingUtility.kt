@@ -19,7 +19,7 @@ fun MutableList<GermInfo>.findOrCreateByType(id: GermType): GermInfo {
 }
 
 
-class CachingUtility() {
+class CachingUtility(private val basexInfo: BasexInfo) {
     private val log = KotlinLogging.logger { }
 
 
@@ -75,10 +75,9 @@ class CachingUtility() {
     private fun createCache(): CacheData {
         return CacheData(
             metadata = CacheMetadata(
-                LocalDateTime.now().toString(),
-                LocalDateTime.now().toString(),
-                GlobalData.url,
-                GlobalData.database
+                timeCreated = LocalDateTime.now().toString(),
+                timeUpdated = LocalDateTime.now().toString(),
+                basex = basexInfo
             ),
             germCache = mutableListOf()
         )

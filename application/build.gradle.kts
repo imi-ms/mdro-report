@@ -18,9 +18,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("io.ktor:ktor-server-netty:$ktor_version")
 
-
     implementation(project(":baseX"))
-    implementation(project(":common"))
     implementation(project(":webapp"))
 }
 

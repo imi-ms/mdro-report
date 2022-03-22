@@ -13,9 +13,25 @@ data class CacheData(
 data class CacheMetadata(
     @SerialName("time_created") val timeCreated: String,
     @SerialName("time_updated") var timeUpdated: String,
-    @SerialName("server_url") val serverUrl: String,
-    @SerialName("database_id") val databaseId: String
+    @SerialName("basex") val basex: BasexInfo,
 )
+
+@Serializable
+sealed class BasexInfo {
+}
+
+@Serializable
+@SerialName("rest")
+data class RestConnectionInfo(
+    @SerialName("server_url") val serverUrl: String,
+    @SerialName("database_id") val databaseId: String,
+) : BasexInfo()
+
+@Serializable
+@SerialName("local")
+data class LocalBasexInfo(
+    @SerialName("directory") val directory: String,
+) : BasexInfo()
 
 @Serializable
 data class GermInfo(

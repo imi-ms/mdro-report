@@ -1,6 +1,7 @@
 package de.uni_muenster.imi.oegd.baseX
 
 import de.uni_muenster.imi.oegd.common.IBaseXClient
+import de.uni_muenster.imi.oegd.webapp.LocalBasexInfo
 import org.basex.core.Context
 import org.basex.core.cmd.*
 import java.io.File
@@ -9,7 +10,7 @@ import java.nio.file.Files
 /**
  * read a directory and create an internal BaseX database instance to execute XQueries
  */
-class LocalBaseXClient(directory: File) : IBaseXClient {
+class LocalBaseXClient(val directory: File) : IBaseXClient {
 
     private val context: Context = Context()
 
@@ -35,4 +36,6 @@ class LocalBaseXClient(directory: File) : IBaseXClient {
             .filter { item -> Files.isRegularFile(item.toPath()) }
             .forEach { Add("", it.absolutePath).execute(context) }
     }
+
+    override fun getInfo() = LocalBasexInfo(directory.toString())
 }

@@ -14,5 +14,5 @@ repositories {
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.basex:basex:9.2.4")
-    implementation(project(":common"))
+    implementation(project(":webapp"))
 }

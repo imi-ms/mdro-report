@@ -3,6 +3,5 @@ include(
     "webapp",
     "baseX",
     "application",
-    "common",
-    "testdataGenerator"
+    "testdataGenerator",
 )

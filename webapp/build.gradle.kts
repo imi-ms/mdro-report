@@ -31,15 +31,14 @@ dependencies {
     implementation("io.ktor:ktor-webjars:$ktor_version")
     implementation("io.ktor:ktor-server-servlet:$ktor_version")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
-    implementation(project(":baseX"))
-    implementation(project(":common"))
+    implementation("net.harawata:appdirs:1.2.1")
+
 
     //webjars
     implementation("org.webjars.npm:jquery:3.3.1")
     implementation("org.webjars.npm:bootstrap:4.3.1")
     implementation("org.webjars.npm:bootstrap-icons:1.8.1")
     implementation("org.webjars.npm:popper.js:1.16.1")
-    implementation("net.harawata:appdirs:1.2.1")
 }
 
 tasks {
