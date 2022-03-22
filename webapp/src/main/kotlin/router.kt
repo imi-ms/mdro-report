@@ -16,7 +16,6 @@ import io.ktor.webjars.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
-import java.io.File
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 
@@ -86,10 +85,13 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondRedirect("/")
             }
             get("/settings/downloadCache") {
-                //TODO: Cache everything
+                for (germType in GermType.values()) {
+                    cachingUtility.getCaseList(germType, baseXClient)
+                    cachingUtility.getOverviewEntries(germType, baseXClient)
+                }
                 call.response.header(
                     HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
-                        ContentDisposition.Parameters.FileName, "foo.mdreport" //TODO: Use database / year name
+                        ContentDisposition.Parameters.FileName, cachingUtility.cacheFilename
                     ).toString()
                 )
                 call.respondText(
@@ -200,7 +202,6 @@ private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: Ca
     multipartdata.forEachPart { part ->
         if(part is PartData.FileItem) {
             fileBytes = part.streamProvider().readBytes()
-
         }
     }
     if (fileBytes != null) {

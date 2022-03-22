@@ -9,6 +9,7 @@ import de.uni_muenster.imi.oegd.webapp.createServer
 import io.ktor.server.netty.*
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.concurrent.Task
 import javafx.concurrent.Worker
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
@@ -20,9 +21,11 @@ import javafx.scene.image.Image
 import javafx.scene.layout.StackPane
 import javafx.scene.web.WebView
 import javafx.stage.DirectoryChooser
+import javafx.stage.FileChooser
 import javafx.stage.Stage
 import kotlinx.coroutines.runBlocking
 import java.io.File
+import java.net.URL
 import kotlin.system.exitProcess
 
 /**
@@ -137,13 +140,35 @@ class JavaFxApplication : Application() {
     private fun startWebView(primaryStage: Stage) {
         val webView = WebView()
         val indicator = ProgressIndicator()
-        primaryStage.scene = Scene(StackPane(webView, indicator), 1280.0, 800.0)
+        val indicator2 = ProgressIndicator()
+        indicator2.isVisible = false
+        indicator2.style = "-fx-progress-color: black;"
+        primaryStage.scene = Scene(StackPane(webView, indicator, indicator2), 1280.0, 800.0)
         webView.engine.load("http://localhost:$webappPort/")
         webView.isContextMenuEnabled = false
-
         indicator.visibleProperty()
             .bind(webView.engine.loadWorker.stateProperty().isEqualTo(Worker.State.RUNNING))
+        webView.engine.locationProperty().addListener { _, _, newLocation ->
+            //TODO: Womöglich wird dadurch die Datei zweimal heruntergeladen - einmal durch den Browser und einmal unten durch den Code
+            if (newLocation.contains("downloadCache")) {
+                val data = object : Task<String>() {
+                    override fun call() = URL(newLocation).readText()
+                }
+                indicator2.visibleProperty().bind(data.runningProperty())
+                webView.disableProperty().bind(data.runningProperty())
+                data.setOnFailed {
+                    Alert(Alert.AlertType.ERROR, "Cannot download report. Please check stacktrace!")
+                }
 
+                val file = FileChooser().apply {
+                    initialFileName = "report.mdreport"
+                }.showSaveDialog(primaryStage) ?: return@addListener
+                data.setOnSucceeded {
+                    file.writeText(data.get())
+                }
+                Thread(data).apply { isDaemon = true }.start()
+            }
+        }
         primaryStage.show()
         primaryStage.centerOnScreen()
     }
