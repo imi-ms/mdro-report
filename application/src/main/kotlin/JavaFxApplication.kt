@@ -65,6 +65,7 @@ class JavaFxApplication : Application() {
             if ((page.lookup("#radio_basex") as RadioButton).isSelected) {
                 GlobalData.database = (page.lookup("#database") as TextField).text
                 GlobalData.url = (page.lookup("#server") as TextField).text
+                GlobalData.user = (page.lookup("#username") as TextField).text
                 GlobalData.isLocal = false
 
                 basex = RestClient(
@@ -87,6 +88,7 @@ class JavaFxApplication : Application() {
             } else {
                 GlobalData.database="LOCAL"
                 GlobalData.url="LOCAL"
+                GlobalData.user="LOCAL"
                 GlobalData.isLocal = true
 
                 try {
