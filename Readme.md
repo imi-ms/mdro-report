@@ -62,7 +62,7 @@ If you only want to use the web interface and connect to a separate running Base
                 <analysis OPUS="avre" display="Selektivagar VRE">
                     <result OPUS="positiv" />
                 </analysis>
-                <germ id="123456" number="1" SNOMED="90272000" display="Enterococcus faecium">
+                <germ class="MRSA" id="123456" number="1" SNOMED="90272000" display="Enterococcus faecium">
                     <comment>A comment for the germ detection</comment>
                     <analysis><!--further analysis--></analysis>
                     <!--...-->
@@ -113,10 +113,19 @@ If you only want to use the web interface and connect to a separate running Base
 
 In order to be usable for this project the record has to at least contain the following objects: 
 
-- A patient with an id: `<patient id="">`
-- A corresponding case with an id, type and period: `<case id="" type="S" @from="2022-02-22" @till="2022-02-25">`.
+- A patient with an id: 
+  ```xml
+  <patient id="">
+  ```
+- A corresponding case with an id, type and period: 
+  ```xml
+  <case id="" type="S" from="2022-02-22" till="2022-02-25">
+  ```
   Type "S" tags inpatient cases ("**s**tationär").
-- A lab report for this case with an id `<labReport id="">...</labReport>`
+- A lab report for this case with an id: 
+  ```xml
+  <labReport id="">...</labReport>
+  ```
 - The lab report has to contain information about the sender of the request
     ```xml
     <request from="2022-03-10T10:10:10" sender="SENDER">VRE</request>
@@ -126,25 +135,23 @@ In order to be usable for this project the record has to at least contain the fo
     ```xml
     <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">...</sample>
     ```
-- The sample has to contain a positive analysis for MRSA, MRGN or VRE //TODO: Muss es nicht, wird dann nur nicht
-  gezaehlt
-
-  ```xml
-  <analysis OPUS="avre" display="Selektivagar VRE">
-      <result OPUS="positiv" />
-  </analysis>
-  ```
-
+  
 - The lab report has to have a germ with an id and the antibiotics analysis
+- The sample has to contain a positive analysis for MRSA, MRGN or VRE in order to appear in the statistics otherwise it will not be counted
+  - The data is analyzed in the ETL process and if it matches a certain criteria a class property will be added to the germ object
+  - This class is used for the data analysis in the tool and is therefore necessary to perform any meaningful analysis on testdata 
   ```xml
-      <germ id="" SNOMED="" display="">
+      <germ class="" id="" SNOMED="" display="">
           <antibiotic LOINC="" display="">
               <result string="" LOINC=""/>
           </antibiotic>
           ....
       </germ>
   ```
+`labReport/germ/@class` might be any String, but only "**MRSA**", "**MRGN**" and "**VRE**" are important for this tool
+
 `antibiotic/result/@string` might be "R" (resistent), "S" (sensibel) or "I" (intermediär)
+
 
 ## Acknowledgement
 
