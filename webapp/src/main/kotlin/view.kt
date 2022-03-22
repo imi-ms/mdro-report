@@ -282,21 +282,6 @@ private fun FlowContent.drawSettingsModal() {
                     form(action = "/settings/save", method = FormMethod.post) {
                         div(classes = "form-group") {
                             label {
-                                attributes["for"] = "inputDatabase"
-                                +"Datenbank"
-                            }
-                            input(type = InputType.text) {
-                                id = "inputDatabase"
-                                classes = setOf("form-control")
-                                name = "database"
-                                value = GlobalData.database
-                                if(GlobalData.isLocal) {
-                                    disabled = true
-                                }
-                            }
-                        }
-                        div(classes = "form-group") {
-                            label {
                                 attributes["for"] = "inputYear"
                                 +"Jahr"
                             }
