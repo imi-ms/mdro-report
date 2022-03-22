@@ -6,6 +6,8 @@ class GlobalData {
     companion object {
         lateinit var database: String
         lateinit var url: String
+        lateinit var user : String
+        var year: String = "2021" //TODO: Ask when first launching
         var isLocal: Boolean = false
     }
 }
