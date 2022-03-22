@@ -5,6 +5,8 @@ import de.uni_muenster.imi.oegd.common.GlobalData
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import mu.KotlinLogging
+import net.harawata.appdirs.AppDirsFactory
 import java.io.File
 import java.time.LocalDateTime
 
@@ -18,6 +20,8 @@ fun MutableList<GermInfo>.findOrCreateByType(id: GermType): GermInfo {
 
 
 class CachingUtility() {
+    private val log = KotlinLogging.logger { }
+
 
     @JvmName("cacheOverview")
     fun cache(germ: GermType, data: List<OverviewEntry>) {
@@ -82,17 +86,18 @@ class CachingUtility() {
 
 
     private fun cacheExists(): Boolean {
-        return File("${GlobalData.database}.mdreport").exists()
+        return File(cacheDirectory, cacheFilename).exists()
     }
 
     private fun writeCache(cache: CacheData) {
         val json = Json.encodeToString(cache)
-        File("${GlobalData.database}.mdreport").writeText(json) //TODO: Add caching path as property
+        File(cacheDirectory).mkdirs()
+        File(cacheDirectory, cacheFilename).writeText(json) //TODO: Add caching path as property
     }
 
     fun getCache(): CacheData? {
         if(cacheExists()) {
-            val json = File("${GlobalData.database}.mdreport").readText() //TODO: Add caching path as property
+            val json = File(cacheDirectory, cacheFilename).readText() //TODO: Add caching path as property
             return Json.decodeFromString(json)
         }
         return null
@@ -102,6 +107,16 @@ class CachingUtility() {
         return getCache()?.germCache?.find { it.type == germ.germtype }
     }
 
+    private val cacheDirectory: String by lazy {
+        val userCacheDir = AppDirsFactory.getInstance().getUserCacheDir("mdreport", "1.0", "IMI")!!
+        log.info { "Using '$userCacheDir' as cache directory!" }
+        userCacheDir
+    }
+
+    private val cacheFilename: String by lazy {
+        fun sanitizeFilename(inputName: String) = inputName.replace(Regex("[^a-zA-Z0-9_]"), "_")
+        "${sanitizeFilename(GlobalData.url)}-${sanitizeFilename(GlobalData.database)}.mdreport"
+    }
 
 }
 

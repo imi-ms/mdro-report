@@ -39,6 +39,7 @@ dependencies {
     implementation("org.webjars.npm:bootstrap:4.3.1")
     implementation("org.webjars.npm:bootstrap-icons:1.8.1")
     implementation("org.webjars.npm:popper.js:1.16.1")
+    implementation("net.harawata:appdirs:1.2.1")
 }
 
 tasks {
