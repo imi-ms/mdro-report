@@ -14,11 +14,14 @@ import javafx.concurrent.Worker
 import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.fxml.FXMLLoader
+import javafx.geometry.Insets
+import javafx.geometry.Pos
 import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.image.Image
-import javafx.scene.layout.StackPane
+import javafx.scene.layout.*
+import javafx.scene.paint.Color
 import javafx.scene.web.WebView
 import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
@@ -140,9 +143,12 @@ class JavaFxApplication : Application() {
     private fun startWebView(primaryStage: Stage) {
         val webView = WebView()
         val indicator = ProgressIndicator()
-        val indicator2 = ProgressIndicator()
+        val indicator2 =
+            VBox(ProgressIndicator(), Label("Erstellen des Berichtes kann einige Zeit dauern, bitte warten!")).apply {
+                alignment = Pos.CENTER
+                background = Background(BackgroundFill(Color(1.0, 1.0, 1.0, 0.5), CornerRadii.EMPTY, Insets.EMPTY))
+            }
         indicator2.isVisible = false
-        indicator2.style = "-fx-progress-color: black;"
         primaryStage.scene = Scene(StackPane(webView, indicator, indicator2), 1280.0, 800.0)
         webView.engine.load("http://localhost:$webappPort/")
         webView.isContextMenuEnabled = false
