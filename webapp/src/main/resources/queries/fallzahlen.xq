@@ -2,7 +2,7 @@ let $input :=
 <patientenzahlen>
 {
 for $x in /patient/case
-where substring($x/@from,1,4)="2021"
+where (xs:dateTime($x/@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/@from) < xs:dateTime("#YEAR_END"))
 where $x/@type="S"
 return 
 <caseID>

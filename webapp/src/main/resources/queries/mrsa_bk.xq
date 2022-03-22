@@ -3,6 +3,7 @@ let $input :=
 {
 for $x in /patient/case/labReport/sample
 where $x/../../@type="S"
+where (xs:dateTime($x/../../@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/../../@from) < xs:dateTime("#YEAR_END"))
 where $x/@bodySiteDisplay="Blut-peripher entnommen" or $x/@bodySiteDisplay="Blut-zentral entnommen"
 where $x/germ/comment[contains(@class,"MRSA")]
 let $ids:=$x/../../@id

@@ -1,2 +1,13 @@
 (: 11 % faster :)
-count(distinct-values(patient/case[@type="S" and labReport/sample[(@bodySiteDisplay="Blut-peripher entnommen" or @bodySiteDisplay="Blut-zentral entnommen") and germ/@display="Enterococcus faecium"]]/@id))
+count(
+    distinct-values(
+        patient/case[
+            @type="S" and
+            (xs:dateTime(@from) > xs:dateTime("#YEAR_START") and xs:dateTime(@from) < xs:dateTime("#YEAR_END")) and
+            labReport/sample[
+                (@bodySiteDisplay="Blut-peripher entnommen" or @bodySiteDisplay="Blut-zentral entnommen") and
+                germ/@display="Enterococcus faecium"
+            ]
+        ]/@id
+    )
+)

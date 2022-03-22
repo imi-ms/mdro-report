@@ -1,5 +1,6 @@
 for $x in /patient/case/labReport/sample/germ/comment[contains(@class,"VRE")]
 where $x/../../../../@type="S"
+where (xs:dateTime($x/../../../../@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/../../../../@from) < xs:dateTime("#YEAR_END"))
 
 let $ids:=$x/../../../../@id
 group by $ids

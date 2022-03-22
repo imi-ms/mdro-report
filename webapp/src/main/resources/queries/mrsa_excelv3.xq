@@ -1,5 +1,6 @@
 for $x in /patient/case/labReport/sample/germ/comment[contains(@class,"MRSA")]
 where $x/../../../../@type="S"
+where (xs:dateTime($x/../../../../@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/../../../../@from) < xs:dateTime("2022-01-01T00:00:00"))
 
 let $ids:=$x/../../../../@id
 group by $ids
