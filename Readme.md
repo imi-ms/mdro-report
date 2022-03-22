@@ -62,7 +62,7 @@ If you only want to use the web interface and connect to a separate running Base
                 <analysis OPUS="avre" display="Selektivagar VRE">
                     <result OPUS="positiv" />
                 </analysis>
-                <germ class="MRSA" id="123456" number="1" SNOMED="90272000" display="Enterococcus faecium">
+                <germ class="VRE" id="123456" number="1" SNOMED="90272000" display="Enterococcus faecium">
                     <comment>A comment for the germ detection</comment>
                     <analysis><!--further analysis--></analysis>
                     <!--...-->
