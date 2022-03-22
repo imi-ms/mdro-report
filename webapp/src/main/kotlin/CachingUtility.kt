@@ -102,7 +102,11 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     fun getCache(): CacheData? {
         if(cacheExists()) {
             val json = File(cacheDirectory, cacheFilename).readText() //TODO: Add caching path as property
-            return Json.decodeFromString(json)
+            return try {
+                Json.decodeFromString(json)
+            } catch (e: Exception) {
+                null
+            }
         }
         return null
     }
@@ -117,7 +121,7 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         userCacheDir
     }
 
-    private val cacheFilename: String by lazy {
+    val cacheFilename: String by lazy {
         fun sanitizeFilename(inputName: String) = inputName.replace(Regex("[^a-zA-Z0-9_]"), "_")
         "${sanitizeFilename(GlobalData.url)}-${sanitizeFilename(GlobalData.database)}.mdreport"
     }
