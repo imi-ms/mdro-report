@@ -192,7 +192,6 @@ private suspend fun CachingUtility.getOverviewEntries(
 }
 
 private fun updateGlobalData(parameters: Parameters) {
-    GlobalData.database = parameters["database"].toString()
     GlobalData.year = parameters["year"].toString()
     log.info("User updated settings. New parameters: database - ${GlobalData.database} | year - ${GlobalData.year}")
 }
