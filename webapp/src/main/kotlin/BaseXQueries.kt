@@ -1,5 +1,7 @@
 package de.uni_muenster.imi.oegd.common
 
+import java.time.LocalDateTime
+
 object BaseXQueries {
     fun getMRSA() = readFile("mrsa_excelv3.xq")
     fun getMRGN() = readFile("mrgn_excelv3.xq")
@@ -17,9 +19,23 @@ object BaseXQueries {
     fun getEfaeciumBK2() = readFile("efaecium_bk2.xq")
     fun getVREBK() = readFile("vre_bk.xq")
 
-    private fun readFile(filename: String) =
-        javaClass.classLoader.getResourceAsStream("queries/$filename")!!.readBytes().toString(Charsets.UTF_8)
-}
+    private fun readFile(filename: String): String {
 
+        val query = javaClass.classLoader
+            .getResourceAsStream("queries/$filename")!!
+            .readBytes()
+            .toString(Charsets.UTF_8)
+        return applyYearFilter(query)
+    }
+
+    private fun applyYearFilter(query: String): String {
+        val startDate = "${GlobalData.year}-01-01T00:00:00"
+        val endDate = "${GlobalData.year}-12-31T23:59:59"
+
+        return query
+            .replace("#YEAR_START", startDate)
+            .replace("#YEAR_END", endDate)
+    }
+}
 
 
