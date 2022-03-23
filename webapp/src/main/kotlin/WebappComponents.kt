@@ -79,9 +79,17 @@ object WebappComponents {
 
     //TODO: Übersicht auf Plausibilität checken / checken lassen
 
-    suspend fun getMRSAOverview(baseXClient: IBaseXClient): List<OverviewEntry> {
+    suspend fun getGlobalStatistics(baseXClient: IBaseXClient): List<OverviewEntry> {
         val fallzahlen = baseXClient.executeXQuery(BaseXQueries.getFallzahlen())
         val falltage = baseXClient.executeXQuery(BaseXQueries.getFalltage())
+
+        return listOf(
+            OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen),
+            OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage),
+        )
+    }
+
+    suspend fun getMRSAOverview(baseXClient: IBaseXClient): List<OverviewEntry> {
         val nasenrachenabstriche = baseXClient.executeXQuery(BaseXQueries.getNasenRachenAbstriche())
         val mssabk = baseXClient.executeXQuery(BaseXQueries.getMSSABK())
         val mrsabk = baseXClient.executeXQuery(BaseXQueries.getMRSABK())
@@ -92,8 +100,6 @@ object WebappComponents {
         val mrsaImported = DataProcessor.countMRSAImported(fallliste)
 
         return listOf(
-            OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen),
-            OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage),
             OverviewEntry(
                 "Anzahl der Nasenabstriche bzw. kombinierte Nasen/Rachenabstiche pro Erfassungszeitraum",
                 BaseXQueries.getNasenRachenAbstriche(),
@@ -108,28 +114,22 @@ object WebappComponents {
             ),
             OverviewEntry("Anzahl der importierten MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaImported"),
             OverviewEntry("Anzahl nosokomialer MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaNosokomial"),
-            OverviewEntry("stationäre Falltage von MRSA-Fällen", BaseXQueries.getFallzahlen(), fallzahlen)
+            OverviewEntry("stationäre Falltage von MRSA-Fällen", BaseXQueries.getFallzahlen(), "TODO") //TODO
         )
     }
 
     suspend fun getMRGNOverview(baseXClient: IBaseXClient): List<OverviewEntry> {
-        val fallzahlen = baseXClient.executeXQuery(BaseXQueries.getFallzahlen())
-        val falltage = baseXClient.executeXQuery(BaseXQueries.getFalltage())
         val fallliste = baseXClient.executeXQuery(BaseXQueries.getMRGN())
         val mrgn3Cases = DataProcessor.countMRGN3Cases(fallliste)
         val mrgn4Cases = DataProcessor.countMRGN4Cases(fallliste)
 
         return listOf(
-            OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen),
-            OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage),
             OverviewEntry("Anzahl der 3MRGN Fälle", BaseXQueries.getMRGN(), "$mrgn3Cases"),
             OverviewEntry("Anzahl der 4MRGN Fälle", BaseXQueries.getMRGN(), "$mrgn4Cases"),
         )
     }
 
     suspend fun getVREOverview(baseXClient: IBaseXClient): List<OverviewEntry> {
-        val fallzahlen = baseXClient.executeXQuery(BaseXQueries.getFallzahlen())
-        val falltage = baseXClient.executeXQuery(BaseXQueries.getFalltage())
         val numEfaecalis = baseXClient.executeXQuery(BaseXQueries.getAnzahlEFaecalis())
         val caseList = baseXClient.executeXQuery(BaseXQueries.getVRE())
         val numEfaecalisResistant = DataProcessor.countVREEfaecalisResistant(caseList)
@@ -140,8 +140,6 @@ object WebappComponents {
         val numVREEfaecium = baseXClient.executeXQuery(BaseXQueries.getVREBK())
 
         return listOf(
-            OverviewEntry("stationäre Fälle gesamt pro Erfassungszeitraum", BaseXQueries.getFallzahlen(), fallzahlen),
-            OverviewEntry("stationäre Falltage gesamt pro Erfassungszeitraum", BaseXQueries.getFalltage(), falltage),
             OverviewEntry(
                 "Anzahl der gesamten E.faecalis Fälle (resistente und sensible)",
                 BaseXQueries.getAnzahlEFaecalis(),

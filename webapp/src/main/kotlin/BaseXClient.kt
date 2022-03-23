@@ -13,6 +13,10 @@ import io.ktor.client.request.*
  */
 interface IBaseXClient : AutoCloseable {
     suspend fun executeXQuery(xquery: String): String
+
+    /**
+     * Info for serialization
+     */
     fun getInfo(): BasexInfo
 }
 

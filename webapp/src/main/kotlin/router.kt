@@ -63,13 +63,20 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("/") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
                     header { +"Willkommen" }
-                    content {drawIndex()}
+                    content {
+                        drawIndex()
+                    }
                 }
             }
             post("{germ}/overview/invalidate-cache") {
-                val germ = GermType.valueOf(call.parameters["germ"]!!)
-                cachingUtility.clearOverviewCache(germ)
-                call.respondRedirect("/$germ/overview")
+                val value = call.parameters["germ"]!!
+                if (value == "global") {
+                    cachingUtility.clearGlobalInfoCache()
+                } else {
+                    val germ = GermType.valueOf(value)
+                    cachingUtility.clearOverviewCache(germ)
+                }
+                call.respondRedirect("/$value/overview")
             }
             post("{germ}/list/invalidate-cache") {
                 val germ = GermType.valueOf(call.parameters["germ"]!!)
@@ -98,6 +105,13 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     Json.encodeToString(cachingUtility.getCache()),
                     contentType = ContentType.Application.Json
                 ) //TODO: Works in browser, does not work in JavaFX app
+            }
+            get("global/overview") {
+                val (overviewContent, lastUpdate) = cachingUtility.getGlobalInfo(baseXClient)
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                    header { +"Globale Statistiken" }
+                    content { drawOverviewTable(overviewContent, lastUpdate) }
+                }
             }
             get("MRSA/overview") {
                 val (overviewContent, lastUpdate) = cachingUtility.getOverviewEntries(GermType.MRSA, baseXClient)
@@ -191,6 +205,18 @@ private suspend fun CachingUtility.getOverviewEntries(
     return overviewEntries!! to lastUpdate!!
 }
 
+private suspend fun CachingUtility.getGlobalInfo(
+    baseXClient: IBaseXClient
+): Pair<List<OverviewEntry>, String> {
+    if (this.getGlobalInfo()?.overviewTimeCreated == null) {
+        val overviewContent = WebappComponents.getGlobalStatistics(baseXClient)
+        this.cache(overviewContent)
+    }
+    val (overviewEntries, lastUpdate) = this.getGlobalInfo()!!
+
+    return overviewEntries!! to lastUpdate!!
+}
+
 private fun updateGlobalData(parameters: Parameters) {
     GlobalData.year = parameters["year"].toString()
     log.info("User updated settings. New parameters: database - ${GlobalData.database} | year - ${GlobalData.year}")
@@ -199,7 +225,7 @@ private fun updateGlobalData(parameters: Parameters) {
 private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: CachingUtility) {
     var fileBytes: ByteArray? = null
     multipartdata.forEachPart { part ->
-        if(part is PartData.FileItem) {
+        if (part is PartData.FileItem) {
             fileBytes = part.streamProvider().readBytes()
         }
     }

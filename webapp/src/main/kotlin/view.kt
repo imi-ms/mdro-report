@@ -1,7 +1,7 @@
 package de.uni_muenster.imi.oegd.webapp
 
+import de.uni_muenster.imi.oegd.common.GermType
 import de.uni_muenster.imi.oegd.common.GlobalData
-import io.ktor.client.request.forms.*
 import io.ktor.html.*
 import kotlinx.html.*
 
@@ -39,7 +39,8 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
                     div(classes = "collapse navbar-collapse") {
                         id = "navbarNav"
                         ul(classes = "navbar-nav") {
-                            for (germ in sequenceOf("MRSA", "MRGN", "VRE")) {
+                            navItem("global/overview", "Globale Statistiken")
+                            for (germ in GermType.values().map { it.germtype }) {
                                 li(classes = "nav-item dropdown") {
                                     if (url.startsWith(germ)) {
                                         classes += "active"
@@ -97,7 +98,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
 
     private fun UL.navItem(href: String, label: String) {
         li(classes = "nav-item") {
-            if (url.startsWith("$href")) {
+            if (url.startsWith(href)) {
                 classes += "active"
             }
             a(classes = "nav-link", href = "/$href") {
