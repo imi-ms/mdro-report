@@ -12,7 +12,10 @@ import io.ktor.http.content.*
 import io.ktor.request.*
 import io.ktor.response.*
 import io.ktor.routing.*
+import io.ktor.util.*
 import io.ktor.webjars.*
+import kotlinx.html.script
+import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
@@ -21,15 +24,16 @@ import java.nio.charset.StandardCharsets
 
 private val log = KotlinLogging.logger {  }
 
-fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit =
-    {
+fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit {
+    val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
+    return {
         val cachingUtility = CachingUtility(baseXClient.getInfo())
         install(Webjars)
         install(StatusPages) {
             status(HttpStatusCode.NotFound) {
                 call.respondHtmlTemplate(
                     status = HttpStatusCode.NotFound,
-                    template = LayoutTemplate(call.request.uri.removePrefix("/"))
+                    template = LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])
                 ) {
                     header { +"404 Not Found" }
                     content { +"No route defined for URL: ${call.request.uri}" }
@@ -39,7 +43,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 cause.printStackTrace()
                 call.respondHtmlTemplate(
                     status = HttpStatusCode.InternalServerError,
-                    template = LayoutTemplate(call.request.uri.removePrefix("/"))
+                    template = LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])
                 ) {
                     header { +"500 Internal Server Error" }
                     content { +"${cause.message}" }
@@ -60,8 +64,40 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     }
                 }
             }
+            intercept(ApplicationCallPipeline.Features) {
+                if (call.request.uri.contains("settings/save")) return@intercept
+                val params: XQueryParams? = call.parameters["q"]?.let { Json.decodeFromString(it) }
+                if (params != null) {
+                    call.attributes.put(xqueryparams, params)
+                }
+            }
+            post("/settings/save") {
+//                updateGlobalData(call.receiveParameters())
+                val parameters = call.receiveParameters()
+                val x = XQueryParams(parameters["year"]?.toInt())
+                val q = Json.encodeToString(x)
+                val referer = call.request.headers["Referer"]?.substringBefore("?")
+                call.respondRedirect("$referer?q=$q")
+            }
+            intercept(ApplicationCallPipeline.Call) {
+                if (call.request.httpMethod != HttpMethod.Get) return@intercept
+                val s = call.parameters["q"]
+                if (s.isNullOrBlank() || s == "null") {
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                        header { +"Willkommen" }
+                        content {
+                            drawIndex()
+                            script(type = "application/javascript") {
+                                +"$(function() { $('#settings-modal').modal({focus:true}) });"
+                            }
+                        }
+                    }
+                    this.finish()
+                }
+            }
+
             get("/") {
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
                     header { +"Willkommen" }
                     content {
                         drawIndex()
@@ -83,10 +119,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 cachingUtility.clearCaseListCache(germ)
                 call.respondRedirect("/$germ/list")
             }
-            post("/settings/save") {
-                updateGlobalData(call.receiveParameters())
-                call.respondRedirect("/")
-            }
+
             post("/settings/uploadCache") {
                 uploadCache(call.receiveMultipart(), cachingUtility)
                 call.respondRedirect("/")
@@ -108,61 +141,36 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             get("global/overview") {
                 val (overviewContent, lastUpdate) = cachingUtility.getGlobalInfo(baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
                     header { +"Globale Statistiken" }
                     content { drawOverviewTable(overviewContent, lastUpdate) }
                 }
             }
-            get("MRSA/overview") {
-                val (overviewContent, lastUpdate) = cachingUtility.getOverviewEntries(GermType.MRSA, baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRSA: Übersicht" }
-                    content { drawOverviewTable(overviewContent, lastUpdate) }
+            for (germ in GermType.values()) {
+                get("$germ/overview") {
+                    val (overviewContent, lastUpdate) = cachingUtility.getOverviewEntries(germ, baseXClient)
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                        header { +"MRSA: Übersicht" }
+                        content { drawOverviewTable(overviewContent, lastUpdate) }
+                    }
+                }
+                get("$germ/list") {
+                    val (tableData, lastUpdate) = cachingUtility.getCaseList(germ, baseXClient)
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                        header { +"MRSA: Fallliste" }
+                        content { drawCaseList(tableData, lastUpdate) }
+                    }
                 }
             }
-            get("MRSA/list") {
-                val (tableData, lastUpdate) = cachingUtility.getCaseList(GermType.MRSA, baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRSA: Fallliste" }
-                    content { drawCaseList(tableData, lastUpdate) }
-                }
-            }
-            get("MRGN/overview") {
-                val (overviewEntries, lastUpdate) = cachingUtility.getOverviewEntries(GermType.MRGN, baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRGN: Übersicht" }
-                    content { drawOverviewTable(overviewEntries, lastUpdate) }
-                }
-            }
-            get("MRGN/list") {
-                val (caseList, lastUpdate) = cachingUtility.getCaseList(GermType.MRGN, baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"MRGN: Fallliste" }
-                    content { drawCaseList(caseList, lastUpdate) }
-                }
-            }
-            get("VRE/overview") {
-                val (overviewContent, lastUpdate) = cachingUtility.getOverviewEntries(GermType.VRE, baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"VRE: Übersicht" }
-                    content { drawOverviewTable(overviewContent, lastUpdate) }
-                }
-            }
-            get("VRE/list") {
-                val (tableData, lastUpdate) = cachingUtility.getCaseList(GermType.VRE, baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
-                    header { +"VRE: Fallliste" }
-                    content { drawCaseList(tableData, lastUpdate) }
-                }
-            }
+
             get("/statistic") {
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
                     header { +"Statistik" }
                     content { +"Upload files or select stored cache files:" }
                 }
             }
             get("/about") {
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"))) {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
                     header { +"Über" }
                     content {
                         +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports anhand der Integration von ORBIS, OPUS-L und SeqSphere in der internen BaseX-Zwischenschicht des Medics."
@@ -178,6 +186,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             baseXClient.close()
         }
     }
+}
 
 private suspend fun CachingUtility.getCaseList(
     germ: GermType,

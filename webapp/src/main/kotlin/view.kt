@@ -6,7 +6,7 @@ import io.ktor.html.*
 import kotlinx.html.*
 
 
-class LayoutTemplate(private val url: String) : Template<HTML> {
+class LayoutTemplate(private val url: String, val q: String? = null) : Template<HTML> {
     val header = Placeholder<FlowContent>()
     val content = Placeholder<FlowContent>()
     override fun HTML.apply() {
@@ -25,7 +25,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
         body {
             div(classes = "wrapper") {
                 nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
-                    a(classes = "navbar-brand", href = "/") {
+                    a(classes = "navbar-brand", href = "/?q=$q") {
                         +"MDReport"
                     }
                     button(classes = "navbar-toggler") {
@@ -39,7 +39,7 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
                     div(classes = "collapse navbar-collapse") {
                         id = "navbarNav"
                         ul(classes = "navbar-nav") {
-                            navItem("global/overview", "Globale Statistiken")
+                            navItem("global/overview?q=$q", "Globale Statistiken")
                             for (germ in GermType.values().map { it.germtype }) {
                                 li(classes = "nav-item dropdown") {
                                     if (url.startsWith(germ)) {
@@ -55,13 +55,16 @@ class LayoutTemplate(private val url: String) : Template<HTML> {
                                     }
                                     div(classes = "dropdown-menu") {
                                         attributes["aria-labelledby"] = "navbar$germ"
-                                        a(classes = "dropdown-item", href = "/$germ/overview") { +"Übersicht $germ" }
-                                        a(classes = "dropdown-item", href = "/$germ/list") { +"Fallliste" }
+                                        a(
+                                            classes = "dropdown-item",
+                                            href = "/$germ/overview?q=$q"
+                                        ) { +"Übersicht $germ" }
+                                        a(classes = "dropdown-item", href = "/$germ/list?q=$q") { +"Fallliste" }
                                     }
                                 }
                             }
-                            navItem("statistic", "Statistik")
-                            navItem("about", "Über")
+                            navItem("statistic?q=$q", "Statistik")
+                            navItem("about?q=$q", "Über")
                         }
                     }
                     div(classes = "navbar float-left"){

@@ -4,6 +4,11 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
+data class XQueryParams(
+    val year: Int? = null,
+)
+
+@Serializable
 data class CacheData(
     @SerialName("meta") val metadata: CacheMetadata,
     @SerialName("germdata") val germCache: MutableList<GermInfo>,

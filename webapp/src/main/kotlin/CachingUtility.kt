@@ -47,6 +47,17 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         writeCache(cache)
     }
 
+    fun cache(data: List<OverviewEntry>) {
+        val cache = if (cacheExists()) getCache() else createCache()
+
+        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache.globalCache.apply {
+            overviewEntries = data
+            overviewTimeCreated = LocalDateTime.now().toString()
+        }
+        writeCache(cache)
+    }
+
     fun clearCaseListCache(germ: GermType) {
         val cache = if (cacheExists()) getCache() else createCache()
 
@@ -80,16 +91,7 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         writeCache(cache)
     }
 
-    fun cache(data: List<OverviewEntry>) {
-        val cache = if (cacheExists()) getCache() else createCache()
 
-        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
-        cache.globalCache.apply {
-            overviewEntries = data
-            overviewTimeCreated = LocalDateTime.now().toString()
-        }
-        writeCache(cache)
-    }
 
     fun uploadExistingCache(cache: String) {
         File(cacheDirectory).mkdirs()
