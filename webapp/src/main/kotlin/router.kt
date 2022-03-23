@@ -33,7 +33,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             status(HttpStatusCode.NotFound) {
                 call.respondHtmlTemplate(
                     status = HttpStatusCode.NotFound,
-                    template = LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])
+                    template = LayoutTemplate(call.request.uri, call.parameters["q"])
                 ) {
                     header { +"404 Not Found" }
                     content { +"No route defined for URL: ${call.request.uri}" }
@@ -43,7 +43,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 cause.printStackTrace()
                 call.respondHtmlTemplate(
                     status = HttpStatusCode.InternalServerError,
-                    template = LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])
+                    template = LayoutTemplate(call.request.uri, call.parameters["q"])
                 ) {
                     header { +"500 Internal Server Error" }
                     content { +"${cause.message}" }
@@ -65,14 +65,12 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             intercept(ApplicationCallPipeline.Features) {
-                if (call.request.uri.contains("settings/save")) return@intercept
                 val params: XQueryParams? = call.parameters["q"]?.let { Json.decodeFromString(it) }
                 if (params != null) {
                     call.attributes.put(xqueryparams, params)
                 }
             }
             post("/settings/save") {
-//                updateGlobalData(call.receiveParameters())
                 val parameters = call.receiveParameters()
                 val x = XQueryParams(parameters["year"]?.toInt())
                 val q = Json.encodeToString(x)
@@ -80,10 +78,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondRedirect("$referer?q=$q")
             }
             intercept(ApplicationCallPipeline.Call) {
-                if (call.request.httpMethod != HttpMethod.Get) return@intercept
+                if (call.request.uri.contains("settings/save")) return@intercept
                 val s = call.parameters["q"]
                 if (s.isNullOrBlank() || s == "null") {
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, s)) {
                         header { +"Willkommen" }
                         content {
                             drawIndex()
@@ -97,7 +95,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
 
             get("/") {
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Willkommen" }
                     content {
                         drawIndex()
@@ -106,18 +104,20 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             post("{germ}/overview/invalidate-cache") {
                 val value = call.parameters["germ"]!!
+                val xQueryParams = call.attributes[xqueryparams]
                 if (value == "global") {
-                    cachingUtility.clearGlobalInfoCache()
+                    cachingUtility.clearGlobalInfoCache(xQueryParams)
                 } else {
                     val germ = GermType.valueOf(value)
-                    cachingUtility.clearOverviewCache(germ)
+                    cachingUtility.clearOverviewCache(xQueryParams, germ)
                 }
-                call.respondRedirect("/$value/overview")
+                call.respondRedirect(call.request.headers["Referer"] ?: ("/$value/overview?q=" + call.parameters["q"]))
             }
             post("{germ}/list/invalidate-cache") {
                 val germ = GermType.valueOf(call.parameters["germ"]!!)
-                cachingUtility.clearCaseListCache(germ)
-                call.respondRedirect("/$germ/list")
+                val xQueryParams = call.attributes[xqueryparams]
+                cachingUtility.clearCaseListCache(xQueryParams, germ)
+                call.respondRedirect(call.request.headers["Referer"] ?: ("/$germ/overview?q=" + call.parameters["q"]))
             }
 
             post("/settings/uploadCache") {
@@ -125,38 +125,48 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondRedirect("/")
             }
             get("/settings/downloadCache") {
+                val xQueryParams = call.attributes[xqueryparams]
+
+                cachingUtility.getGlobalInfo(xQueryParams)
                 for (germType in GermType.values()) {
-                    cachingUtility.getCaseList(germType, baseXClient)
-                    cachingUtility.getOverviewEntries(germType, baseXClient)
+                    cachingUtility.getCaseList(xQueryParams, germType, baseXClient)
+                    cachingUtility.getOverviewEntries(xQueryParams, germType, baseXClient)
                 }
                 call.response.header(
                     HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
-                        ContentDisposition.Parameters.FileName, cachingUtility.cacheFilename
+                        ContentDisposition.Parameters.FileName, cachingUtility.getCacheFileName(xQueryParams)
                     ).toString()
                 )
                 call.respondText(
-                    Json.encodeToString(cachingUtility.getCache()),
+                    Json.encodeToString(cachingUtility.getCache(xQueryParams)),
                     contentType = ContentType.Application.Json
-                ) //TODO: Works in browser, does not work in JavaFX app
+                )
             }
             get("global/overview") {
-                val (overviewContent, lastUpdate) = cachingUtility.getGlobalInfo(baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                val xQueryParams = call.attributes[xqueryparams]
+                val (overviewContent, lastUpdate) = cachingUtility.getGlobalInfo(xQueryParams, baseXClient)
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Globale Statistiken" }
                     content { drawOverviewTable(overviewContent, lastUpdate) }
                 }
             }
             for (germ in GermType.values()) {
                 get("$germ/overview") {
-                    val (overviewContent, lastUpdate) = cachingUtility.getOverviewEntries(germ, baseXClient)
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                    val xQueryParams = call.attributes[xqueryparams]
+                    val (overviewContent, lastUpdate) = cachingUtility.getOverviewEntries(
+                        xQueryParams,
+                        germ,
+                        baseXClient
+                    )
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                         header { +"MRSA: Übersicht" }
                         content { drawOverviewTable(overviewContent, lastUpdate) }
                     }
                 }
                 get("$germ/list") {
-                    val (tableData, lastUpdate) = cachingUtility.getCaseList(germ, baseXClient)
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                    val xQueryParams = call.attributes[xqueryparams]
+                    val (tableData, lastUpdate) = cachingUtility.getCaseList(xQueryParams, germ, baseXClient)
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                         header { +"MRSA: Fallliste" }
                         content { drawCaseList(tableData, lastUpdate) }
                     }
@@ -164,13 +174,13 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
 
             get("/statistic") {
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Statistik" }
                     content { +"Upload files or select stored cache files:" }
                 }
             }
             get("/about") {
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri.removePrefix("/"), call.parameters["q"])) {
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Über" }
                     content {
                         +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports anhand der Integration von ORBIS, OPUS-L und SeqSphere in der internen BaseX-Zwischenschicht des Medics."
@@ -189,39 +199,42 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
 }
 
 private suspend fun CachingUtility.getCaseList(
+    xQueryParams: XQueryParams,
     germ: GermType,
     baseXClient: IBaseXClient
 ): Pair<List<Map<String, String>>, String> {
-    if (this.getGermForGermtype(germ)?.caseListTimeCreated == null) {
+    if (this.getGermForGermtype(xQueryParams, germ)?.caseListTimeCreated == null) {
         val tableData = WebappComponents.getCaseList(baseXClient, germ)
-        this.cache(germ, tableData)
+        this.cache(xQueryParams, germ, tableData)
     }
-    val (_, _, _, caseList, lastUpdate) = this.getGermForGermtype(germ)!!
+    val (_, _, _, caseList, lastUpdate) = this.getGermForGermtype(xQueryParams, germ)!!
 
     return caseList!! to lastUpdate!!
 }
 
 private suspend fun CachingUtility.getOverviewEntries(
+    xQueryParams: XQueryParams,
     germ: GermType,
     baseXClient: IBaseXClient
 ): Pair<List<OverviewEntry>, String> {
-    if (this.getGermForGermtype(germ)?.overviewTimeCreated == null) {
+    if (this.getGermForGermtype(xQueryParams, germ)?.overviewTimeCreated == null) {
         val overviewContent = WebappComponents.getOverview(baseXClient, germ)
-        this.cache(germ, overviewContent)
+        this.cache(xQueryParams, germ, overviewContent)
     }
-    val (_, overviewEntries, lastUpdate, _, _) = this.getGermForGermtype(germ)!!
+    val (_, overviewEntries, lastUpdate, _, _) = this.getGermForGermtype(xQueryParams, germ)!!
 
     return overviewEntries!! to lastUpdate!!
 }
 
 private suspend fun CachingUtility.getGlobalInfo(
-    baseXClient: IBaseXClient
+    xQueryParams: XQueryParams,
+    baseXClient: IBaseXClient,
 ): Pair<List<OverviewEntry>, String> {
-    if (this.getGlobalInfo()?.overviewTimeCreated == null) {
+    if (this.getGlobalInfo(xQueryParams)?.overviewTimeCreated == null) {
         val overviewContent = WebappComponents.getGlobalStatistics(baseXClient)
-        this.cache(overviewContent)
+        this.cache(xQueryParams, overviewContent)
     }
-    val (overviewEntries, lastUpdate) = this.getGlobalInfo()!!
+    val (overviewEntries, lastUpdate) = this.getGlobalInfo(xQueryParams)!!
 
     return overviewEntries!! to lastUpdate!!
 }
@@ -243,3 +256,4 @@ private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: Ca
         cachingUtility.uploadExistingCache(newCache)
     }
 }
+

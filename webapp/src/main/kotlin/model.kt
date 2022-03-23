@@ -20,6 +20,7 @@ data class CacheMetadata(
     @SerialName("time_created") val timeCreated: String,
     @SerialName("time_updated") var timeUpdated: String,
     @SerialName("basex") val basex: BasexInfo,
+    @SerialName("xquery_params") val xQueryParams: XQueryParams,
 )
 
 @Serializable

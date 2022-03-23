@@ -6,14 +6,15 @@ import io.ktor.html.*
 import kotlinx.html.*
 
 
-class LayoutTemplate(private val url: String, val q: String? = null) : Template<HTML> {
+class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
     val header = Placeholder<FlowContent>()
     val content = Placeholder<FlowContent>()
+    val url = url2.removePrefix("/")
     override fun HTML.apply() {
         head {
             meta(charset = "UTF-8")
             meta(name = "viewport", content = "width=device-width, initial-scale=1, shrink-to-fit=no")
-            title { url }
+            title { +url }
             link(rel = "stylesheet", href = "/webjars/bootstrap/dist/css/bootstrap.min.css")
             link(rel = "stylesheet", href = "/webjars/bootstrap-icons/font/bootstrap-icons.css")
             link(rel = "stylesheet", href = "/static/custom-styles.css")
@@ -69,7 +70,7 @@ class LayoutTemplate(private val url: String, val q: String? = null) : Template<
                     }
                     div(classes = "navbar float-left"){
                         ul(classes = "navbar-nav"){
-                            drawSettingsModal()
+                            drawSettingsModal(q)
                         }
                     }
                 }
@@ -252,11 +253,11 @@ private fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
     }
 }
 
-private fun FlowContent.drawSettingsModal() {
-    button(classes="btn") {
+private fun FlowContent.drawSettingsModal(q: String?) {
+    button(classes = "btn") {
         attributes["data-toggle"] = "modal"
         attributes["data-target"] = "#settings-modal"
-        i(classes="bi bi-gear-fill") {  }
+        i(classes = "bi bi-gear-fill") { }
     }
 
     div(classes = "modal fade") {
@@ -293,7 +294,7 @@ private fun FlowContent.drawSettingsModal() {
                                 id = "inputYear"
                                 classes = setOf("form-control")
                                 name = "year"
-                                value = GlobalData.year
+//                                value = GlobalData.year
                             }
                         }
                         div(classes = "form-group") {
@@ -323,7 +324,7 @@ private fun FlowContent.drawSettingsModal() {
                             button(type = ButtonType.submit, classes = "btn btn-secondary mt-2") {
                                 +"Cache hochladen"
                             }
-                            a(href = "/settings/downloadCache", classes = "btn btn-secondary mt-2 ml-2") {
+                            a(href = "/settings/downloadCache?q=$q", classes = "btn btn-secondary mt-2 ml-2") {
                                 +"Aktuellen Cache herunterladen"
                             }
                         }

@@ -1,7 +1,6 @@
 package de.uni_muenster.imi.oegd.webapp
 
 import de.uni_muenster.imi.oegd.common.GermType
-import de.uni_muenster.imi.oegd.common.GlobalData
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -24,8 +23,8 @@ class CachingUtility(private val basexInfo: BasexInfo) {
 
 
     @JvmName("cacheOverview")
-    fun cache(germ: GermType, data: List<OverviewEntry>) {
-        val cache = if (cacheExists()) getCache() else createCache()
+    fun cache(xQueryParams: XQueryParams, germ: GermType, data: List<OverviewEntry>) {
+        val cache = getOrCreateCache(xQueryParams)
         cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.findOrCreateByType(germ).apply {
             overviewEntries = data
@@ -35,8 +34,8 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     }
 
     @JvmName("cacheCaseList")
-    fun cache(germ: GermType, data: List<Map<String, String>>) {
-        val cache = if (cacheExists()) getCache() else createCache()
+    fun cache(xQueryParams: XQueryParams, germ: GermType, data: List<Map<String, String>>) {
+        val cache = getOrCreateCache(xQueryParams)
 
         cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.findOrCreateByType(germ).apply {
@@ -47,8 +46,11 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         writeCache(cache)
     }
 
-    fun cache(data: List<OverviewEntry>) {
-        val cache = if (cacheExists()) getCache() else createCache()
+    private fun getOrCreateCache(xQueryParams: XQueryParams) =
+        if (!cacheExists(xQueryParams)) createCache(xQueryParams) else getCache(xQueryParams)
+
+    fun cache(xQueryParams: XQueryParams, data: List<OverviewEntry>) {
+        val cache = getOrCreateCache(xQueryParams)
 
         cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.globalCache.apply {
@@ -58,8 +60,8 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         writeCache(cache)
     }
 
-    fun clearCaseListCache(germ: GermType) {
-        val cache = if (cacheExists()) getCache() else createCache()
+    fun clearCaseListCache(xQueryParams: XQueryParams, germ: GermType) {
+        val cache = getOrCreateCache(xQueryParams)
 
         cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.findOrCreateByType(germ).apply {
@@ -70,8 +72,8 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         writeCache(cache)
     }
 
-    fun clearOverviewCache(germ: GermType) {
-        val cache = if (cacheExists()) getCache() else createCache()
+    fun clearOverviewCache(xQueryParams: XQueryParams, germ: GermType) {
+        val cache = getOrCreateCache(xQueryParams)
 
         cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.findOrCreateByType(germ).apply {
@@ -82,8 +84,8 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         writeCache(cache)
     }
 
-    fun clearGlobalInfoCache() {
-        val cache = if (cacheExists()) getCache() else createCache()
+    fun clearGlobalInfoCache(xQueryParams: XQueryParams) {
+        val cache = getOrCreateCache(xQueryParams)
 
         cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.globalCache.clear()
@@ -92,40 +94,45 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     }
 
 
-
     fun uploadExistingCache(cache: String) {
         File(cacheDirectory).mkdirs()
-        File(cacheDirectory, cacheFilename).writeText(cache)
+        val xQueryParams = Json.decodeFromString<CacheData>(cache).metadata.xQueryParams
+        File(cacheDirectory, getCacheFileName(xQueryParams)).writeText(cache)
     }
 
 
-    private fun createCache(): CacheData {
+    private fun createCache(xQueryParams: XQueryParams): CacheData {
         return CacheData(
             metadata = CacheMetadata(
                 timeCreated = LocalDateTime.now().toString(),
                 timeUpdated = LocalDateTime.now().toString(),
-                basex = basexInfo
+                basex = basexInfo,
+                xQueryParams = xQueryParams,
             ),
             germCache = mutableListOf(),
-            globalCache = GlobalInfo()
+            globalCache = GlobalInfo(),
         )
     }
 
 
-    private fun cacheExists(): Boolean {
-        return File(cacheDirectory, cacheFilename).exists()
+    private fun cacheExists(xQueryParams: XQueryParams): Boolean {
+        return File(cacheDirectory, getCacheFileName(xQueryParams)).exists()
     }
 
     private fun writeCache(cache: CacheData) {
         val json = Json.encodeToString(cache)
         File(cacheDirectory).mkdirs()
-        File(cacheDirectory, cacheFilename).writeText(json) //TODO: Add caching path as property
+        File(
+            cacheDirectory,
+            getCacheFileName(cache.metadata.xQueryParams)
+        ).writeText(json) //TODO: Add caching path as property
     }
 
-    fun getCache(): CacheData? {
-        if(cacheExists()) {
-            val json = File(cacheDirectory, cacheFilename).readText() //TODO: Add caching path as property
+    fun getCache(xQueryParams: XQueryParams): CacheData? {
+        if (cacheExists(xQueryParams)) {
             return try {
+                val json =
+                    File(cacheDirectory, getCacheFileName(xQueryParams)).readText() //TODO: Add caching path as property
                 Json.decodeFromString(json)
             } catch (e: Exception) {
                 null
@@ -134,12 +141,12 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         return null
     }
 
-    fun getGermForGermtype(germ: GermType): GermInfo? {
-        return getCache()?.germCache?.find { it.type == germ.germtype }
+    fun getGermForGermtype(xQueryParams: XQueryParams, germ: GermType): GermInfo? {
+        return getCache(xQueryParams)?.germCache?.find { it.type == germ.germtype }
     }
 
-    fun getGlobalInfo(): GlobalInfo? {
-        return getCache()?.globalCache
+    fun getGlobalInfo(xQueryParams: XQueryParams): GlobalInfo? {
+        return getCache(xQueryParams)?.globalCache
     }
 
     private val cacheDirectory: String by lazy {
@@ -148,9 +155,15 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         userCacheDir
     }
 
-    val cacheFilename: String by lazy {
+    fun getCacheFileName(xQueryParams: XQueryParams): String {
         fun sanitizeFilename(inputName: String) = inputName.replace(Regex("[^a-zA-Z0-9_]"), "_")
-        "${sanitizeFilename(GlobalData.url)}-${sanitizeFilename(GlobalData.database)}.mdreport"
+        val prefix = if (basexInfo is RestConnectionInfo) {
+            "${sanitizeFilename(basexInfo.serverUrl)}-${sanitizeFilename(basexInfo.databaseId)}"
+        } else {
+            basexInfo as LocalBasexInfo
+            "local-${sanitizeFilename(basexInfo.directory)}"
+        }
+        return "$prefix--${xQueryParams.year}.mdreport"
     }
 
 }
