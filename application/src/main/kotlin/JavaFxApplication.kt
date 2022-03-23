@@ -154,14 +154,12 @@ class JavaFxApplication : Application() {
         webView.isContextMenuEnabled = false
         indicator.visibleProperty()
             .bind(webView.engine.loadWorker.stateProperty().isEqualTo(Worker.State.RUNNING))
-        webView.engine.locationProperty().addListener { _, _, newLocation ->
+        webView.engine.locationProperty().addListener { _, oldLocation, newLocation ->
             //TODO: Womöglich wird dadurch die Datei zweimal heruntergeladen - einmal durch den Browser und einmal unten durch den Code
             if (newLocation.contains("downloadCache")) {
                 val data = object : Task<String>() {
                     override fun call() = URL(newLocation).readText()
                 }
-                indicator2.visibleProperty().bind(data.runningProperty())
-                webView.disableProperty().bind(data.runningProperty())
                 data.setOnFailed {
                     Alert(Alert.AlertType.ERROR, "Cannot download report. Please check stacktrace!")
                 }
@@ -169,10 +167,16 @@ class JavaFxApplication : Application() {
                 val file = FileChooser().apply {
                     initialFileName = "report.mdreport"
                 }.showSaveDialog(primaryStage) ?: return@addListener
+                indicator2.visibleProperty().bind(data.runningProperty())
+                webView.disableProperty().bind(data.runningProperty())
                 data.setOnSucceeded {
                     file.writeText(data.get())
                 }
                 Thread(data).apply { isDaemon = true }.start()
+            }
+            if (newLocation.contains("imi.uni-muenster.de")) {
+                hostServices.showDocument(newLocation)
+                webView.engine.load(oldLocation)
             }
         }
         primaryStage.show()
