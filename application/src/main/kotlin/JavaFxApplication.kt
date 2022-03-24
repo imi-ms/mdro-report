@@ -1,7 +1,6 @@
 package de.uni_muenster.imi.oegd.application
 
 import de.uni_muenster.imi.oegd.baseX.LocalBaseXClient
-import de.uni_muenster.imi.oegd.common.GlobalData
 import de.uni_muenster.imi.oegd.common.IBaseXClient
 import de.uni_muenster.imi.oegd.common.RestClient
 import de.uni_muenster.imi.oegd.common.findOpenPortInRange
@@ -69,11 +68,6 @@ class JavaFxApplication : Application() {
         (page.lookup("#button_confirm") as Button).onAction = EventHandler<ActionEvent> {
             val basex: IBaseXClient
             if ((page.lookup("#radio_basex") as RadioButton).isSelected) {
-                GlobalData.database = (page.lookup("#database") as TextField).text
-                GlobalData.url = (page.lookup("#server") as TextField).text
-                GlobalData.user = (page.lookup("#username") as TextField).text
-                GlobalData.isLocal = false
-
                 basex = RestClient(
                     (page.lookup("#server") as TextField).text,
                     (page.lookup("#database") as TextField).text,
@@ -92,11 +86,6 @@ class JavaFxApplication : Application() {
                     return@EventHandler
                 }
             } else {
-                GlobalData.database="LOCAL"
-                GlobalData.url="LOCAL"
-                GlobalData.user="LOCAL"
-                GlobalData.isLocal = true
-
                 try {
                     basex = LocalBaseXClient(directory)
                 } catch (e: Exception) {

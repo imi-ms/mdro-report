@@ -86,7 +86,7 @@ public class HtmlContent2(
         try {
             content.bufferedWriter().use {
                 it.append("<!DOCTYPE html>\n")
-                it.appendHTML().urlRewrite { it.substringBefore("?") + "?q={\"q\":2021}" }.html(block = builder)
+                it.appendHTML().urlRewrite { it.substringBefore("?") + "?q={\"year\":2021}" }.html(block = builder)
             }
         } catch (cause: Throwable) {
             channel.close(cause)

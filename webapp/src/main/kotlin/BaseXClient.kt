@@ -24,8 +24,8 @@ interface IBaseXClient : AutoCloseable {
  * Make REST calls to an external BaseX server
  */
 class RestClient(
-    private val baseURL: String,
-    private val database: String,
+    val baseURL: String,
+    val database: String,
     private val username: String,
     private val password: String
 ) : IBaseXClient {

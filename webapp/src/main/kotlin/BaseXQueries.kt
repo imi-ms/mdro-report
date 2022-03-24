@@ -1,6 +1,6 @@
 package de.uni_muenster.imi.oegd.common
 
-import java.time.LocalDateTime
+import de.uni_muenster.imi.oegd.webapp.XQueryParams
 
 object BaseXQueries {
     fun getMRSA() = readFile("mrsa_excelv3.xq")
@@ -25,12 +25,16 @@ object BaseXQueries {
             .getResourceAsStream("queries/$filename")!!
             .readBytes()
             .toString(Charsets.UTF_8)
-        return applyYearFilter(query)
+        return query
     }
 
-    private fun applyYearFilter(query: String): String {
-        val startDate = "${GlobalData.year}-01-01T00:00:00"
-        val endDate = "${GlobalData.year}-12-31T23:59:59"
+    fun applyParams(query: String, xQueryParams: XQueryParams): String {
+        return applyYearFilter(query, xQueryParams)
+    }
+
+    fun applyYearFilter(query: String, xQueryParams: XQueryParams): String {
+        val startDate = "${xQueryParams.year}-01-01T00:00:00"
+        val endDate = "${xQueryParams.year}-12-31T23:59:59"
 
         return query
             .replace("#YEAR_START", startDate)

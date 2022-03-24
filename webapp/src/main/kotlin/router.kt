@@ -2,7 +2,6 @@ package de.uni_muenster.imi.oegd.webapp
 
 
 import de.uni_muenster.imi.oegd.common.GermType
-import de.uni_muenster.imi.oegd.common.GlobalData
 import de.uni_muenster.imi.oegd.common.IBaseXClient
 import io.ktor.application.*
 import io.ktor.features.*
@@ -84,7 +83,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, s)) {
                         header { +"Willkommen" }
                         content {
-                            drawIndex()
+                            drawIndex(baseXClient.getInfo())
                             script(type = "application/javascript") {
                                 +"$(function() { $('#settings-modal').modal({focus:true}) });"
                             }
@@ -98,7 +97,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Willkommen" }
                     content {
-                        drawIndex()
+                        drawIndex(baseXClient.getInfo())
                     }
                 }
             }
@@ -204,7 +203,7 @@ private suspend fun CachingUtility.getCaseList(
     baseXClient: IBaseXClient
 ): Pair<List<Map<String, String>>, String> {
     if (this.getGermForGermtype(xQueryParams, germ)?.caseListTimeCreated == null) {
-        val tableData = WebappComponents.getCaseList(baseXClient, germ)
+        val tableData = WebappComponents.getCaseList(baseXClient, germ, xQueryParams)
         this.cache(xQueryParams, germ, tableData)
     }
     val (_, _, _, caseList, lastUpdate) = this.getGermForGermtype(xQueryParams, germ)!!
@@ -218,7 +217,7 @@ private suspend fun CachingUtility.getOverviewEntries(
     baseXClient: IBaseXClient
 ): Pair<List<OverviewEntry>, String> {
     if (this.getGermForGermtype(xQueryParams, germ)?.overviewTimeCreated == null) {
-        val overviewContent = WebappComponents.getOverview(baseXClient, germ)
+        val overviewContent = WebappComponents.getOverview(baseXClient, germ, xQueryParams)
         this.cache(xQueryParams, germ, overviewContent)
     }
     val (_, overviewEntries, lastUpdate, _, _) = this.getGermForGermtype(xQueryParams, germ)!!
@@ -231,7 +230,7 @@ private suspend fun CachingUtility.getGlobalInfo(
     baseXClient: IBaseXClient,
 ): Pair<List<OverviewEntry>, String> {
     if (this.getGlobalInfo(xQueryParams)?.overviewTimeCreated == null) {
-        val overviewContent = WebappComponents.getGlobalStatistics(baseXClient)
+        val overviewContent = WebappComponents.getGlobalStatistics(baseXClient, xQueryParams)
         this.cache(xQueryParams, overviewContent)
     }
     val (overviewEntries, lastUpdate) = this.getGlobalInfo(xQueryParams)!!
@@ -239,10 +238,6 @@ private suspend fun CachingUtility.getGlobalInfo(
     return overviewEntries!! to lastUpdate!!
 }
 
-private fun updateGlobalData(parameters: Parameters) {
-    GlobalData.year = parameters["year"].toString()
-    log.info("User updated settings. New parameters: database - ${GlobalData.database} | year - ${GlobalData.year}")
-}
 
 private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: CachingUtility) {
     var fileBytes: ByteArray? = null

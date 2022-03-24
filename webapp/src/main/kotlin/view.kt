@@ -1,7 +1,6 @@
 package de.uni_muenster.imi.oegd.webapp
 
 import de.uni_muenster.imi.oegd.common.GermType
-import de.uni_muenster.imi.oegd.common.GlobalData
 import io.ktor.html.*
 import kotlinx.html.*
 
@@ -112,35 +111,35 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
     }
 }
 
-fun FlowContent.drawIndex() {
+fun FlowContent.drawIndex(basexInfo: BasexInfo) {
     div(classes = "mb-5") {
         +"Bitte nutzen Sie die Navigationsleiste oben, um zwischen den verschiedenen Funktionen zu navigieren!"
     }
 
     div {
         table(classes = "table") {
-            tr{
+            tr {
                 td {
                     attributes["colspan"] = "2"
                     +"Aktuelle Einstellungen"
                 }
             }
-            tr {
-                td { +"Nutzer: " }
-                td { +GlobalData.user }
+            if (basexInfo is RestConnectionInfo) {
+                tr {
+                    td { +"URL: " }
+                    td { +basexInfo.serverUrl }
+                }
+                tr {
+                    td { +"Datenbank: " }
+                    td { +basexInfo.databaseId }
+                }
+            } else if (basexInfo is LocalBasexInfo) {
+                tr {
+                    td { +"Verzeichnis: " }
+                    td { +basexInfo.directory }
+                }
             }
-            tr {
-                td { +"URL: " }
-                td { +GlobalData.url }
-            }
-            tr {
-                td { +"Datenbank: " }
-                td { +GlobalData.database }
-            }
-            tr {
-                td { +"Jahr: " }
-                td { +GlobalData.year }
-            }
+
         }
     }
 }
