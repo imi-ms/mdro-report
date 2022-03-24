@@ -3,6 +3,8 @@ package de.uni_muenster.imi.oegd.webapp
 import de.uni_muenster.imi.oegd.common.GermType
 import io.ktor.html.*
 import kotlinx.html.*
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 
 
 class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
@@ -68,8 +70,11 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
                             navItem("about?q=$q", "Über")
                         }
                     }
-                    div(classes = "navbar float-left"){
-                        ul(classes = "navbar-nav"){
+                    div(classes = "navbar float-left") {
+                        span(classes = "navbar-text") {
+                            q?.let { +("" + Json.decodeFromString<XQueryParams>(it).year) }
+                        }
+                        ul(classes = "navbar-nav") {
                             drawSettingsModal(q)
                         }
                     }
