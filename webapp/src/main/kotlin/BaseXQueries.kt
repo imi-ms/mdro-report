@@ -20,7 +20,6 @@ object BaseXQueries {
     fun getVREBK() = readFile("vre_bk.xq")
 
     private fun readFile(filename: String): String {
-
         val query = javaClass.classLoader
             .getResourceAsStream("queries/$filename")!!
             .readBytes()

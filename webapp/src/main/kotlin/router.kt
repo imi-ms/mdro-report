@@ -13,6 +13,8 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import io.ktor.webjars.*
+import kotlinx.html.canvas
+import kotlinx.html.id
 import kotlinx.html.script
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -64,7 +66,14 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             intercept(ApplicationCallPipeline.Features) {
-                val params: XQueryParams? = call.parameters["q"]?.let { Json.decodeFromString(it) }
+                val params: XQueryParams? = call.parameters["q"]?.let {
+                    Json.decodeFromString(
+                        it.replace(
+                            "%22",
+                            "\""
+                        )
+                    )
+                } //TODO: Remove replace function
                 if (params != null) {
                     call.attributes.put(xqueryparams, params)
                 }
@@ -78,6 +87,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             intercept(ApplicationCallPipeline.Call) {
                 if (call.request.uri.contains("settings/save")) return@intercept
+                if (call.request.uri.contains("static")) return@intercept
                 val s = call.parameters["q"]
                 if (s.isNullOrBlank() || s == "null") {
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, s)) {
@@ -152,7 +162,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 get("$germ/overview") {
                     val xQueryParams = call.attributes[xqueryparams]
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ, baseXClient)
-                    println(germInfo)
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                         header { +"$germ: Übersicht" }
                         content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!) }
@@ -161,7 +170,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 get("$germ/list") {
                     val xQueryParams = call.attributes[xqueryparams]
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ, baseXClient)
-                    println(germInfo)
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                         header { +"$germ: Fallliste" }
                         content { drawCaseList(germInfo.caseList!!, germInfo.created!!) }
@@ -172,7 +180,16 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("/statistic") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Statistik" }
-                    content { +"Upload files or select stored cache files:" }
+                    content {
+                        +"Upload files or select stored cache files:"
+                        canvas {
+                            id = "myChart"
+                            width = "100px"
+                            height = "100px"
+                        }
+                        script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        script("application/javascript", "/static/chart.js") {}
+                    }
                 }
             }
             get("/about") {
@@ -185,7 +202,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
 
             static("/static") {
-                resources()
+                resources("static")
             }
         }
         environment.monitor.subscribe(ApplicationStopping) {

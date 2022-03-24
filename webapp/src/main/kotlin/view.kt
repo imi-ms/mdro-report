@@ -159,7 +159,7 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
 
 
     if (data.isEmpty()) {
-        +"Falliste ist leer"
+        +"Fallliste ist leer"
         return
     }
 
