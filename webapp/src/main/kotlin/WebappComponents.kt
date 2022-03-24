@@ -182,8 +182,8 @@ object WebappComponents {
         baseXClient: IBaseXClient,
         xQueryParams: XQueryParams
     ): OverviewEntry {
-        val result = baseXClient.executeXQuery(query)
         val query2 = BaseXQueries.applyParams(query, xQueryParams)
+        val result = baseXClient.executeXQuery(query2)
         return OverviewEntry(name, query2, result)
     }
 }
