@@ -125,15 +125,23 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     }
 
     fun getCacheFileName(xQueryParams: XQueryParams): String {
-        fun sanitizeFilename(inputName: String) = inputName.replace(Regex("[^a-zA-Z0-9_]"), "_")
-        val prefix = if (basexInfo is RestConnectionInfo) {
-            "${sanitizeFilename(basexInfo.serverUrl)}-${sanitizeFilename(basexInfo.databaseId)}"
-        } else {
-            basexInfo as LocalBasexInfo
-            "local-${sanitizeFilename(basexInfo.directory)}"
-        }
-        return "$prefix--${xQueryParams.year}.mdreport"
+        return "${getBaseXPrefix()}--${xQueryParams.year}.mdreport"
     }
+
+    fun getCachedParameters(): List<XQueryParams> {
+        val cached = File(cacheDirectory).listFiles().map { it.name.substringAfter("--").removeSuffix(".mdreport") }
+        return cached.map { XQueryParams(it.toInt()) }
+    }
+
+
+    private fun getBaseXPrefix() = if (basexInfo is RestConnectionInfo) {
+        "${sanitizeFilename(basexInfo.serverUrl)}-${sanitizeFilename(basexInfo.databaseId)}"
+    } else {
+        basexInfo as LocalBasexInfo
+        "local-${sanitizeFilename(basexInfo.directory)}"
+    }
+
+    private fun sanitizeFilename(inputName: String) = inputName.replace(Regex("[^a-zA-Z0-9_]"), "_")
 
 }
 

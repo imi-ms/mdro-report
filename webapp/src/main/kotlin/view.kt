@@ -60,6 +60,7 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
                                             href = "/$germ/overview?q=$q"
                                         ) { +"Übersicht $germ" }
                                         a(classes = "dropdown-item", href = "/$germ/list?q=$q") { +"Fallliste" }
+                                        a(classes = "dropdown-item", href = "/$germ/statistic?q=$q") { +"Statistik" }
                                     }
                                 }
                             }
@@ -146,16 +147,7 @@ fun FlowContent.drawIndex(basexInfo: BasexInfo) {
 
 
 fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String) {
-    div(classes = "btn-toolbar") {
-        span {
-            +"Bericht erstellt: $lastUpdate"
-        }
-        form(action = "list/invalidate-cache", method = FormMethod.post) {
-            button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
-                +"Neu erstellen"
-            }
-        }
-    }
+    drawInvalidateButton(lastUpdate)
 
 
     if (data.isEmpty()) {
@@ -185,16 +177,22 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
     }
 }
 
-
-fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String = "foo") {
-    span {
-        +"Bericht erstellt: $lastUpdate"
-    }
-    form(action = "overview/invalidate-cache", method = FormMethod.post) {
-        button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
-            +"Neu erstellen"
+private fun FlowContent.drawInvalidateButton(lastUpdate: String) {
+    div(classes = "btn-toolbar") {
+        form(classes = "form-inline", action = "invalidate-cache", method = FormMethod.post) {
+            label {
+                +"Bericht erstellt: $lastUpdate"
+            }
+            button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
+                +"Neu erstellen"
+            }
         }
     }
+}
+
+
+fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String) {
+    drawInvalidateButton(lastUpdate)
 
     table(classes = "table") {
         for ((index, entry) in data.withIndex()) {

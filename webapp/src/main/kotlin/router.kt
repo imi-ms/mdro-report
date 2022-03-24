@@ -13,9 +13,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import io.ktor.webjars.*
-import kotlinx.html.canvas
-import kotlinx.html.id
-import kotlinx.html.script
+import kotlinx.html.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -88,6 +86,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             intercept(ApplicationCallPipeline.Call) {
                 if (call.request.uri.contains("settings/save")) return@intercept
                 if (call.request.uri.contains("static")) return@intercept
+                if (call.request.uri.contains("invalidate-cache")) return@intercept
                 val s = call.parameters["q"]
                 if (s.isNullOrBlank() || s == "null") {
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, s)) {
@@ -111,7 +110,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     }
                 }
             }
-            post("{germ}/overview/invalidate-cache") {
+            post("{germ}/invalidate-cache") {
                 val value = call.parameters["germ"]!!
                 val xQueryParams = call.attributes[xqueryparams]
                 if (value == "global") {
@@ -122,13 +121,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
                 call.respondRedirect(call.request.headers["Referer"] ?: ("/$value/overview?q=" + call.parameters["q"]))
             }
-            post("{germ}/list/invalidate-cache") {
-                val germ = GermType.valueOf(call.parameters["germ"]!!)
-                val xQueryParams = call.attributes[xqueryparams]
-                cachingUtility.clearGermInfo(xQueryParams, germ)
-                call.respondRedirect(call.request.headers["Referer"] ?: ("/$germ/overview?q=" + call.parameters["q"]))
-            }
-
             post("/settings/uploadCache") {
                 uploadCache(call.receiveMultipart(), cachingUtility)
                 call.respondRedirect("/")
@@ -181,7 +173,19 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Statistik" }
                     content {
-                        +"Upload files or select stored cache files:"
+                        for (year in cachingUtility.getCachedParameters()) {
+                            div(classes = "form-check form-check-inline") {
+                                checkBoxInput(classes = "form-check-input") {
+                                    id = "p${year.year}"
+                                    value = "${year.year}"
+                                }
+                                label(classes = "form-check-label") {
+                                    htmlFor = "p${year.year}"
+                                    +year.year.toString()
+                                }
+                            }
+
+                        }
                         canvas {
                             id = "myChart"
                             width = "100px"

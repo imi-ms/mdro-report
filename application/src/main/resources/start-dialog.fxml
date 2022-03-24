@@ -30,7 +30,7 @@
                 <Label text="Server-URL:" />
                 <TextField id="server" text="https://basex.ukmuenster.de/rest" GridPane.columnIndex="1" GridPane.vgrow="ALWAYS" />
                 <Label text="Nutzername:" GridPane.rowIndex="1" />
-                <TextField id="username" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <TextField id="username" text="oehm" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
                 <Label text="Passwort:" GridPane.rowIndex="2" />
                 <PasswordField id="password" GridPane.columnIndex="1" GridPane.rowIndex="2" />
                 <Label text="Datenbank:" GridPane.rowIndex="3" />
