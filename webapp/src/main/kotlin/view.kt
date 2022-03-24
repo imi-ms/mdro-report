@@ -287,8 +287,10 @@ private fun FlowContent.drawSettingsModal(q: String?) {
                                 attributes["for"] = "inputYear"
                                 +"Jahr"
                             }
-                            input(type = InputType.text) {
+                            input(type = InputType.number) {
                                 id = "inputYear"
+                                min = "2000"
+                                max = "3000"
                                 classes = setOf("form-control")
                                 name = "year"
 //                                value = GlobalData.year
