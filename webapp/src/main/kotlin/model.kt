@@ -12,7 +12,7 @@ data class XQueryParams(
 data class CacheData(
     @SerialName("meta") val metadata: CacheMetadata,
     @SerialName("germdata") val germCache: MutableList<GermInfo>,
-    @SerialName("globaldata") val globalCache: GlobalInfo,
+    @SerialName("globaldata") var globalCache: GlobalInfo,
 )
 
 @Serializable
@@ -45,19 +45,18 @@ data class LocalBasexInfo(
 data class GermInfo(
     @SerialName("type") val type: String,
     @SerialName("overview_entries") var overviewEntries: List<OverviewEntry>? = null,
-    @SerialName("overview_created") var overviewTimeCreated: String? = null, //null means overview data is not yet retrieved
     @SerialName("case_list") var caseList: List<Map<String, String>>? = null,
-    @SerialName("case_list_created") var caseListTimeCreated: String? = null //null means case list data is not yet retrieved
+    @SerialName("created") var created: String? = null //null means case list data is not yet retrieved
 )
 
 @Serializable
 data class GlobalInfo(
     @SerialName("overview_entries") var overviewEntries: List<OverviewEntry>? = null,
-    @SerialName("overview_created") var overviewTimeCreated: String? = null, //null means overview data is not yet retrieved
+    @SerialName("overview_created") var created: String? = null, //null means overview data is not yet retrieved
 ) {
     fun clear() {
         overviewEntries = null
-        overviewTimeCreated = null
+        created = null
     }
 }
 

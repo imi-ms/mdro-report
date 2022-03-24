@@ -108,14 +108,14 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     cachingUtility.clearGlobalInfoCache(xQueryParams)
                 } else {
                     val germ = GermType.valueOf(value)
-                    cachingUtility.clearOverviewCache(xQueryParams, germ)
+                    cachingUtility.clearGermInfo(xQueryParams, germ)
                 }
                 call.respondRedirect(call.request.headers["Referer"] ?: ("/$value/overview?q=" + call.parameters["q"]))
             }
             post("{germ}/list/invalidate-cache") {
                 val germ = GermType.valueOf(call.parameters["germ"]!!)
                 val xQueryParams = call.attributes[xqueryparams]
-                cachingUtility.clearCaseListCache(xQueryParams, germ)
+                cachingUtility.clearGermInfo(xQueryParams, germ)
                 call.respondRedirect(call.request.headers["Referer"] ?: ("/$germ/overview?q=" + call.parameters["q"]))
             }
 
@@ -128,8 +128,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
 
                 cachingUtility.getGlobalInfo(xQueryParams)
                 for (germType in GermType.values()) {
-                    cachingUtility.getCaseList(xQueryParams, germType, baseXClient)
-                    cachingUtility.getOverviewEntries(xQueryParams, germType, baseXClient)
+                    cachingUtility.getOrLoadGermInfo(xQueryParams, germType, baseXClient)
                 }
                 call.response.header(
                     HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
@@ -143,31 +142,29 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             get("global/overview") {
                 val xQueryParams = call.attributes[xqueryparams]
-                val (overviewContent, lastUpdate) = cachingUtility.getGlobalInfo(xQueryParams, baseXClient)
+                val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(xQueryParams, baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Globale Statistiken" }
-                    content { drawOverviewTable(overviewContent, lastUpdate) }
+                    content { drawOverviewTable(overviewContent!!, lastUpdate!!) }
                 }
             }
             for (germ in GermType.values()) {
                 get("$germ/overview") {
                     val xQueryParams = call.attributes[xqueryparams]
-                    val (overviewContent, lastUpdate) = cachingUtility.getOverviewEntries(
-                        xQueryParams,
-                        germ,
-                        baseXClient
-                    )
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ, baseXClient)
+                    println(germInfo)
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +"MRSA: Übersicht" }
-                        content { drawOverviewTable(overviewContent, lastUpdate) }
+                        header { +"$germ: Übersicht" }
+                        content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!) }
                     }
                 }
                 get("$germ/list") {
                     val xQueryParams = call.attributes[xqueryparams]
-                    val (tableData, lastUpdate) = cachingUtility.getCaseList(xQueryParams, germ, baseXClient)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ, baseXClient)
+                    println(germInfo)
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +"MRSA: Fallliste" }
-                        content { drawCaseList(tableData, lastUpdate) }
+                        header { +"$germ: Fallliste" }
+                        content { drawCaseList(germInfo.caseList!!, germInfo.created!!) }
                     }
                 }
             }
@@ -197,45 +194,31 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
     }
 }
 
-private suspend fun CachingUtility.getCaseList(
+private suspend fun CachingUtility.getOrLoadGermInfo(
     xQueryParams: XQueryParams,
     germ: GermType,
     baseXClient: IBaseXClient
-): Pair<List<Map<String, String>>, String> {
-    if (this.getGermForGermtype(xQueryParams, germ)?.caseListTimeCreated == null) {
-        val tableData = WebappComponents.getCaseList(baseXClient, germ, xQueryParams)
-        this.cache(xQueryParams, germ, tableData)
+): GermInfo {
+    if (this.getGermForGermtype(xQueryParams, germ)?.created == null) {
+        log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
+        val germInfo = WebappComponents.getGermInfo(baseXClient, germ, xQueryParams)
+        this.cache(xQueryParams, germInfo)
     }
-    val (_, _, _, caseList, lastUpdate) = this.getGermForGermtype(xQueryParams, germ)!!
-
-    return caseList!! to lastUpdate!!
+    return this.getGermForGermtype(xQueryParams, germ)!!
 }
 
-private suspend fun CachingUtility.getOverviewEntries(
-    xQueryParams: XQueryParams,
-    germ: GermType,
-    baseXClient: IBaseXClient
-): Pair<List<OverviewEntry>, String> {
-    if (this.getGermForGermtype(xQueryParams, germ)?.overviewTimeCreated == null) {
-        val overviewContent = WebappComponents.getOverview(baseXClient, germ, xQueryParams)
-        this.cache(xQueryParams, germ, overviewContent)
-    }
-    val (_, overviewEntries, lastUpdate, _, _) = this.getGermForGermtype(xQueryParams, germ)!!
 
-    return overviewEntries!! to lastUpdate!!
-}
-
-private suspend fun CachingUtility.getGlobalInfo(
+private suspend fun CachingUtility.getOrLoadGlobalInfo(
     xQueryParams: XQueryParams,
     baseXClient: IBaseXClient,
-): Pair<List<OverviewEntry>, String> {
-    if (this.getGlobalInfo(xQueryParams)?.overviewTimeCreated == null) {
+): GlobalInfo {
+    if (this.getGlobalInfo(xQueryParams)?.created == null) {
+        log.info { "Loading GlobalInfo from server $xQueryParams" }
         val overviewContent = WebappComponents.getGlobalStatistics(baseXClient, xQueryParams)
         this.cache(xQueryParams, overviewContent)
     }
-    val (overviewEntries, lastUpdate) = this.getGlobalInfo(xQueryParams)!!
+    return this.getGlobalInfo(xQueryParams)!!
 
-    return overviewEntries!! to lastUpdate!!
 }
 
 

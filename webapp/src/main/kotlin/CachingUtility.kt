@@ -22,73 +22,42 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     private val log = KotlinLogging.logger { }
 
 
-    @JvmName("cacheOverview")
-    fun cache(xQueryParams: XQueryParams, germ: GermType, data: List<OverviewEntry>) {
+    fun cache(xQueryParams: XQueryParams, germ: GermInfo) {
         val cache = getOrCreateCache(xQueryParams)
-        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
-        cache.germCache.findOrCreateByType(germ).apply {
-            overviewEntries = data
-            overviewTimeCreated = LocalDateTime.now().toString()
-        }
+        cache.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache.germCache.removeIf { it.type == germ.type }
+        cache.germCache.add(germ)
         writeCache(cache)
     }
 
-    @JvmName("cacheCaseList")
-    fun cache(xQueryParams: XQueryParams, germ: GermType, data: List<Map<String, String>>) {
+    fun cache(xQueryParams: XQueryParams, data: GlobalInfo) {
         val cache = getOrCreateCache(xQueryParams)
-
-        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
-        cache.germCache.findOrCreateByType(germ).apply {
-            caseList = data
-            caseListTimeCreated = LocalDateTime.now().toString()
-        }
-
+        cache.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache.globalCache = data
         writeCache(cache)
     }
+
 
     private fun getOrCreateCache(xQueryParams: XQueryParams) =
-        if (!cacheExists(xQueryParams)) createCache(xQueryParams) else getCache(xQueryParams)
+        if (!cacheExists(xQueryParams)) createCache(xQueryParams) else getCache(xQueryParams) ?: createCache(
+            xQueryParams
+        )
 
-    fun cache(xQueryParams: XQueryParams, data: List<OverviewEntry>) {
-        val cache = getOrCreateCache(xQueryParams)
-
-        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
-        cache.globalCache.apply {
-            overviewEntries = data
-            overviewTimeCreated = LocalDateTime.now().toString()
-        }
-        writeCache(cache)
-    }
-
-    fun clearCaseListCache(xQueryParams: XQueryParams, germ: GermType) {
-        val cache = getOrCreateCache(xQueryParams)
-
-        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
-        cache.germCache.findOrCreateByType(germ).apply {
-            caseList = null
-            caseListTimeCreated = null
-        }
-
-        writeCache(cache)
-    }
-
-    fun clearOverviewCache(xQueryParams: XQueryParams, germ: GermType) {
-        val cache = getOrCreateCache(xQueryParams)
-
-        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
-        cache.germCache.findOrCreateByType(germ).apply {
-            overviewEntries = null
-            overviewTimeCreated = null
-        }
-
-        writeCache(cache)
-    }
 
     fun clearGlobalInfoCache(xQueryParams: XQueryParams) {
         val cache = getOrCreateCache(xQueryParams)
 
         cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.globalCache.clear()
+
+        writeCache(cache)
+    }
+
+    fun clearGermInfo(xQueryParams: XQueryParams, germ: GermType) {
+        val cache = getOrCreateCache(xQueryParams)
+
+        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache.germCache.removeIf { it.type == germ.germtype }
 
         writeCache(cache)
     }
