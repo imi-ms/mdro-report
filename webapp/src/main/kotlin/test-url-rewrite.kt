@@ -38,6 +38,7 @@ private class UrlRewriteTagConsumer<T>(val downstream: TagConsumer<T>, val rewri
             downstream.onTagStart(copy)
         } else if (tag is FORM) {
             val copy = FORM(tag.attributes.transformValue("action"), this)
+            //if method is get, add hidden element instead
             downstream.onTagStart(copy)
         } else {
             downstream.onTagStart(tag)

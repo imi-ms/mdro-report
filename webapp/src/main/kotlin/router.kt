@@ -21,7 +21,7 @@ import mu.KotlinLogging
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 
-private val log = KotlinLogging.logger {  }
+private val log = KotlinLogging.logger { }
 
 fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit {
     val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
@@ -170,28 +170,65 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
 
             get("/statistic") {
+                val yearsEnabled = call.parameters.getAll("year[]")?.map { it.toInt() } ?: emptyList()
+                val xqueryParams = yearsEnabled.map { XQueryParams(it) }
+                val mrgn =
+                    xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRGN, baseXClient) }
+                val mrgn3 =
+                    mrgn.map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
+                        .toMap()
+                val mrgn4 =
+                    mrgn.map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
+                        .toMap()
+                println("mrgn3 = ${mrgn3}")
+                println("mrgn4 = ${mrgn4}")
+                val mrsa =
+                    xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA, baseXClient) }
+                        .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Gesamtanzahl aller") }!!.data }
+                        .toMap()
+                println("mrgn4 = ${mrgn4}")
+                val vre = xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE, baseXClient) }
+                    .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)") }!!.data }
+                    .toMap() //TODO
+
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Statistik" }
                     content {
-                        for (year in cachingUtility.getCachedParameters()) {
-                            div(classes = "form-check form-check-inline") {
-                                checkBoxInput(classes = "form-check-input") {
-                                    id = "p${year.year}"
-                                    value = "${year.year}"
-                                }
-                                label(classes = "form-check-label") {
-                                    htmlFor = "p${year.year}"
-                                    +year.year.toString()
+                        form(action = "/statistic") {
+                            call.parameters["q"]?.let {
+                                hiddenInput(name = "q") { value = it }
+                            }
+                            for (year in cachingUtility.getCachedParameters()) {
+                                div(classes = "form-check form-check-inline") {
+                                    checkBoxInput(classes = "form-check-input", name = "year[]") {
+                                        id = "p${year.year}"
+                                        value = "${year.year}"
+                                        checked = year.year in yearsEnabled
+                                    }
+                                    label(classes = "form-check-label") {
+                                        htmlFor = "p${year.year}"
+                                        +year.year.toString()
+                                    }
                                 }
                             }
-
-                        }
-                        canvas {
-                            id = "myChart"
-                            width = "100px"
-                            height = "100px"
+                            button(type = ButtonType.submit, classes = "btn btn-primary mb-2") { +"OK" }
                         }
                         script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        div(classes = "container") {
+                            div(classes = "row") {
+                                for ((germ, data) in mapOf(
+                                    "3MRGN" to mrgn3,
+                                    "4MRGN" to mrgn4,
+                                    "MRSA" to mrsa,
+                                    "VRE" to vre
+                                )) {
+                                    div(classes = "col-3") {
+                                        drawBarChart("Anzahl $germ", data.mapKeys { it.key.toString() })
+                                    }
+                                }
+
+                            }
+                        }
                         script("application/javascript", "/static/chart.js") {}
                     }
                 }
