@@ -20,6 +20,7 @@ import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
+import java.time.LocalDate
 
 private val log = KotlinLogging.logger { }
 
@@ -87,12 +88,13 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 if (call.request.uri.contains("settings/save")) return@intercept
                 if (call.request.uri.contains("static")) return@intercept
                 if (call.request.uri.contains("invalidate-cache")) return@intercept
+                if (call.request.uri.startsWith("/statistic")) return@intercept
                 val s = call.parameters["q"]
                 if (s.isNullOrBlank() || s == "null") {
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, s)) {
-                        header { +"Willkommen" }
+                        header { +"Anfragekonfiguration fehlt" }
                         content {
-                            drawIndex(baseXClient.getInfo())
+                            +"Bitte nutzen Sie die Einstellungsleiste, um die Konfiguration der Anfrage durchzuführen"
                             script(type = "application/javascript") {
                                 +"$(function() { $('#settings-modal').modal({focus:true}) });"
                             }
@@ -146,7 +148,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val xQueryParams = call.attributes[xqueryparams]
                 val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(xQueryParams, baseXClient)
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Globale Statistiken" }
+                    header { +"Krankenhauskennzahlen" }
                     content { drawOverviewTable(overviewContent!!, lastUpdate!!) }
                 }
             }
@@ -168,7 +170,63 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     }
                 }
             }
-
+            get("MRGN/statistic") {
+                val xQueryParams = call.attributes[xqueryparams]
+                val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
+                val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
+                    .mapValues { it.value.toString() }
+                val data2 =
+                    germInfo.caseList!!.groupingBy { it["Probenart"]!! }.eachCount().mapValues { it.value.toString() }
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                    header { +"Diagramme" }
+                    content {
+                        script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", data)
+                        drawBarChart("Anzahl der Probenarten", data2)
+                    }
+                }
+            }
+            get("VRE/statistic") {
+                val xQueryParams = call.attributes[xqueryparams]
+                val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
+                val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
+                    .mapValues { it.value.toString() }
+                val data2 =
+                    germInfo.caseList!!.groupingBy { it["Probenart"]!! }.eachCount().mapValues { it.value.toString() }
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                    header { +"Diagramme" }
+                    content {
+                        script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", data)
+                        drawBarChart("Anzahl der Probenarten", data2)
+                    }
+                }
+            }
+            get("MRSA/statistic") {
+                val xQueryParams = call.attributes[xqueryparams]
+                val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
+                val data =
+                    germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"] ?: "null" }.eachCount()
+                        .mapValues { it.value.toString() }
+                val data2 = germInfo.caseList!!.groupingBy { it["Probenart"] ?: "null" }.eachCount()
+                    .mapValues { it.value.toString() }
+                val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"] ?: "null" }.eachCount().mapKeys {
+                    when (it.key) {
+                        "true" -> "nosokomial"
+                        "false" -> "importiert"
+                        else -> "unbekannt"
+                    }
+                }.mapValues { it.value.toString() }
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                    header { +"Diagramme" }
+                    content {
+                        script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        drawBarChart("MRSA Nachweis in den einzelnen Fachabteilungen", data)
+                        drawBarChart("Anzahl der Probenarten", data2)
+                        drawPieChart("Anzahl Import/Nosokomial", data3)
+                    }
+                }
+            }
             get("/statistic") {
                 val yearsEnabled = call.parameters.getAll("year[]")?.map { it.toInt() } ?: emptyList()
                 val xqueryParams = yearsEnabled.map { XQueryParams(it) }
@@ -178,58 +236,106 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     mrgn.map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
                         .toMap()
                 val mrgn4 =
-                    mrgn.map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
+                    mrgn.map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("4MRGN") }!!.data }
                         .toMap()
-                println("mrgn3 = ${mrgn3}")
-                println("mrgn4 = ${mrgn4}")
                 val mrsa =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA, baseXClient) }
                         .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Gesamtanzahl aller") }!!.data }
                         .toMap()
-                println("mrgn4 = ${mrgn4}")
                 val vre = xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE, baseXClient) }
                     .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)") }!!.data }
                     .toMap() //TODO
 
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Statistik" }
+                    header { +"Diagramme" }
                     content {
-                        form(action = "/statistic") {
-                            call.parameters["q"]?.let {
-                                hiddenInput(name = "q") { value = it }
-                            }
-                            for (year in cachingUtility.getCachedParameters()) {
-                                div(classes = "form-check form-check-inline") {
-                                    checkBoxInput(classes = "form-check-input", name = "year[]") {
-                                        id = "p${year.year}"
-                                        value = "${year.year}"
-                                        checked = year.year in yearsEnabled
-                                    }
-                                    label(classes = "form-check-label") {
-                                        htmlFor = "p${year.year}"
-                                        +year.year.toString()
+                        if (yearsEnabled.isNotEmpty()) {
+
+                            form(action = "/statistic") {
+                                call.parameters["q"]?.let {
+                                    hiddenInput(name = "q") { value = it }
+                                }
+                                for (year in cachingUtility.getCachedParameters()) {
+                                    div(classes = "form-check form-check-inline") {
+                                        checkBoxInput(classes = "form-check-input", name = "year[]") {
+                                            id = "p${year.year}"
+                                            value = "${year.year}"
+                                            checked = year.year in yearsEnabled
+                                        }
+                                        label(classes = "form-check-label") {
+                                            htmlFor = "p${year.year}"
+                                            +year.year.toString()
+                                        }
                                     }
                                 }
+                                button(type = ButtonType.submit, classes = "btn btn-primary mb-2") { +"OK" }
                             }
-                            button(type = ButtonType.submit, classes = "btn btn-primary mb-2") { +"OK" }
-                        }
-                        script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                        div(classes = "container") {
-                            div(classes = "row") {
-                                for ((germ, data) in mapOf(
-                                    "3MRGN" to mrgn3,
-                                    "4MRGN" to mrgn4,
-                                    "MRSA" to mrsa,
-                                    "VRE" to vre
-                                )) {
-                                    div(classes = "col-3") {
-                                        drawBarChart("Anzahl $germ", data.mapKeys { it.key.toString() })
+                            script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                            div(classes = "container") {
+                                div(classes = "row") {
+                                    for ((germ, data) in mapOf(
+                                        "3MRGN" to mrgn3,
+                                        "4MRGN" to mrgn4,
+                                        "MRSA" to mrsa,
+                                        "VRE" to vre
+                                    )) {
+                                        div(classes = "col-3") {
+                                            drawBarChart("Anzahl $germ", data.mapKeys { it.key.toString() })
+                                        }
+                                    }
+
+                                }
+                            }
+                        } else {
+                            form(action = "/statistic") {
+                                call.parameters["q"]?.let {
+                                    hiddenInput(name = "q") { value = it }
+                                }
+                                for (cache in cachingUtility.getCachedParameters()
+                                    .map { cachingUtility.getCache(it)!! }) {
+                                    val xQueryParams = cache.metadata.xQueryParams
+                                    div(classes = "form-check") {
+                                        checkBoxInput(classes = "form-check-input", name = "year[]") {
+                                            id = "q${xQueryParams.year}"
+                                            value = "${xQueryParams.year}"
+                                            checked = xQueryParams.year in yearsEnabled
+                                        }
+                                        label(classes = "form-check-label") {
+                                            htmlFor = "q${xQueryParams.year}"
+                                            +xQueryParams.year.toString()
+                                            span(classes = "text-muted") {
+                                                +"Bericht erstellt: "
+                                                +cache.metadata.timeUpdated
+                                                +", zuletzt aktualisiert: "
+                                                +cache.metadata.timeUpdated
+                                                +", verfügbar: "
+                                                +(cache.germCache.filter { it.created != null }
+                                                    .joinToString { it.type })
+                                            }
+                                        }
                                     }
                                 }
 
+                                button(
+                                    type = ButtonType.submit,
+                                    classes = "btn btn-secondary mb-2"
+                                ) { +"Diagramme erstellen" }
                             }
+                            form(classes = "form-inline", method = FormMethod.post, action = "") {
+                                input(classes = "form-control b-2 mr-sm-2", name = "year") {
+                                    type = InputType.number
+                                    min = "2000"
+                                    max = LocalDate.now().year.toString()
+                                    placeholder = "Jahr"
+                                }
+                                button(
+                                    type = ButtonType.submit,
+                                    classes = "btn btn-light btn-mb-2"
+                                ) { +"Bericht erstellen" }
+                            }
+
+
                         }
-                        script("application/javascript", "/static/chart.js") {}
                     }
                 }
             }

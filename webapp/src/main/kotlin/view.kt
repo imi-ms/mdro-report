@@ -6,6 +6,7 @@ import kotlinx.html.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.time.LocalDate
 import kotlin.random.Random
 
 
@@ -43,7 +44,7 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
                     div(classes = "collapse navbar-collapse") {
                         id = "navbarNav"
                         ul(classes = "navbar-nav") {
-                            navItem("global/overview?q=$q", "Globale Statistiken")
+                            navItem("global/overview?q=$q", "Krankenhauskennzahlen")
                             for (germ in GermType.values().map { it.germtype }) {
                                 li(classes = "nav-item dropdown") {
                                     if (url.startsWith(germ)) {
@@ -64,18 +65,16 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
                                             href = "/$germ/overview?q=$q"
                                         ) { +"Übersicht $germ" }
                                         a(classes = "dropdown-item", href = "/$germ/list?q=$q") { +"Fallliste" }
-                                        a(classes = "dropdown-item", href = "/$germ/statistic?q=$q") { +"Statistik" }
+                                        a(classes = "dropdown-item", href = "/$germ/statistic?q=$q") { +"Diagramme" }
                                     }
                                 }
                             }
-                            navItem("statistic?q=$q", "Statistik")
+                            navItem("statistic?q=$q", "Diagramme")
                             navItem("about?q=$q", "Über")
                         }
                     }
                     div(classes = "navbar float-left") {
-                        span(classes = "navbar-text") {
-                            q?.let { +("" + Json.decodeFromString<XQueryParams>(it).year) }
-                        }
+
                         ul(classes = "navbar-nav") {
                             drawSettingsModal(q)
                         }
@@ -109,7 +108,7 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
 
     private fun UL.navItem(href: String, label: String) {
         li(classes = "nav-item") {
-            if (url.startsWith(href)) {
+            if (url.startsWith(href.substringBefore("?"))) {
                 classes += "active"
             }
             a(classes = "nav-link", href = "/$href") {
@@ -258,6 +257,16 @@ private fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
 }
 
 private fun FlowContent.drawSettingsModal(q: String?) {
+    val q2 = q?.let { Json.decodeFromString<XQueryParams>(it.replace("%22", "\"")) }
+    a(classes = "navbar-text") {
+        attributes["data-toggle"] = "modal"
+        attributes["data-target"] = "#settings-modal"
+        q2?.let {
+            span(classes = "text-muted") { +"Jahr: " }
+            span(classes = "font-weight-bold") { +("" + q2.year) }
+        }
+    }
+
     button(classes = "btn") {
         attributes["data-toggle"] = "modal"
         attributes["data-target"] = "#settings-modal"
@@ -297,10 +306,10 @@ private fun FlowContent.drawSettingsModal(q: String?) {
                             input(type = InputType.number) {
                                 id = "inputYear"
                                 min = "2000"
-                                max = "3000"
+                                max = LocalDate.now().year.toString()
                                 classes = setOf("form-control")
                                 name = "year"
-//                                value = GlobalData.year
+                                value = q2?.year?.toString() ?: ""
                             }
                         }
                         div(classes = "form-group") {
@@ -341,7 +350,10 @@ private fun FlowContent.drawSettingsModal(q: String?) {
     }
 }
 
-fun FlowContent.drawBarChart(label: String, data: Map<String, String>) {
+fun FlowContent.drawBarChart(label: String, data: Map<String, String>) = drawChart("bar", label, data)
+fun FlowContent.drawPieChart(label: String, data: Map<String, String>) = drawChart("pie", label, data)
+
+fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>) {
     val backgroundColors = listOf(
         "rgba(255, 99, 132, 0.2)",
         "rgba(54, 162, 235, 0.2)",
@@ -369,7 +381,7 @@ fun FlowContent.drawBarChart(label: String, data: Map<String, String>) {
     script(type = "text/javascript") {
         unsafe {
             +"""new Chart(document.getElementById('$randomId').getContext('2d'), {
-    type: 'bar',
+    type: '$type',
     data: {
         labels: $labels,
         datasets: [{

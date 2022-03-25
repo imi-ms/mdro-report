@@ -40,6 +40,7 @@ dependencies {
     implementation("org.webjars.npm:bootstrap-icons:1.8.1")
     implementation("org.webjars.npm:popper.js:1.16.1")
     implementation("org.webjars.npm:github-com-chartjs-Chart-js:2.8.0")
+    implementation("io.ktor:ktor-server-core:1.6.8")
 }
 
 tasks {
