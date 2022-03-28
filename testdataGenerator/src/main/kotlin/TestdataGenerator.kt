@@ -3,11 +3,14 @@ import org.redundent.kotlin.xml.Node
 import org.redundent.kotlin.xml.xml
 import java.io.File
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
+import kotlin.random.nextInt
 
 
-class CLIGenerator {
+class TestdataGenerator {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
@@ -53,16 +56,17 @@ fun createPatient(): String {
 }
 
 fun createMRSACase(): Node {
-    val randomClinic = FACHABTEILUNG.values().random()
+    val randomClinic = Department.values().random()
     val startAndEndday = generateStartAndEnddate()
-    val randomBodySite = SMEARTYPE.values().random()
-    val germ = GERMTYPE.S_AUREUS
-    val antibiotics = ANTIBIOTICS.values().toList()
+    val randomBodySite = SmearType.values().random()
+    val germ = GermType.S_AUREUS
+    val antibiotics = getMRSAAntibiotics()
 
     val case = xml("case") {
         attribute("id", "${getUniqueId()}")
         attribute("from", "${startAndEndday.first}")
         attribute("till", "${startAndEndday.second}")
+        attribute("type", "S") //TODO Implement Casetypes and Admission Reason
         "location" {
             attribute("id", "${getUniqueId()}")
             attribute("from", "${startAndEndday.first}")
@@ -102,13 +106,13 @@ fun createMRSACase(): Node {
                         attribute("class", "MRSA") //TODO: Currently xquery searches for this
                         -germ.comment
                     }
-                    for(antibiotic in generateRandomAntibioticsAnalysis(antibiotics)) {
+                    for(antibioticAnalysis in generateRandomAntibioticsAnalysis(antibiotics)) {
                         "antibiotic" {
-                            attribute("LOINC", antibiotic.first.LOINC)
-                            attribute("display", antibiotic.first.display)
+                            attribute("LOINC", antibioticAnalysis.antibiotic.LOINC)
+                            attribute("display", antibioticAnalysis.antibiotic.display)
                             "result" {
-                                attribute("string", antibiotic.second.result)
-                                attribute("LOINC", antibiotic.second.LOINC)
+                                attribute("string", antibioticAnalysis.antibioticsResult.result)
+                                attribute("LOINC", antibioticAnalysis.antibioticsResult.LOINC)
                             }
                         }
                     }
@@ -119,7 +123,7 @@ fun createMRSACase(): Node {
     return case
 }
 
-private fun generateStartAndEnddate(): Pair<LocalDate, LocalDate> {
+private fun generateStartAndEnddate(): Pair<LocalDateTime, LocalDateTime> {
     val startEpochDay = startTimeRange.toEpochDay()
     val endEpochDay = endTimeRange.toEpochDay()
     val randomStartDay = LocalDate.ofEpochDay(
@@ -131,8 +135,18 @@ private fun generateStartAndEnddate(): Pair<LocalDate, LocalDate> {
         .plusWeeks(Random.nextLong(1, 4))
         .plusDays(Random.nextLong(0, 6))
 
-    return Pair(randomStartDay, randomEndDay)
+    val randomStartTime = LocalTime.of(Random.nextInt(1, 24),
+                                        Random.nextInt(1, 60),
+                                        Random.nextInt(1, 60))
 
+    val randomEndTime = LocalTime.of(Random.nextInt(1, 24),
+        Random.nextInt(1, 60),
+        Random.nextInt(1, 60))
+
+    val startDateTime = LocalDateTime.of(randomStartDay, randomStartTime)
+    val endDateTime = LocalDateTime.of(randomEndDay, randomEndTime)
+
+    return Pair(startDateTime, endDateTime)
 }
 
 private fun getUniqueId(): Int {
@@ -141,24 +155,45 @@ private fun getUniqueId(): Int {
     return id
 }
 
-private fun generateRandomAntibioticsAnalysis(antibiotics: List<ANTIBIOTICS>): List<Pair<ANTIBIOTICS, ANTIBIOTICS_RESULT>> {
-    val result: MutableList<Pair<ANTIBIOTICS, ANTIBIOTICS_RESULT>> = mutableListOf()
+//TODO: Antibiogram Logic needs more work
+private fun generateRandomAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
+    val result: MutableList<AntibioticsAnalysis> = mutableListOf()
 
     for(antibiotic in antibiotics) {
-        val randomResult = ANTIBIOTICS_RESULT.values().random()
-        result.add(Pair(antibiotic, randomResult))
+        val randomResult = AntibioticsResult.values().random()
+        result.add(AntibioticsAnalysis(antibiotic, randomResult))
     }
     return result
 }
 
+private fun getMRSAAntibiotics(): List<AntibioticType> {
+    return listOf(
+        AntibioticType.AMOXICILLIN_CLAVULANSAEURE, AntibioticType.AMPICILLIN_SULBACTAM,
+        AntibioticType.AZITHROMYCIN, AntibioticType.BENZYLPENICILLIN,
+        AntibioticType.CEFACLOR, AntibioticType.CEFAZOLIN,
+        AntibioticType.CEFOXITIN, AntibioticType.CLARITHROMYCIN,
+        AntibioticType.CLINDAMYCIN, AntibioticType.DAPTOMYCIN,
+        AntibioticType.ERYTHROMYCIN, AntibioticType.FOSFOMYCIN,
+        AntibioticType.FUSIDINSAEURE, AntibioticType.GENTAMICIN,
+        AntibioticType.IMIPENEM, AntibioticType.INDUCED_CLINDAMYCIN,
+        AntibioticType.LEVOFLOXACIN, AntibioticType.LINEZOLID,
+        AntibioticType.MEROPENEM, AntibioticType.MUPIROCIN,
+        AntibioticType.OXACILLIN, AntibioticType.PIPERACILLIN,
+        AntibioticType.PIPERACILLIN_TAZOBACTAM, AntibioticType.RIFAMPICIN,
+        AntibioticType.TEICOPLANIN, AntibioticType.TETRACYCLIN,
+        AntibioticType.TIGECYCLIN, AntibioticType.TRIMETHOPRIM_SULFAMETHOXAZOL,
+        AntibioticType.VANCOMYCIN
+    )
+}
 
-enum class CASETYPE(val type: String) {
+
+enum class Casetype(val type: String) {
     MRSA("MRSA"),
     MRGN("MRGN"),
     VRE("VRE")
 }
 
-enum class FACHABTEILUNG(val clinic: String, val fa_code: String) {
+enum class Department(val clinic: String, val fa_code: String) {
     GYNAEKOLOGIE("Klinik für Gynäkologie", "FA_GYN"),
 
     HNO("Hals- Nasen- Ohrenklinik", "FA_HNO"),
@@ -180,7 +215,7 @@ enum class FACHABTEILUNG(val clinic: String, val fa_code: String) {
     KINDERKLINIK("Kinderklinik, Schulkinder-Stration", "FA_KIALL")
 }
 
-enum class SMEARTYPE(val bodySiteDisplay: String, val display: String) {
+enum class SmearType(val bodySiteDisplay: String, val display: String) {
     NASE("Nase", "Abstrich-oberflächlich"),
 
     RACHEN("Rachen", "Abstrich-oberflächlich"),
@@ -195,14 +230,14 @@ enum class SMEARTYPE(val bodySiteDisplay: String, val display: String) {
 
 }
 
-enum class GERMTYPE(val display: String, val SNOMED: String, val comment: String){
+enum class GermType(val display: String, val SNOMED: String, val comment: String){
     S_AUREUS("Staphylococcus aureus", "3092008", "Nachweis von Methicillin-resistentem S.aureus (MRSA). Hygienemaßnahmen gemäß Infektionshandbuch erforderlich!"),
     P_AERUGINOSA("Pseudomonas aeruginosa", "52499004", ""),
     E_FAECALIS("Enterococcus faecalis", "78065002", ""),
     E_FAECIUM("Enterococcus faecium", "90272000", "")
 }
 
-enum class ANTIBIOTICS(val LOINC: String, val display: String) {
+enum class AntibioticType(val LOINC: String, val display: String) {
     AMOXICILLIN_CLAVULANSAEURE("18862-3", "Amoxicillin/Clavulansäure"),
 
     AMPICILLIN_SULBACTAM("18865-6", "Ampicillin/Sulbactam"),
@@ -276,7 +311,7 @@ enum class ANTIBIOTICS(val LOINC: String, val display: String) {
     VANCOMYCIN("19000-9", "Vancomycin")
 }
 
-enum class ANTIBIOTICS_RESULT(val LOINC: String, val result: String) {
+enum class AntibioticsResult(val LOINC: String, val result: String) {
     RESISTANT("LA6676-6", "R"),
     SENSIBLE("LA24225-7", "S"),
     INTERMEDIARY("", "I")
@@ -284,7 +319,9 @@ enum class ANTIBIOTICS_RESULT(val LOINC: String, val result: String) {
 
 
 
-data class GERM(val germtype: GERMTYPE, val antibioticsAnalysis: List<Pair<ANTIBIOTICS, ANTIBIOTICS_RESULT>>)
+data class Germ(val germtype: GermType, val antibioticsAnalysis: List<AntibioticsAnalysis>)
+
+data class AntibioticsAnalysis(val antibiotic: AntibioticType, val antibioticsResult: AntibioticsResult)
 
 
 fun <T : Enum<*>?> randomEnum(clazz: Class<T>): T {
