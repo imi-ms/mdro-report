@@ -45,12 +45,11 @@ fun createTestdata(numberOfTestdata: Int): List<String> {
 }
 
 fun createPatient(): String {
-    val patientId = getUniqueId()
     val caseInfo = CaseInfo(CaseScope.MRSA) //TODO: Implement Random selection
     val patient = xml("patient") {
         attribute("birthYear", "${Random.nextInt(1940, 2010)}")
         attribute("sex", "${if (Random.nextBoolean()) 'F' else 'M'}")
-        attribute("id", "$patientId")
+        attribute("id", "${caseInfo.patientId}")
         addCase(caseInfo)
     }
     return patient.toString(true)
