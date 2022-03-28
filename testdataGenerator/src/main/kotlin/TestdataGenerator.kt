@@ -7,7 +7,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
-import kotlin.random.nextInt
 
 
 class TestdataGenerator {
@@ -317,14 +316,6 @@ enum class AntibioticsResult(val LOINC: String, val result: String) {
     INTERMEDIARY("", "I")
 }
 
-
-
-data class Germ(val germtype: GermType, val antibioticsAnalysis: List<AntibioticsAnalysis>)
-
 data class AntibioticsAnalysis(val antibiotic: AntibioticType, val antibioticsResult: AntibioticsResult)
 
 
-fun <T : Enum<*>?> randomEnum(clazz: Class<T>): T {
-    val x: Int = Random.nextInt(clazz.enumConstants.size)
-    return clazz.enumConstants[x]
-}
