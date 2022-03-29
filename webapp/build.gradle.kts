@@ -30,6 +30,7 @@ dependencies {
     implementation("io.ktor:ktor-client-auth-jvm:$ktor_version")
     implementation("io.ktor:ktor-webjars:$ktor_version")
     implementation("io.ktor:ktor-server-servlet:$ktor_version")
+    implementation("io.ktor:ktor-auth:$ktor_version")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
     implementation("net.harawata:appdirs:1.2.1")
 

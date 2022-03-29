@@ -143,7 +143,12 @@ object WebappComponents {
             ),
             OverviewEntry("Anzahl der importierten MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaImported"),
             OverviewEntry("Anzahl nosokomialer MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaNosokomial"),
-            OverviewEntry("stationäre Falltage von MRSA-Fällen", BaseXQueries.getFallzahlen(), "TODO") //TODO
+            createBaseXOverviewEntry(
+                "stationäre Falltage von MRSA-Fällen",
+                BaseXQueries.getFalltageMRSA(),
+                baseXClient,
+                xQueryParams
+            )
         )
     }
 

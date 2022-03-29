@@ -189,10 +189,12 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("VRE/statistic") {
                 val xQueryParams = call.attributes[xqueryparams]
                 val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
-                val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
-                    .mapValues { it.value.toString() }
+                val data =
+                    germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"] ?: "null" }.eachCount()
+                        .mapValues { it.value.toString() }
                 val data2 =
-                    germInfo.caseList!!.groupingBy { it["Probenart"]!! }.eachCount().mapValues { it.value.toString() }
+                    germInfo.caseList!!.groupingBy { it["Probenart"] ?: "null" }.eachCount()
+                        .mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Diagramme" }
                     content {
@@ -208,7 +210,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val data =
                     germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"] ?: "null" }.eachCount()
                         .mapValues { it.value.toString() }
-                val data2 = germInfo.caseList!!.groupingBy { it["Probenart"] ?: "null" }.eachCount()
+                val data2 = germInfo.caseList!!.groupingBy { it["Probeart"] ?: "null" }.eachCount()
                     .mapValues { it.value.toString() }
                 val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"] ?: "null" }.eachCount().mapKeys {
                     when (it.key) {
@@ -221,9 +223,23 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     header { +"Diagramme" }
                     content {
                         script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                        drawBarChart("MRSA Nachweis in den einzelnen Fachabteilungen", data)
-                        drawBarChart("Anzahl der Probenarten", data2)
-                        drawPieChart("Anzahl Import/Nosokomial", data3)
+                        div(classes = "container") {
+                            div(classes = "row") {
+                                style = "height: 400px;"
+                                div(classes = "col") {
+                                    drawBarChart("MRSA Nachweis in den einzelnen Fachabteilungen", data)
+                                }
+                            }
+                            div(classes = "row") {
+                                style = "height: 400px;"
+                                div(classes = "col-6") {
+                                    drawBarChart("Anzahl der Probenarten", data2)
+                                }
+                                div(classes = "col-6") {
+                                    drawPieChart("Anzahl Import/Nosokomial", data3)
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -313,6 +329,22 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                                     .joinToString { it.type })
                                             }
                                         }
+                                        form(action = "/statistic/deleteReport", method = FormMethod.post) {
+                                            hiddenInput {
+                                                name = "q"
+                                                value = Json.encodeToString(xQueryParams)
+                                            }
+                                            hiddenInput {
+                                                name = "toDelete"
+                                                value = Json.encodeToString(xQueryParams)
+                                            }
+                                            button(
+                                                type = ButtonType.submit,
+                                                classes = "btn btn-small btn-outline-danger "
+                                            ) {
+                                                +"delete"
+                                            }
+                                        }
                                     }
                                 }
 
@@ -321,13 +353,20 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                     classes = "btn btn-secondary mb-2"
                                 ) { +"Diagramme erstellen" }
                             }
-                            form(classes = "form-inline", method = FormMethod.post, action = "") {
+                            form(classes = "form-inline", method = FormMethod.post, action = "/statistic/create") {
                                 input(classes = "form-control b-2 mr-sm-2", name = "year") {
                                     type = InputType.number
                                     min = "2000"
                                     max = LocalDate.now().year.toString()
                                     placeholder = "Jahr"
                                 }
+                                if (call.parameters["q"] != null) {
+                                    hiddenInput {
+                                        name = "q"
+                                        value = call.parameters["q"]!!
+                                    }
+                                }
+
                                 button(
                                     type = ButtonType.submit,
                                     classes = "btn btn-light btn-mb-2"
@@ -338,6 +377,23 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                         }
                     }
                 }
+            }
+            post("/statistic/create") {
+                val xQueryParams = XQueryParams(call.receiveParameters()["year"]?.toInt())
+                cachingUtility.getOrLoadGlobalInfo(xQueryParams, baseXClient)
+                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
+                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
+                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
+                call.respondRedirect("/statistic?${call.parameters["q"]?.let { "q=$it" } ?: ""}")
+            }
+            post("/statistic/deleteReport") {
+                val q = call.receiveParameters()["q"]!!
+                val xQueryParams = Json.decodeFromString<XQueryParams>(q)
+                cachingUtility.clearGlobalInfoCache(xQueryParams)
+                cachingUtility.clearGermInfo(xQueryParams, GermType.MRGN)
+                cachingUtility.clearGermInfo(xQueryParams, GermType.MRSA)
+                cachingUtility.clearGermInfo(xQueryParams, GermType.VRE)
+                call.respondRedirect("/statistic?${q.let { "q=$it" } ?: ""}")
             }
             get("/about") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {

@@ -373,8 +373,8 @@ fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>
     val randomId = "myChart" + Random.nextInt(100000)
     canvas {
         id = randomId
-        width = "10px"
-        height = "10px"
+        width = "100%"
+        height = "100%"
     }
     val labels = Json.encodeToString(data.keys)
     val dataValues = Json.encodeToString(data.values.toList())
@@ -387,15 +387,25 @@ fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>
         datasets: [{
             label: "$label",
             data: $dataValues,
-            backgroundColor: "${backgroundColors[0]}",
-            borderColor: "${borderColors[0]}",
+            backgroundColor: ${
+                if (type == "pie") Json.encodeToString(backgroundColors) else Json.encodeToString(
+                    backgroundColors[0]
+                )
+            },
+            borderColor: ${
+                if (type == "pie") Json.encodeToString(borderColors) else Json.encodeToString(
+                    backgroundColors[0]
+                )
+            },
             borderWidth: 1
         }]
     },
     options: {
+        responsive: true,
+        maintainAspectRatio: false,
         scales: {
             y: {
-                beginAtZero: true
+                beginAtZero: true,
             }
         }
     }

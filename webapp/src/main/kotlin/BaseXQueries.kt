@@ -7,6 +7,7 @@ object BaseXQueries {
     fun getMRGN() = readFile("mrgn_excelv3.xq")
     fun getVRE() = readFile("vre_excelv2.xq")
     fun getFalltage() = readFile("Falltage.xq")
+    fun getFalltageMRSA() = readFile("Falltage_mrsa1.xq")
     fun getFallzahlen() = readFile("fallzahlen.xq")
     fun getFallzahlen2() = readFile("fallzahlen2.xq")
     fun getMRSABK() = readFile("mrsa_bk.xq")
