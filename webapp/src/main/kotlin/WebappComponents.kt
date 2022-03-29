@@ -15,7 +15,7 @@ object WebappComponents {
                 return GermInfo(germ.germtype, overviewEntry, caseList, LocalDateTime.now().toString())
             }
             GermType.MRGN -> {
-                val caseList = getMRGACSV(basexClient, xQueryParams)
+                val caseList = getMRGNCSV(basexClient, xQueryParams)
                 val overviewEntry = getMRGNOverview(basexClient, xQueryParams, caseList)
                 return GermInfo(germ.germtype, overviewEntry, caseList, LocalDateTime.now().toString())
             }
@@ -46,16 +46,17 @@ object WebappComponents {
         )
     }
 
-    suspend fun getMRGACSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
-        val mrgaList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.getMRGN(), xQueryParams))
+    suspend fun getMRGNCSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
+        val mrgnList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.getMRGN(), xQueryParams))
         return parseCsv(
-            mrgaList,
+            mrgnList,
             listOf(
                 "FallID",
                 "Abnahmezeitpunkt",
                 "Probenart",
                 "Einsender",
                 "Fachabteilung zum Abnahmezeitpunkt",
+                "Erreger",
                 "Klasse",
                 "Piperacillin und Tazobactam Ergebnis",
                 "Cefotaxime Ergebnis",
