@@ -39,7 +39,7 @@ private val endTimeRange = LocalDate.of(2022,2,28)
 fun createTestdata(numberOfTestdata: Int): List<String> {
     val result = mutableListOf<String>()
     for(i in 1..numberOfTestdata) {
-        val caseScope = listOf(CaseScope.MRSA, CaseScope.MRGN3, CaseScope.MRGN4).random() //TODO Add VRE
+        val caseScope = CaseScope.values().random()
         result.add(createPatient(caseScope))
         log.info("Created new Patient with $caseScope case. Patient no. $i")
     }
@@ -47,7 +47,7 @@ fun createTestdata(numberOfTestdata: Int): List<String> {
 }
 
 fun createPatient(caseScope: CaseScope): String {
-    val caseInfo = CaseInfo(caseScope) //TODO: Implement Random selection
+    val caseInfo = CaseInfo(caseScope)
     val patient = xml("patient") {
         attribute("birthYear", "${Random.nextInt(1940, 2010)}")
         attribute("sex", "${if (Random.nextBoolean()) 'F' else 'M'}")
@@ -147,7 +147,7 @@ data class CaseInfo(val caseScope: CaseScope) {
 
     val bodySite: SmearType = SmearType.values().random()
 
-    lateinit var germType: GermType
+    var germType: GermType
     var spaType: SpaType? = null
     var clusterType: ClusterType? = null
     var nosocomial: Boolean? = null
@@ -166,7 +166,7 @@ data class CaseInfo(val caseScope: CaseScope) {
                germType = getMRGNGermTypes().random()
            }
            CaseScope.VRE -> {
-               //TODO
+               germType = getVREGermTypes().random()
            }
        }
     }
@@ -211,13 +211,13 @@ private fun getUniqueId(): Int {
     return id
 }
 
-//TODO: Antibiogram Logic needs more work
+
 private fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {
     return when(caseInfo.caseScope) {
-        CaseScope.MRSA -> generateRandomAntibioticsAnalysis(getMRSAAntibiotics())
+        CaseScope.MRSA -> generateRandomAntibioticsAnalysis(getMRSAAntibiotics()) //TODO: Add MRSA Logic
         CaseScope.MRGN3 -> generateMRGNAntibioticsAnalysis(3, getMRGNAntibiotics(), caseInfo.germType)
         CaseScope.MRGN4 -> generateMRGNAntibioticsAnalysis(4, getMRGNAntibiotics(), caseInfo.germType)
-        CaseScope.VRE -> generateRandomAntibioticsAnalysis(getMRSAAntibiotics())
+        CaseScope.VRE -> generateRandomAntibioticsAnalysis(getVREAntibiotics()) //TODO: Add VRE Logic
     }
 }
 
@@ -238,8 +238,9 @@ private fun generateMRGNAntibioticsAnalysis(
     when(numberOfResistances) {
         3 -> {
             when(germType) {
-                in getEnterobacterGerms() -> return getEnterobacterAntibioticsAnalysis(antibiotics)
+                in getEnterobacteralesGerms() -> return getEnterobacterAntibioticsAnalysis(antibiotics)
                 GermType.P_AERUGINOSA -> return getPseudomonasAntibioticsAnalysis(antibiotics.toMutableList())
+                //TODO: Add Acinetobacter baumannii
                 else -> {} //TODO: Fallback?
             }
         }
@@ -326,11 +327,25 @@ private fun getMRGNGermTypes(): List<GermType> {
     )
 }
 
-private fun getEnterobacterGerms(): List<GermType> {
+private fun getEnterobacteralesGerms(): List<GermType> {
     return listOf(
         GermType.E_COLI, GermType.E_HERMANNII,
         GermType.K_AEROGENES, GermType.K_OXYTOCA,
         GermType.M_MORGANII, GermType.P_MIRABILIS
+    )
+}
+
+private fun getVREGermTypes(): List<GermType> {
+    return listOf(
+        GermType.E_FAECIUM, GermType.E_FAECALIS
+    )
+}
+
+private fun getVREAntibiotics(): List<AntibioticType> {
+    return listOf(
+        AntibioticType.LINEZOLID, AntibioticType.TIGECYCLIN,
+        AntibioticType.VANCOMYCIN, AntibioticType.TEICOPLANIN,
+        AntibioticType.QUINUPRISTIN_DALFOPRISTIN
     )
 }
 

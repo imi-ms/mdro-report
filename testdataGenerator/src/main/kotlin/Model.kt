@@ -83,6 +83,7 @@ enum class AntibioticType(val LOINC: String, val display: String) {
     OXACILLIN("18961-3", "Oxacillin"),
     PIPERACILLIN("18969-6", "Piperacillin"),
     PIPERACILLIN_TAZOBACTAM("18970-4", "Piperacillin/Tazobactam"),
+    QUINUPRISTIN_DALFOPRISTIN("23640-6", "Quinupristin/Dalfopristin"),
     RIFAMPICIN("", "Rifampicin"),
     TEICOPLANIN("18989-4", "Teicoplanin"),
     TETRACYCLIN("18993-6", "Tetracyclin"),
