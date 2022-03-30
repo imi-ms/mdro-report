@@ -1,6 +1,7 @@
 plugins {
     kotlin("jvm")
     id("com.github.johnrengelman.shadow")
+    id("org.openjfx.javafxplugin")
 }
 
 kotlin {
@@ -23,4 +24,9 @@ tasks {
         }
         archiveFileName.set("MDTestdataGenerator.jar")
     }
+}
+
+javafx {
+    modules("javafx.base","javafx.controls","javafx.fxml",
+        "javafx.graphics","javafx.web")
 }

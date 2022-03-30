@@ -33,8 +33,22 @@ class TestdataGenerator {
 }
 
 private val unusedIds = (1000000..99999999).toMutableList()
-private val startTimeRange = LocalDate.of(2021,1,1)
-private val endTimeRange = LocalDate.of(2022,2,28)
+private var startTimeRange = LocalDate.of(2021,1,1)
+private var endTimeRange = LocalDate.of(2022,2,28)
+
+fun setStartYear(year: String) {
+    startTimeRange = LocalDate.of(year.toInt(), 1, 1)
+}
+
+fun setEndYear(year: String) {
+    endTimeRange = LocalDate.of(year.toInt(), 1, 1).minusDays(1)
+}
+
+fun generateTestdataFile(patientNumber: Int, location: String) {
+    val caseScope = CaseScope.values().random()
+    val patient = createPatient(caseScope)
+    File("$location/Patient$patientNumber").writeText(createPatient(caseScope))
+}
 
 fun createTestdata(numberOfTestdata: Int): List<String> {
     val result = mutableListOf<String>()
