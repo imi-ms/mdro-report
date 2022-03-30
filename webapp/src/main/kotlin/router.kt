@@ -216,13 +216,8 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                         .mapValues { it.value.toString() }
                 val data2 = germInfo.caseList!!.groupingBy { it["Probeart"] ?: "null" }.eachCount()
                     .mapValues { it.value.toString() }
-                val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"] ?: "null" }.eachCount().mapKeys {
-                    when (it.key) {
-                        "true" -> "nosokomial"
-                        "false" -> "importiert"
-                        else -> "unbekannt"
-                    }
-                }.mapValues { it.value.toString() }
+                val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"] ?: "null" }.eachCount()
+                    .mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Diagramme" }
                     content {

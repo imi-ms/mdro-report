@@ -261,7 +261,7 @@ private fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
 }
 
 private fun FlowContent.drawSettingsModal(q: String?) {
-    val q2 = q?.let { Json.decodeFromString<XQueryParams>(it.replace("%22", "\"")) }
+    val q2 = if (q == "null") null else q?.let { Json.decodeFromString<XQueryParams>(it.replace("%22", "\"")) }
     a(classes = "navbar-text") {
         attributes["data-toggle"] = "modal"
         attributes["data-target"] = "#settings-modal"

@@ -22,7 +22,7 @@ class TestdataGenerator {
                 File("testdata").mkdir()
             }
 
-            for (i in 1..Integer.parseInt(askUser("How many patients should be generated?"))) {
+            for (i in 1..Integer.parseInt("100")) {
                 val result = createPatient()
                 File("testdata/Patient$i").writeText(result)
             }
