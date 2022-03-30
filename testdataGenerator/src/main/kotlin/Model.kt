@@ -46,7 +46,10 @@ enum class GermType(val display: String, val SNOMED: String){
     M_MORGANII("Morganella morganii", "243301005"),
     E_FAECALIS("Enterococcus faecalis", "78065002"),
     E_FAECIUM("Enterococcus faecium", "90272000"),
-    E_COLI("Escherichia coli", "112283007")
+    E_COLI("Escherichia coli", "112283007"),
+    E_HERMANNII("Escherichia hermannii", "85786000"),
+    P_MIRABILIS("Proteus mirabilis", "73457008"),
+    K_OXYTOCA("Klebsiella oxytoca", "40886007"),
 }
 
 enum class AntibioticType(val LOINC: String, val display: String) {
@@ -58,6 +61,7 @@ enum class AntibioticType(val LOINC: String, val display: String) {
     CEFACLOR("18874-8", "Cefaclor"),
     CEFAZOLIN("18878-9", "Cefazolin"),
     CEFEPIM("18879-7", "Cefepim"),
+    CEFOTAXIM("18886-2", "Cefotaxim"),
     CEFOXITIN("18888-8", "Cefoxitin Screen"),
     CEFTAZIDIM("18893-8", "Ceftazidim"),
     CEFTOLOZAN_TAZOBACTAM("73602-5", "Ceftolozan/Tazobactam"),
