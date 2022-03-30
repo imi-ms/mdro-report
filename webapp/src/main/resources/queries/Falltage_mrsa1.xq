@@ -1,12 +1,12 @@
 let $input :=
 <Aufnahme20Entlassung21>
 {
-for $x in db:open("2021")/patient/case
-where substring($x/@from,1,4)="2020"
-where substring($x/@till,1,4)="2021"
+for $x in /patient/case
+where xs:dateTime($x/@from) < xs:dateTime("#YEAR_START")
+where xs:dateTime($x/@till) > xs:dateTime("#YEAR_START")
 where $x/@type="S"
 where $x/labReport/sample/germ/comment[contains(@class,"MRSA")]
-let $date1:=xs:dateTime("2021-01-01T00:00:01")
+let $date1:=xs:dateTime("#YEAR_START")
 let $date2:=xs:dateTime($x/@till)
 let $datediff:=ceiling(($date2 - $date1)div xs:dayTimeDuration("P1D"))
 return
@@ -19,9 +19,9 @@ return
 let $input2 :=
 <Aufnahme21Entlassung21>
 {
-for $x in db:open("2021")/patient/case
-where substring($x/@from,1,4)="2021"
-where substring($x/@till,1,4)="2021"
+for $x in /patient/case
+where (xs:dateTime($x/@from) >= xs:dateTime("#YEAR_START") and xs:dateTime($x/@from) <= xs:dateTime("#YEAR_END"))
+where (xs:dateTime($x/@till) >= xs:dateTime("#YEAR_START") and xs:dateTime($x/@till) <= xs:dateTime("#YEAR_END"))
 where $x/@type="S"
 where $x/labReport/sample/germ/comment[contains(@class,"MRSA")]
 let $date1:=xs:dateTime($x/@from)
@@ -37,13 +37,13 @@ return
 let $input3 :=
 <Aufnahme21Entlassung22>
 {
-for $x in db:open("2021")/patient/case
-where substring($x/@from,1,4)="2021"
-where substring($x/@till,1,4)="2022"
+for $x in /patient/case
+where (xs:dateTime($x/@from) >= xs:dateTime("#YEAR_START") and xs:dateTime($x/@from) <= xs:dateTime("#YEAR_END"))
+where xs:dateTime($x/@till) > xs:dateTime("#YEAR_END")
 where $x/@type="S"
 where $x/labReport/sample/germ/comment[contains(@class,"MRSA")]
 let $date1:=xs:dateTime($x/@from)
-let $date2:=xs:dateTime("2021-12-31T23:59:00")
+let $date2:=xs:dateTime("#YEAR_END")
 let $datediff:=ceiling(($date2 - $date1)div xs:dayTimeDuration("P1D"))
 return
 <dates>
@@ -55,13 +55,13 @@ return
 let $input4 :=
 <Aufnahme21NichtEntlassen>
 {
-for $x in db:open("2021")/patient/case
-where substring($x/@from,1,4)="2021"
+for $x in /patient/case
+where (xs:dateTime($x/@from) >= xs:dateTime("#YEAR_START") and xs:dateTime($x/@from) <= xs:dateTime("#YEAR_END"))
 where not($x/@till)
 where $x/@type="S"
 where $x/labReport/sample/germ/comment[contains(@class,"MRSA")]
 let $date1:=xs:dateTime($x/@from)
-let $date2:=xs:dateTime("2021-12-31T23:59:00")
+let $date2:=xs:dateTime("#YEAR_END")
 let $datediff:=ceiling(($date2 - $date1)div xs:dayTimeDuration("P1D"))
 return
 <dates>
