@@ -1,4 +1,5 @@
 package de.uni_muenster.imi.oegd.testdataGenerator
+import mu.KotlinLogging
 import org.redundent.kotlin.xml.Node
 import org.redundent.kotlin.xml.xml
 import java.io.File
@@ -8,6 +9,7 @@ import java.time.LocalTime
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
 
+private val log = KotlinLogging.logger {  }
 
 class TestdataGenerator {
     companion object {
@@ -34,13 +36,12 @@ private val unusedIds = (1000000..99999999).toMutableList()
 private val startTimeRange = LocalDate.of(2021,1,1)
 private val endTimeRange = LocalDate.of(2022,2,28)
 
-
-
 fun createTestdata(numberOfTestdata: Int): List<String> {
     val result = mutableListOf<String>()
     for(i in 1..numberOfTestdata) {
         val caseScope = listOf(CaseScope.MRSA, CaseScope.MRGN3, CaseScope.MRGN4).random() //TODO Add VRE
         result.add(createPatient(caseScope))
+        log.info("Created new Patient with $caseScope case. Patient no. $i")
     }
     return result
 }
@@ -161,11 +162,8 @@ data class CaseInfo(val caseScope: CaseScope) {
                nosocomial = Random.nextBoolean() //TODO: Logic?
                infection = Random.nextBoolean()
            }
-           CaseScope.MRGN3 -> {
+           CaseScope.MRGN3, CaseScope.MRGN4 -> {
                germType = getMRGNGermTypes().random()
-           }
-           CaseScope.MRGN4 -> {
-               //TODO
            }
            CaseScope.VRE -> {
                //TODO
