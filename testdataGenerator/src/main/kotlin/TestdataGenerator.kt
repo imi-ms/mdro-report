@@ -61,7 +61,7 @@ fun Node.addCase(caseInfo: CaseInfo){
         attribute("id", "${caseInfo.caseId}")
         attribute("from", "${caseInfo.startDateTime}")
         attribute("till", "${caseInfo.endDateTime}")
-        attribute("type", "${Casetype.STATIONAER}") //TODO Andere Casetypes?
+        attribute("type", Casetype.STATIONAER.type) //TODO Andere Casetypes?
         //TODO: Add AdmissionCause and state
         "location" {
             attribute("id", "${caseInfo.locationId}")
