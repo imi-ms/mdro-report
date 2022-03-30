@@ -114,14 +114,15 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             post("{germ}/invalidate-cache") {
                 val value = call.parameters["germ"]!!
-                val xQueryParams = call.attributes[xqueryparams]
+                val parameters = call.receiveParameters()
+                val xQueryParams = Json.decodeFromString<XQueryParams>(parameters["q"]!!)
                 if (value == "global") {
                     cachingUtility.clearGlobalInfoCache(xQueryParams)
                 } else {
                     val germ = GermType.valueOf(value)
                     cachingUtility.clearGermInfo(xQueryParams, germ)
                 }
-                call.respondRedirect(call.request.headers["Referer"] ?: ("/$value/overview?q=" + call.parameters["q"]))
+                call.respondRedirect(call.request.headers["Referer"] ?: ("/$value/overview?q=" + parameters["q"]))
             }
             post("/settings/uploadCache") {
                 uploadCache(call.receiveMultipart(), cachingUtility)
@@ -147,26 +148,29 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("global/overview") {
                 val xQueryParams = call.attributes[xqueryparams]
                 val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(xQueryParams, baseXClient)
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                     header { +"Krankenhauskennzahlen" }
-                    content { drawOverviewTable(overviewContent!!, lastUpdate!!) }
+                    content { drawOverviewTable(overviewContent!!, lastUpdate!!, q) }
                 }
             }
             for (germ in GermType.values()) {
                 get("$germ/overview") {
                     val xQueryParams = call.attributes[xqueryparams]
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ, baseXClient)
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                    val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: Übersicht" }
-                        content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!) }
+                        content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!, q) }
                     }
                 }
                 get("$germ/list") {
                     val xQueryParams = call.attributes[xqueryparams]
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ, baseXClient)
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                    val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: Fallliste" }
-                        content { drawCaseList(germInfo.caseList!!, germInfo.created!!) }
+                        content { drawCaseList(germInfo.caseList!!, germInfo.created!!, q) }
                     }
                 }
             }

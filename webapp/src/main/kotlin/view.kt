@@ -152,8 +152,8 @@ fun FlowContent.drawIndex(basexInfo: BasexInfo) {
 }
 
 
-fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String) {
-    drawInvalidateButton(lastUpdate)
+fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String, q: String) {
+    drawInvalidateButton(lastUpdate, q)
 
 
     if (data.isEmpty()) {
@@ -183,11 +183,15 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
     }
 }
 
-private fun FlowContent.drawInvalidateButton(lastUpdate: String) {
+private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
     div(classes = "btn-toolbar") {
         form(classes = "form-inline", action = "invalidate-cache", method = FormMethod.post) {
             label {
                 +"Bericht erstellt: $lastUpdate"
+            }
+            hiddenInput {
+                name = "q"
+                value = q
             }
             button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
                 +"Neu erstellen"
@@ -197,8 +201,8 @@ private fun FlowContent.drawInvalidateButton(lastUpdate: String) {
 }
 
 
-fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String) {
-    drawInvalidateButton(lastUpdate)
+fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String, q: String) {
+    drawInvalidateButton(lastUpdate, q)
 
     table(classes = "table") {
         for ((index, entry) in data.withIndex()) {
