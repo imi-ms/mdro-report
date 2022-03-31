@@ -64,3 +64,23 @@ fun getVREAntibiotics(): List<AntibioticType> {
 fun getSensibleOrIntermediaryRandomly(): AntibioticsResult {
     return listOf(AntibioticsResult.SENSIBLE, AntibioticsResult.INTERMEDIARY).random()
 }
+
+interface AntibioticsProbability {
+    val antibioticType: AntibioticType
+    val rProbability: Double
+    val sProbability: Double
+    val iProbability: Double
+}
+
+enum class VREAntibioticsProbability(
+    override val antibioticType: AntibioticType,
+    override val rProbability: Double,
+    override val sProbability: Double,
+    override val iProbability: Double
+): AntibioticsProbability {
+    LINEZOLID(AntibioticType.LINEZOLID, 0.05, 0.95, 0.0),
+    TIGECYCLIN(AntibioticType.TIGECYCLIN, 0.05, 0.95, 0.0),
+    VANCOMYCIN(AntibioticType.VANCOMYCIN, 1.0, 0.0, 0.0),
+    TEICOPLANIN(AntibioticType.TEICOPLANIN, 0.37, 0.63, 0.0),
+    QUINUPRISTIN(AntibioticType.QUINUPRISTIN_DALFOPRISTIN, 0.03, 0.72, 0.24)
+}
