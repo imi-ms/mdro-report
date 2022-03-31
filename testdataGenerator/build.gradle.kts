@@ -20,13 +20,12 @@ dependencies {
 tasks {
     shadowJar {
         manifest {
-            attributes(Pair("Main-Class", "de.uni_muenster.imi.oegd.testdataGenerator.TestdataGeneratorKt"))
+            attributes(Pair("Main-Class", "de.uni_muenster.imi.oegd.testdataGenerator.Main"))
         }
         archiveFileName.set("MDTestdataGenerator.jar")
     }
 }
 
 javafx {
-    modules("javafx.base","javafx.controls","javafx.fxml",
-        "javafx.graphics","javafx.web")
+    modules("javafx.base","javafx.controls","javafx.fxml", "javafx.graphics")
 }
