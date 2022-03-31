@@ -133,11 +133,13 @@ class TestdataGenerator {
                     }
                 }
             }
-            "hygiene-message" {
-                attribute("germ-name", caseInfo.germType.display)
-                attribute("nosocomial", "${caseInfo.nosocomial}")
-                attribute("infection", "${caseInfo.infection}")
-                attribute("MRG-class", "${caseInfo.caseScope}")
+            if(caseInfo.caseScope == CaseScope.MRSA) {
+                "hygiene-message" {
+                    attribute("germ-name", caseInfo.germType.display)
+                    attribute("nosocomial", "${caseInfo.nosocomial}")
+                    attribute("infection", "${caseInfo.infection}")
+                    attribute("MRG-class", "${caseInfo.caseScope}")
+                }
             }
         })
     }
