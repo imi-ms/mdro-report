@@ -69,7 +69,7 @@ The main tree follows this structure:
 
 
 For each of these objects the following attributes are important: 
-###patient
+### patient
 - **id** - the id of the patient. This can be any number. The ID has to be unique.
 - **birthYear** - each patient has a birth year. It is a four digit long number YYYY
 - **sex** - The sex of a patient. It can be "F" or "M"
@@ -78,7 +78,7 @@ Example:
 ```xml
 <patient birthYear="1970" sex="F" id="5630133">...</patient>
 ```
-###case
+### case
 - **id** - the id of the case. This can be any number. The ID has to be unique.
 - **from** - the start date-time of the case. It follows the ISO-8601 standard. 
 - **till** - the end date-time of the case. It follows the ISO-8601 standard.
@@ -89,7 +89,7 @@ Example:
 <case id="99814764" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" type="S">...</case>
 ```
 
-###location
+### location
 - **id** - the id of the location. This can be any number. The ID has to be unique.
 - **from** - The date time when the patient was transferred to this location. It follows the ISO-8601 standard.
 - **till** - The date time when the patient was transferred to a different location or dismissed. It follows the ISO-8601 standard.
@@ -99,7 +99,7 @@ Example:
 <location id="8909885" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" clinic="FA_GYN"/>
 ```
 
-###labReport
+### labReport
 - **id** - the id of the lab report. This can be any number. The ID has to be unique.
 - **source** - the source of the labReport data. The labReport is extracted in the ETL-process. This can be any string.
 
@@ -108,7 +108,7 @@ Example:
 <labReport id="32005541" source="MIBI">...</labReport>
 ```
 
-###request
+### request
 - **from** - the date time when the request was received. It follows the ISO-8601 standard.
 - **sender** - which clinical department send the lab report request. This can be any string.
 
@@ -117,7 +117,7 @@ Example:
 <request from="2021-04-16T19:14:46" sender="Klinik für Gynäkologie"/>
 ```
 
-###sample
+### sample
 - **bodySiteDisplay** - the body site where the sample was taken. This can be any string
 - **display** - the type of sample (i.e. how the sample was taken). This can be any string
 - **from** - the date time when the sample was taken. It follows the ISO-8601 standard.
@@ -127,7 +127,7 @@ Example:
 <sample from="2021-04-16T19:14:46" bodySiteDisplay="Nase und Rachen" display="Abstrich-oberflächlich">...</sample>
 ```
 
-###germ
+### germ
 - **id** - the id of the germ. This can be any number. The ID has to be unique.
 - **display** - the type of germ. This can be any string containing the name
 - **SNOMED** - The conceptID of the germ from the SNOMED nomenclature. It can be any string
@@ -137,8 +137,8 @@ Example:
 <germ id="25403319" SNOMED="3092008" display="Staphylococcus aureus">...</germ>
 ```
 
-###comment
-This explanation is specific to the comment that is attatched to the germ
+### comment
+This explanation is specific to the comment that is attatched to the germ node.
 - **class** - The class of the germ. This can be any String, but only MRSA, MRGN3, MRGN4 and VRE will be processed by this tool. The class information is computed by various conditions during the ETL-Process
 
 Example:
@@ -146,7 +146,7 @@ Example:
 <comment class="MRSA">...</comment>
 ```
 
-###antibiotic
+### antibiotic
 - **LOINC** - The corresponding LOINC code for the antibiotic. This has to be the correct code, otherwise the antibiotics result can not be processed
 - **display** - The name of the antibiotic. This can be any string.
 
@@ -155,7 +155,7 @@ Example:
 <antibiotic LOINC="18862-3" display="Amoxicillin/Clavulansäure">...</antibiotic>
 ```
 
-###result
+### result
 - **string** - The result string of the Antibiotics test. This can be "R" (Resistant), "S" (Sensible) or "I" (Intermediary)
 - **LOINC** - The corresponding LOINC code for the antibiotics result.
 
@@ -202,7 +202,7 @@ Following this structure a valid example for a VRE-case could look like this:
 </patient>
 ```
 
-##MRSA specifics
+## MRSA specifics
 
 The XML file for MRSA cases have to follow a specific scheme and additionally contain the following information:
 
