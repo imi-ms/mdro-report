@@ -44,7 +44,7 @@ fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {
         CaseScope.MRSA -> generateRandomAntibioticsAnalysis(getMRSAAntibiotics()) //TODO: Add MRSA Logic
         CaseScope.MRGN3 -> generateMRGNAntibioticsAnalysis(3, getMRGNAntibiotics(), caseInfo.germType)
         CaseScope.MRGN4 -> generateMRGNAntibioticsAnalysis(4, getMRGNAntibiotics(), caseInfo.germType)
-        CaseScope.VRE -> generateRandomAntibioticsAnalysis(getVREAntibiotics()) //TODO: Add VRE Logic
+        CaseScope.VRE -> generateVREAntibioticsAnalysis(getVREAntibiotics())
     }
 }
 
@@ -106,6 +106,31 @@ fun getPseudomonasAntibioticsAnalysis(antibiotics: MutableList<AntibioticType>):
     return result
 }
 
+fun generateVREAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
+    val result = mutableListOf<AntibioticsAnalysis>()
+    for (antibiotic in antibiotics) {
+        when (antibiotic) {
+            AntibioticType.LINEZOLID -> result.add(
+                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.LINEZOLID)
+            )
+            AntibioticType.TIGECYCLIN -> result.add(
+                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.TIGECYCLIN)
+            )
+            AntibioticType.VANCOMYCIN -> result.add(
+                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.VANCOMYCIN)
+            )
+            AntibioticType.TEICOPLANIN -> result.add(
+                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.TEICOPLANIN)
+            )
+            AntibioticType.QUINUPRISTIN_DALFOPRISTIN -> result.add(
+                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.QUINUPRISTIN)
+            )
+            else -> result.add(AntibioticsAnalysis(antibiotic, AntibioticsResult.UNKNOWN))
+        }
+    }
+    return result
+}
+
 fun getResistantAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
     val result = mutableListOf<AntibioticsAnalysis>()
     antibiotics.forEach {
@@ -125,4 +150,27 @@ fun getRandomTypeWithProbability(typeList: List<ProbabilityEnum>): ProbabilityEn
         }
     }
     return null //Should never be reached
+}
+
+fun getRandomAntibioticsAnalysisWithProbability(antibioticWithProbability: AntibioticsProbability): AntibioticsAnalysis {
+    val p = Random.nextDouble(0.0, 1.0)
+    var cumulativeProbability = 0.0
+
+    cumulativeProbability += antibioticWithProbability.sProbability
+    if (p <= cumulativeProbability) {
+        return AntibioticsAnalysis(antibioticWithProbability.antibioticType, AntibioticsResult.SENSIBLE)
+    }
+
+    cumulativeProbability += antibioticWithProbability.rProbability
+    if (p <= cumulativeProbability) {
+        return AntibioticsAnalysis(antibioticWithProbability.antibioticType, AntibioticsResult.RESISTANT)
+    }
+
+    cumulativeProbability += antibioticWithProbability.iProbability
+    if (p <= cumulativeProbability) {
+        return AntibioticsAnalysis(antibioticWithProbability.antibioticType, AntibioticsResult.INTERMEDIARY)
+    }
+
+    //Should never be reached if probabilities are correct
+    return AntibioticsAnalysis(antibioticWithProbability.antibioticType, AntibioticsResult.UNKNOWN)
 }
