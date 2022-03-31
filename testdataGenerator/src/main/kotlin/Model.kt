@@ -96,11 +96,12 @@ enum class AntibioticType(val LOINC: String, val display: String) {
 enum class AntibioticsResult(val LOINC: String, val result: String) {
     RESISTANT("LA6676-6", "R"),
     SENSIBLE("LA24225-7", "S"),
-    INTERMEDIARY("", "I")
+    INTERMEDIARY("", "I"),
+    UNKNOWN("", "")
 }
 
 interface ProbabilityEnum{
-    val type: String
+    val type: Any
     val relativeProbability: Double
 }
 
