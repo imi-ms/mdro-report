@@ -9,15 +9,13 @@ import javafx.event.EventHandler
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
 import javafx.scene.Scene
-import javafx.scene.control.Button
-import javafx.scene.control.ChoiceBox
-import javafx.scene.control.Label
-import javafx.scene.control.ProgressBar
-import javafx.scene.control.Slider
+import javafx.scene.control.*
+import javafx.scene.control.Alert.AlertType
 import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
 import java.io.File
 import kotlin.system.exitProcess
+
 
 /**
  * Classes that extend Application require javafx in the jdk.
@@ -93,11 +91,19 @@ class JavaFxApplication : Application() {
                         (page.lookup("#loadingBar") as ProgressBar).progress = i / numberOfPatients
                     }
                 }
-                stop()
+                Platform.runLater{
+                    val alert = Alert(AlertType.INFORMATION)
+                    alert.title = "Generierung Erfolgreich"
+                    alert.headerText = "Die Generierung war erfolgreich"
+                    alert.contentText = "Die Testdaten wurden erfolgreich unter dem von " +
+                            "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
+                            "Sollten Sie noch weitere Daten generieren wollen, " +
+                            "führen Sie den Testdaten Generator erneut aus."
+                    alert.showAndWait()
+
+                    stop()
+                }
             }.start()
-
-
-
         }
     }
 
