@@ -41,7 +41,7 @@ data class CaseDate(val startTimeDate: LocalDateTime, val endDateTime: LocalDate
 
 fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {
     return when (caseInfo.caseScope) {
-        CaseScope.MRSA -> generateRandomAntibioticsAnalysis(getMRSAAntibiotics()) //TODO: Add MRSA Logic
+        CaseScope.MRSA -> generateRandomAntibioticsAnalysis(getMRSAAntibiotics()) //TODO: Add Logic
         CaseScope.MRGN3 -> generateMRGNAntibioticsAnalysis(3, getMRGNAntibiotics(), caseInfo.germType)
         CaseScope.MRGN4 -> generateMRGNAntibioticsAnalysis(4, getMRGNAntibiotics(), caseInfo.germType)
         CaseScope.VRE -> generateVREAntibioticsAnalysis(getVREAntibiotics())
@@ -64,19 +64,17 @@ fun generateMRGNAntibioticsAnalysis(
 ): List<AntibioticsAnalysis> {
     when (numberOfResistances) {
         3 -> {
-            when (germType) {
-                in getEnterobacteralesGerms() -> return getEnterobacterAntibioticsAnalysis(antibiotics)
-                GermType.P_AERUGINOSA -> return getPseudomonasAntibioticsAnalysis(antibiotics.toMutableList())
-                //TODO: Add Acinetobacter baumannii
-                else -> {} //TODO: Fallback?
+            return when (germType) {
+                GermType.P_AERUGINOSA -> generatePseudomonasAntibioticsAnalysis(antibiotics.toMutableList())
+                else -> generateDefaultMRGNAntibioticsAnalysis(antibiotics)
             }
         }
-        4 -> return getResistantAntibioticsAnalysis(antibiotics)
+        4 -> return generateResistantAntibioticsAnalysis(antibiotics)
     }
     return listOf()
 }
 
-fun getEnterobacterAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
+fun generateDefaultMRGNAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
     val result = mutableListOf<AntibioticsAnalysis>()
     antibiotics.forEach {
         when (it) {
@@ -91,7 +89,7 @@ fun getEnterobacterAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<
     return result
 }
 
-fun getPseudomonasAntibioticsAnalysis(antibiotics: MutableList<AntibioticType>): List<AntibioticsAnalysis> {
+fun generatePseudomonasAntibioticsAnalysis(antibiotics: MutableList<AntibioticType>): List<AntibioticsAnalysis> {
     val result = mutableListOf<AntibioticsAnalysis>()
 
     val randomSelection = antibiotics.random()
@@ -131,7 +129,7 @@ fun generateVREAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<Anti
     return result
 }
 
-fun getResistantAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
+fun generateResistantAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
     val result = mutableListOf<AntibioticsAnalysis>()
     antibiotics.forEach {
         result.add(AntibioticsAnalysis(it, AntibioticsResult.RESISTANT))

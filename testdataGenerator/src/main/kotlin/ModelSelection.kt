@@ -32,18 +32,10 @@ fun getMRGNAntibiotics(): List<AntibioticType> {
 
 fun getMRGNGermTypes(): List<GermType> {
     return listOf(
-        GermType.E_COLI, GermType.E_HERMANNII,
-        GermType.K_AEROGENES, GermType.K_OXYTOCA,
-        GermType.M_MORGANII, GermType.P_AERUGINOSA,
-        GermType.P_MIRABILIS
-    )
-}
-
-fun getEnterobacteralesGerms(): List<GermType> {
-    return listOf(
-        GermType.E_COLI, GermType.E_HERMANNII,
-        GermType.K_AEROGENES, GermType.K_OXYTOCA,
-        GermType.M_MORGANII, GermType.P_MIRABILIS
+        GermType.A_BAUMANNII, GermType.E_COLI,
+        GermType.E_HERMANNII, GermType.K_AEROGENES,
+        GermType.K_OXYTOCA, GermType.M_MORGANII,
+        GermType.P_AERUGINOSA, GermType.P_MIRABILIS
     )
 }
 

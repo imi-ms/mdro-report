@@ -50,6 +50,7 @@ enum class GermType(val display: String, val SNOMED: String){
     E_HERMANNII("Escherichia hermannii", "85786000"),
     P_MIRABILIS("Proteus mirabilis", "73457008"),
     K_OXYTOCA("Klebsiella oxytoca", "40886007"),
+    A_BAUMANNII("Acinetobacter baumannii", "91288006")
 }
 
 enum class AntibioticType(val LOINC: String, val display: String) {

@@ -76,7 +76,7 @@ class TestdataGenerator {
             attribute("id", "${caseInfo.caseId}")
             attribute("from", "${caseInfo.startDateTime}")
             attribute("till", "${caseInfo.endDateTime}")
-            attribute("type", Casetype.STATIONAER.type) //TODO Andere Casetypes?
+            attribute("type", Casetype.STATIONAER.type)
             //TODO: Add AdmissionCause and state
             "location" {
                 attribute("id", "${caseInfo.locationId}")
@@ -114,7 +114,6 @@ class TestdataGenerator {
                                 addPCRMetaNode("SampleID", "${caseInfo.sampleId}")
                                 addPCRMetaNode("CollectionDate", "${caseInfo.startDateTime}")
                                 addPCRMetaNode("Spa", "${caseInfo.spaType?.type}")
-                                //TODO: <pcr-meta k="ST" v=""/>
                                 addPCRMetaNode("ClusterType", "${caseInfo.clusterType}")
                             }
                             else -> {}
@@ -136,7 +135,6 @@ class TestdataGenerator {
             }
             "hygiene-message" {
                 attribute("germ-name", caseInfo.germType.display)
-                attribute("germ-number", "1") //TODO Logik dahinter?
                 attribute("nosocomial", "${caseInfo.nosocomial}")
                 attribute("infection", "${caseInfo.infection}")
                 attribute("MRG-class", "${caseInfo.caseScope}")
@@ -182,7 +180,7 @@ data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) 
                 germType = GermType.S_AUREUS
                 spaType = getRandomTypeWithProbability(SpaType.values().toList())!! as SpaType
                 clusterType = getRandomTypeWithProbability(ClusterType.values().toList())!! as ClusterType
-                nosocomial = Random.nextBoolean() //TODO: Logic?
+                nosocomial = Random.nextBoolean()
                 infection = Random.nextBoolean()
             }
             CaseScope.MRGN3, CaseScope.MRGN4 -> {
