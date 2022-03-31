@@ -45,22 +45,24 @@ class TestdataGenerator {
         return generateStartAndEnddate(startTimeRange, endTimeRange)
     }
 
-    fun createTestdataFile(patientNumber: Int, location: String) {
+    fun createTestdataFile(location: String) {
         val caseScope = CaseScope.values().random()
-        File("$location/Patient$patientNumber").writeText(createPatient(caseScope))
+        val patient = createPatient(caseScope)
+        val id = patient.get<String>("id")
+        File("$location/$id").writeText(patient.toString())
     }
 
     fun createTestdata(numberOfTestdata: Int): List<String> {
         val result = mutableListOf<String>()
         for (i in 1..numberOfTestdata) {
             val caseScope = CaseScope.values().random()
-            result.add(createPatient(caseScope))
+            result.add(createPatient(caseScope).toString())
             log.info("Created new Patient with $caseScope case. Patient no. $i")
         }
         return result
     }
 
-    fun createPatient(caseScope: CaseScope): String {
+    fun createPatient(caseScope: CaseScope): Node {
         val caseInfo = CaseInfo(caseScope, this)
         val patient = xml("patient") {
             attribute("birthYear", "${Random.nextInt(1940, 2010)}")
@@ -68,7 +70,7 @@ class TestdataGenerator {
             attribute("id", "${caseInfo.patientId}")
             addCase(caseInfo)
         }
-        return patient.toString(true)
+        return patient
     }
 
     fun Node.addCase(caseInfo: CaseInfo) {
