@@ -5,13 +5,14 @@ import org.redundent.kotlin.xml.xml
 import java.io.File
 import java.time.LocalDate
 import java.time.LocalDateTime
-import java.time.LocalTime
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
 
 private val log = KotlinLogging.logger {  }
 
 class TestdataGenerator {
+    private var startTimeRange = LocalDate.of(2021, 1, 1)
+    private var endTimeRange = LocalDate.of(2022, 2, 28)
+
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
@@ -24,360 +25,174 @@ class TestdataGenerator {
                 File("testdata").mkdir()
             }
 
-            val patients = createTestdata(Integer.parseInt(askUser("How many patients should be generated?")))
+            val patients = TestdataGenerator().createTestdata(Integer.parseInt(askUser("How many patients should be generated?")))
             patients.forEachIndexed { index, patient ->
                 File("testdata/Patient$index").writeText(patient)
             }
         }
     }
-}
 
-private val unusedIds = (1000000..99999999).toMutableList()
-private var startTimeRange = LocalDate.of(2021,1,1)
-private var endTimeRange = LocalDate.of(2022,2,28)
 
-fun setStartYear(year: String) {
-    startTimeRange = LocalDate.of(year.toInt(), 1, 1)
-}
+    fun setStartYear(year: String) {
+        startTimeRange = LocalDate.of(year.toInt(), 1, 1)
+    }
 
-fun setEndYear(year: String) {
-    endTimeRange = LocalDate.of(year.toInt(), 1, 1).minusDays(1)
-}
+    fun setEndYear(year: String) {
+        endTimeRange = LocalDate.of(year.toInt(), 1, 1).minusDays(1)
+    }
 
-fun generateTestdataFile(patientNumber: Int, location: String) {
-    val caseScope = CaseScope.values().random()
-    val patient = createPatient(caseScope)
-    File("$location/Patient$patientNumber").writeText(createPatient(caseScope))
-}
+    fun getStartAndEndYear(): CaseDate {
+        return generateStartAndEnddate(startTimeRange, endTimeRange)
+    }
 
-fun createTestdata(numberOfTestdata: Int): List<String> {
-    val result = mutableListOf<String>()
-    for(i in 1..numberOfTestdata) {
+    fun createTestdataFile(patientNumber: Int, location: String) {
         val caseScope = CaseScope.values().random()
-        result.add(createPatient(caseScope))
-        log.info("Created new Patient with $caseScope case. Patient no. $i")
+        File("$location/Patient$patientNumber").writeText(createPatient(caseScope))
     }
-    return result
-}
 
-fun createPatient(caseScope: CaseScope): String {
-    val caseInfo = CaseInfo(caseScope)
-    val patient = xml("patient") {
-        attribute("birthYear", "${Random.nextInt(1940, 2010)}")
-        attribute("sex", "${if (Random.nextBoolean()) 'F' else 'M'}")
-        attribute("id", "${caseInfo.patientId}")
-        addCase(caseInfo)
+    fun createTestdata(numberOfTestdata: Int): List<String> {
+        val result = mutableListOf<String>()
+        for (i in 1..numberOfTestdata) {
+            val caseScope = CaseScope.values().random()
+            result.add(createPatient(caseScope))
+            log.info("Created new Patient with $caseScope case. Patient no. $i")
+        }
+        return result
     }
-    return patient.toString(true)
-}
 
-fun Node.addCase(caseInfo: CaseInfo){
-    addNode(xml("case") {
-        attribute("id", "${caseInfo.caseId}")
-        attribute("from", "${caseInfo.startDateTime}")
-        attribute("till", "${caseInfo.endDateTime}")
-        attribute("type", Casetype.STATIONAER.type) //TODO Andere Casetypes?
-        //TODO: Add AdmissionCause and state
-        "location" {
-            attribute("id", "${caseInfo.locationId}")
+    fun createPatient(caseScope: CaseScope): String {
+        val caseInfo = CaseInfo(caseScope, this)
+        val patient = xml("patient") {
+            attribute("birthYear", "${Random.nextInt(1940, 2010)}")
+            attribute("sex", "${if (Random.nextBoolean()) 'F' else 'M'}")
+            attribute("id", "${caseInfo.patientId}")
+            addCase(caseInfo)
+        }
+        return patient.toString(true)
+    }
+
+    fun Node.addCase(caseInfo: CaseInfo) {
+        addNode(xml("case") {
+            attribute("id", "${caseInfo.caseId}")
             attribute("from", "${caseInfo.startDateTime}")
             attribute("till", "${caseInfo.endDateTime}")
-            attribute("clinic", caseInfo.clinic.fa_code)
-        }
-        "labReport" {
-            attribute("id", "${caseInfo.labReportId}")
-            attribute("source", "MIBI")
-            "request" {
-                attribute("from", "${caseInfo.requestDateTime}")
-                attribute("sender", caseInfo.clinic.clinic)
+            attribute("type", Casetype.STATIONAER.type) //TODO Andere Casetypes?
+            //TODO: Add AdmissionCause and state
+            "location" {
+                attribute("id", "${caseInfo.locationId}")
+                attribute("from", "${caseInfo.startDateTime}")
+                attribute("till", "${caseInfo.endDateTime}")
+                attribute("clinic", caseInfo.clinic.fa_code)
             }
-            "sample" {
-                attribute("from", "${caseInfo.requestDateTime}")
-                attribute("bodySiteDisplay", caseInfo.bodySite.bodySiteDisplay)
-                attribute("display", caseInfo.bodySite.display)
-                "comment" {
-                    -"No comment"
+            "labReport" {
+                attribute("id", "${caseInfo.labReportId}")
+                attribute("source", "MIBI")
+                "request" {
+                    attribute("from", "${caseInfo.requestDateTime}")
+                    attribute("sender", caseInfo.clinic.clinic)
                 }
-                "germ" {
-                    attribute("id", "${caseInfo.germId}")
-                    attribute("SNOMED", caseInfo.germType.SNOMED)
-                    attribute("display", caseInfo.germType.display)
-                    attribute("class", caseInfo.caseScope.type)
-                    "comment"{
-                        attribute("class", caseInfo.caseScope.type) //TODO: Currently xquery searches for this
-                        -"Germ generated by Testdata Generator"
+                "sample" {
+                    attribute("from", "${caseInfo.requestDateTime}")
+                    attribute("bodySiteDisplay", caseInfo.bodySite.bodySiteDisplay)
+                    attribute("display", caseInfo.bodySite.display)
+                    "comment" {
+                        -"No comment"
                     }
-                    when(caseInfo.caseScope) {
-                        CaseScope.MRSA -> {
-                            addPCRMetaNode("PatientID", "${caseInfo.patientId}")
-                            addPCRMetaNode("CaseID", "${caseInfo.caseId}")
-                            addPCRMetaNode("SampleID", "${caseInfo.sampleId}")
-                            addPCRMetaNode("CollectionDate", "${caseInfo.startDateTime}")
-                            addPCRMetaNode("Spa", "${caseInfo.spaType?.type}")
-                            //TODO: <pcr-meta k="ST" v=""/>
-                            addPCRMetaNode("ClusterType", "${caseInfo.clusterType}")
+                    "germ" {
+                        attribute("id", "${caseInfo.germId}")
+                        attribute("SNOMED", caseInfo.germType.SNOMED)
+                        attribute("display", caseInfo.germType.display)
+                        attribute("class", caseInfo.caseScope.type)
+                        "comment"{
+                            attribute("class", caseInfo.caseScope.type) //TODO: Currently xquery searches for this
+                            -"Germ generated by Testdata Generator"
                         }
-                        else -> {}
-                    }
+                        when (caseInfo.caseScope) {
+                            CaseScope.MRSA -> {
+                                addPCRMetaNode("PatientID", "${caseInfo.patientId}")
+                                addPCRMetaNode("CaseID", "${caseInfo.caseId}")
+                                addPCRMetaNode("SampleID", "${caseInfo.sampleId}")
+                                addPCRMetaNode("CollectionDate", "${caseInfo.startDateTime}")
+                                addPCRMetaNode("Spa", "${caseInfo.spaType?.type}")
+                                //TODO: <pcr-meta k="ST" v=""/>
+                                addPCRMetaNode("ClusterType", "${caseInfo.clusterType}")
+                            }
+                            else -> {}
+                        }
 
 
-                    for(antibioticAnalysis in generateAntibioticsAnalysis(caseInfo)) {
-                        "antibiotic" {
-                            attribute("LOINC", antibioticAnalysis.antibiotic.LOINC)
-                            attribute("display", antibioticAnalysis.antibiotic.display)
-                            "result" {
-                                attribute("string", antibioticAnalysis.antibioticsResult.result)
-                                attribute("LOINC", antibioticAnalysis.antibioticsResult.LOINC)
+                        for (antibioticAnalysis in generateAntibioticsAnalysis(caseInfo)) {
+                            "antibiotic" {
+                                attribute("LOINC", antibioticAnalysis.antibiotic.LOINC)
+                                attribute("display", antibioticAnalysis.antibiotic.display)
+                                "result" {
+                                    attribute("string", antibioticAnalysis.antibioticsResult.result)
+                                    attribute("LOINC", antibioticAnalysis.antibioticsResult.LOINC)
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-        "hygiene-message" {
-            attribute("germ-name", caseInfo.germType.display)
-            attribute("germ-number", "1") //TODO Logik dahinter?
-            attribute("nosocomial", "${caseInfo.nosocomial}")
-            attribute("infection", "${caseInfo.infection}")
-            attribute("MRG-class", "${caseInfo.caseScope}")
-        }
-    })
+            "hygiene-message" {
+                attribute("germ-name", caseInfo.germType.display)
+                attribute("germ-number", "1") //TODO Logik dahinter?
+                attribute("nosocomial", "${caseInfo.nosocomial}")
+                attribute("infection", "${caseInfo.infection}")
+                attribute("MRG-class", "${caseInfo.caseScope}")
+            }
+        })
+    }
+
+
+    fun Node.addPCRMetaNode(k: String, v: String) {
+        addNode(xml("pcr-meta") {
+            attribute("k", k)
+            attribute("v", v)
+        })
+    }
+
 }
 
+data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) {
+    val patientId: Int = idGenerator.getUniqueId()
+    val caseId: Int = idGenerator.getUniqueId()
+    val locationId: Int = idGenerator.getUniqueId()
+    val labReportId: Int = idGenerator.getUniqueId()
+    val sampleId: Int = idGenerator.getUniqueId()
+    val germId: Int = idGenerator.getUniqueId()
 
-data class CaseInfo(val caseScope: CaseScope) {
-    val patientId: Int = getUniqueId()
-    val caseId: Int = getUniqueId()
-    val locationId: Int = getUniqueId()
-    val labReportId: Int = getUniqueId()
-    val sampleId: Int = getUniqueId()
-    val germId: Int = getUniqueId()
     val clinic: Department = Department.values().random()
-
-    private val startAndEndDateTime : Pair<LocalDateTime, LocalDateTime> = generateStartAndEnddate()
-    val startDateTime: LocalDateTime = startAndEndDateTime.first
-    val endDateTime: LocalDateTime = startAndEndDateTime.second
-    val requestDateTime = startDateTime.plusDays(1) //Request always one day after start
-
     val bodySite: SmearType = SmearType.values().random()
+
+    private val startAndEndDateTime: CaseDate = generator.getStartAndEndYear()
+    val startDateTime: LocalDateTime = startAndEndDateTime.startTimeDate
+    val endDateTime: LocalDateTime = startAndEndDateTime.endDateTime
+    val requestDateTime: LocalDateTime = startDateTime.plusDays(1) //Request always one day after start
 
     var germType: GermType
     var spaType: SpaType? = null
     var clusterType: ClusterType? = null
     var nosocomial: Boolean? = null
     var infection: Boolean? = null
+
     init {
-
-       when (caseScope) {
-           CaseScope.MRSA -> {
-               germType = GermType.S_AUREUS
-               spaType = getRandomTypeWithProbability(SpaType.values().toList())!! as SpaType
-               clusterType = getRandomTypeWithProbability(ClusterType.values().toList())!! as ClusterType
-               nosocomial = Random.nextBoolean() //TODO: Logic?
-               infection = Random.nextBoolean()
-           }
-           CaseScope.MRGN3, CaseScope.MRGN4 -> {
-               germType = getMRGNGermTypes().random()
-           }
-           CaseScope.VRE -> {
-               germType = getVREGermTypes().random()
-           }
-       }
-    }
-}
-
-fun Node.addPCRMetaNode(k: String, v: String) {
-    addNode(xml("pcr-meta") {
-        attribute("k", k)
-        attribute("v", v)
-    })
-}
-
-private fun generateStartAndEnddate(): Pair<LocalDateTime, LocalDateTime> {
-    val startEpochDay = startTimeRange.toEpochDay()
-    val endEpochDay = endTimeRange.toEpochDay()
-    val randomStartDay = LocalDate.ofEpochDay(
-        ThreadLocalRandom
-            .current()
-            .nextLong(startEpochDay, endEpochDay)
-    )
-    val randomEndDay = randomStartDay
-        .plusWeeks(Random.nextLong(1, 4))
-        .plusDays(Random.nextLong(0, 6))
-
-    val randomStartTime = LocalTime.of(Random.nextInt(1, 24),
-                                        Random.nextInt(1, 60),
-                                        Random.nextInt(1, 60))
-
-    val randomEndTime = LocalTime.of(Random.nextInt(1, 24),
-        Random.nextInt(1, 60),
-        Random.nextInt(1, 60))
-
-    val startDateTime = LocalDateTime.of(randomStartDay, randomStartTime)
-    val endDateTime = LocalDateTime.of(randomEndDay, randomEndTime)
-
-    return Pair(startDateTime, endDateTime)
-}
-
-private fun getUniqueId(): Int {
-    val id = unusedIds.random()
-    unusedIds.remove(id)
-    return id
-}
-
-
-private fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {
-    return when(caseInfo.caseScope) {
-        CaseScope.MRSA -> generateRandomAntibioticsAnalysis(getMRSAAntibiotics()) //TODO: Add MRSA Logic
-        CaseScope.MRGN3 -> generateMRGNAntibioticsAnalysis(3, getMRGNAntibiotics(), caseInfo.germType)
-        CaseScope.MRGN4 -> generateMRGNAntibioticsAnalysis(4, getMRGNAntibiotics(), caseInfo.germType)
-        CaseScope.VRE -> generateRandomAntibioticsAnalysis(getVREAntibiotics()) //TODO: Add VRE Logic
-    }
-}
-
-private fun generateRandomAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
-    val result: MutableList<AntibioticsAnalysis> = mutableListOf()
-    for(antibiotic in antibiotics) {
-        val randomResult = AntibioticsResult.values().random()
-        result.add(AntibioticsAnalysis(antibiotic, randomResult))
-    }
-    return result
-}
-
-private fun generateMRGNAntibioticsAnalysis(
-    numberOfResistances: Int,
-    antibiotics: List<AntibioticType>,
-    germType: GermType
-): List<AntibioticsAnalysis> {
-    when(numberOfResistances) {
-        3 -> {
-            when(germType) {
-                in getEnterobacteralesGerms() -> return getEnterobacterAntibioticsAnalysis(antibiotics)
-                GermType.P_AERUGINOSA -> return getPseudomonasAntibioticsAnalysis(antibiotics.toMutableList())
-                //TODO: Add Acinetobacter baumannii
-                else -> {} //TODO: Fallback?
+        when (caseScope) {
+            CaseScope.MRSA -> {
+                germType = GermType.S_AUREUS
+                spaType = getRandomTypeWithProbability(SpaType.values().toList())!! as SpaType
+                clusterType = getRandomTypeWithProbability(ClusterType.values().toList())!! as ClusterType
+                nosocomial = Random.nextBoolean() //TODO: Logic?
+                infection = Random.nextBoolean()
             }
-        }
-        4 -> return getResistantAntibioticsAnalysis(antibiotics)
-    }
-    return listOf()
-}
-
-private fun getEnterobacterAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
-    val result = mutableListOf<AntibioticsAnalysis>()
-    antibiotics.forEach {
-        when(it) {
-            AntibioticType.IMIPENEM, AntibioticType.MEROPENEM -> {
-                result.add(AntibioticsAnalysis(it, getSensibleOrIntermediaryRandomly()))
+            CaseScope.MRGN3, CaseScope.MRGN4 -> {
+                germType = getMRGNGermTypes().random()
             }
-            else -> {
-                result.add(AntibioticsAnalysis(it, AntibioticsResult.RESISTANT))
+            CaseScope.VRE -> {
+                germType = getVREGermTypes().random()
             }
         }
     }
-    return result
-}
-
-private fun getPseudomonasAntibioticsAnalysis(antibiotics: MutableList<AntibioticType>): List<AntibioticsAnalysis> {
-    val result = mutableListOf<AntibioticsAnalysis>()
-
-    val randomSelection = antibiotics.random()
-    antibiotics.remove(randomSelection)
-
-    result.add(AntibioticsAnalysis(randomSelection, getSensibleOrIntermediaryRandomly()))
-
-    for (antibiotic in antibiotics) {
-        result.add(AntibioticsAnalysis(antibiotic, AntibioticsResult.RESISTANT))
-    }
-
-    return result
-}
-
-private fun getResistantAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
-    val result = mutableListOf<AntibioticsAnalysis>()
-    antibiotics.forEach {
-        result.add(AntibioticsAnalysis(it, AntibioticsResult.RESISTANT))
-    }
-    return result
-}
-
-
-private fun getMRSAAntibiotics(): List<AntibioticType> {
-    return listOf(
-        AntibioticType.AMOXICILLIN_CLAVULANSAEURE, AntibioticType.AMPICILLIN_SULBACTAM,
-        AntibioticType.AZITHROMYCIN, AntibioticType.BENZYLPENICILLIN,
-        AntibioticType.CEFACLOR, AntibioticType.CEFAZOLIN,
-        AntibioticType.CEFOXITIN, AntibioticType.CLARITHROMYCIN,
-        AntibioticType.CLINDAMYCIN, AntibioticType.DAPTOMYCIN,
-        AntibioticType.ERYTHROMYCIN, AntibioticType.FOSFOMYCIN,
-        AntibioticType.FUSIDINSAEURE, AntibioticType.GENTAMICIN,
-        AntibioticType.IMIPENEM, AntibioticType.INDUCED_CLINDAMYCIN,
-        AntibioticType.LEVOFLOXACIN, AntibioticType.LINEZOLID,
-        AntibioticType.MEROPENEM, AntibioticType.MUPIROCIN,
-        AntibioticType.OXACILLIN, AntibioticType.PIPERACILLIN,
-        AntibioticType.PIPERACILLIN_TAZOBACTAM, AntibioticType.RIFAMPICIN,
-        AntibioticType.TEICOPLANIN, AntibioticType.TETRACYCLIN,
-        AntibioticType.TIGECYCLIN, AntibioticType.TRIMETHOPRIM_SULFAMETHOXAZOL,
-        AntibioticType.VANCOMYCIN
-    )
-}
-
-private fun getMRGNAntibiotics(): List<AntibioticType> {
-    return listOf(
-        AntibioticType.PIPERACILLIN_TAZOBACTAM, AntibioticType.CEFOTAXIM,
-        AntibioticType.CEFTAZIDIM, AntibioticType.CEFEPIM,
-        AntibioticType.MEROPENEM, AntibioticType.IMIPENEM,
-        AntibioticType.CIPROFLOXACIN
-
-    )
-}
-
-private fun getMRGNGermTypes(): List<GermType> {
-    return listOf(
-        GermType.E_COLI, GermType.E_HERMANNII,
-        GermType.K_AEROGENES, GermType.K_OXYTOCA,
-        GermType.M_MORGANII, GermType.P_AERUGINOSA,
-        GermType.P_MIRABILIS
-    )
-}
-
-private fun getEnterobacteralesGerms(): List<GermType> {
-    return listOf(
-        GermType.E_COLI, GermType.E_HERMANNII,
-        GermType.K_AEROGENES, GermType.K_OXYTOCA,
-        GermType.M_MORGANII, GermType.P_MIRABILIS
-    )
-}
-
-private fun getVREGermTypes(): List<GermType> {
-    return listOf(
-        GermType.E_FAECIUM, GermType.E_FAECALIS
-    )
-}
-
-private fun getVREAntibiotics(): List<AntibioticType> {
-    return listOf(
-        AntibioticType.LINEZOLID, AntibioticType.TIGECYCLIN,
-        AntibioticType.VANCOMYCIN, AntibioticType.TEICOPLANIN,
-        AntibioticType.QUINUPRISTIN_DALFOPRISTIN
-    )
-}
-
-private fun getSensibleOrIntermediaryRandomly(): AntibioticsResult {
-    return listOf(AntibioticsResult.SENSIBLE, AntibioticsResult.INTERMEDIARY).random()
-}
-
-private fun getRandomTypeWithProbability(typeList: List<ProbabilityEnum>):ProbabilityEnum? {
-    val p = Random.nextDouble(0.0, 1.0)
-    var cumulativeProbability = 0.0
-
-    for(type in typeList) {
-        cumulativeProbability += type.relativeProbability
-        if(p <= cumulativeProbability) {
-            return type
-        }
-    }
-    return null //Should never be reached
 }
 
 

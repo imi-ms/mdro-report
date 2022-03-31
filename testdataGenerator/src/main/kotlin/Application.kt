@@ -60,7 +60,7 @@ class JavaFxApplication : Application() {
 
                 (page.lookup("#label_location") as Label).text = directory.absolutePath
                 (page.lookup("#button_ok") as Button).isDisable = false
-            } catch(e: Exception) {}
+            } catch(e: Exception) {/*Nothing to do here*/}
         }
         (page.lookup("#selectBox_yearStart") as ChoiceBox<String>).items = getYearsList()
         (page.lookup("#selectBox_yearStart") as ChoiceBox<String>).value = "2021"
@@ -77,17 +77,18 @@ class JavaFxApplication : Application() {
             val yearStart = (page.lookup("#selectBox_yearStart") as ChoiceBox<String>).value
             val yearEnd = (page.lookup("#selectBox_yearEnd") as ChoiceBox<String>).value
             val location = directory.absolutePath
+            val generator = TestdataGenerator()
 
             page = FXMLLoader.load(javaClass.getResource("/progressView.fxml"))
             primaryStage.scene = Scene(page)
             primaryStage.show()
 
             Thread {
-                setStartYear(yearStart)
-                setEndYear(yearEnd)
+                generator.setStartYear(yearStart)
+                generator.setEndYear(yearEnd)
 
                 for(i in 1..numberOfPatients.toInt()) {
-                    generateTestdataFile(i, location)
+                    generator.createTestdataFile(i, location)
                     Platform.runLater {
                         (page.lookup("#loadingBar") as ProgressBar).progress = i / numberOfPatients
                     }
