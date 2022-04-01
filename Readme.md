@@ -49,9 +49,9 @@ The MDReport Tool hosts an BaseX Instance that works with XML files that follow 
 The main tree follows this structure:
 ```xml
 <patient>
-	<case>
-		<location>
-		<labReport>
+    <case>
+        <location/>
+        <labReport>
 			<request/>
 			<sample>
 				<comment></comment>
@@ -92,7 +92,9 @@ Example:
 ### location
 - **id** - the id of the location. This can be any number. The ID has to be unique.
 - **from** - The date time when the patient was transferred to this location. It follows the ISO-8601 standard.
-- **till** - The date time when the patient was transferred to a different location or dismissed. It follows the ISO-8601 standard.
+- **till** - The date time when the patient was transferred to a different location or dismissed. It follows the
+  ISO-8601 standard.
+- **clinic** - The clinic where the patient was located. Can be any string.
 
 Example:
 ```xml
@@ -206,7 +208,7 @@ Following this structure a valid example for a VRE-case could look like this:
 
 The XML file for MRSA cases have to follow a specific scheme and additionally contain the following information:
 
-- Information about the PCR analysis of the germ with the Spa and cluster type. This will be attatched to the germ node.
+- Information about the PCR analysis of the germ with the Spa and cluster type. This will be attached to the germ node.
 ```xml
 <pcr-meta k="PatientID" v="5630133"/>
 <pcr-meta k="CaseID" v="99814764"/>
@@ -216,7 +218,7 @@ The XML file for MRSA cases have to follow a specific scheme and additionally co
 <pcr-meta k="ClusterType" v="CLUSTER_1550"/>
 ```
 
-- A hygiene message containing information about the infection type. It is attatched to the case node.
+- A hygiene message containing information about the infection type. It is attached to the case node.
 ```xml
 <hygiene-message germ-name="Staphylococcus aureus" nosocomial="false" infection="true" MRG-class="MRSA"/>
 ```
