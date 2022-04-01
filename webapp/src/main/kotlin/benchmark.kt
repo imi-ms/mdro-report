@@ -4,6 +4,9 @@ import de.uni_muenster.imi.oegd.common.BaseXQueries
 import de.uni_muenster.imi.oegd.common.RestClient
 import kotlin.system.measureTimeMillis
 
+/**
+ * Utility to compare two different BaseX-Queries for performance
+ */
 suspend fun main() {
     val restclient = RestClient("https://basex.ukmuenster.de/rest", "2021", "oehm", "edQu5PyusVt11yg")
 

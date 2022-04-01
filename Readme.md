@@ -3,7 +3,6 @@
 This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html).
 
-# Include fancy screenshot and concept art
 
 ![](images/concept-art.png)
 

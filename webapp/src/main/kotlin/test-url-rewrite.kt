@@ -9,6 +9,7 @@ import kotlinx.html.consumers.delayed
 import kotlinx.html.stream.appendHTML
 import java.io.ByteArrayOutputStream
 
+/** This is just a test project made by me to test if one could modify hrefs with session data during URL build process **/
 fun main() {
     println(buildString {
         appendHTML().urlRewrite { it.substringBefore("?") + "?q={\"q\":2021}" }.html {
