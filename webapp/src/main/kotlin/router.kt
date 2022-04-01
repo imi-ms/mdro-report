@@ -85,8 +85,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondRedirect("$referer?q=$q")
             }
             intercept(ApplicationCallPipeline.Call) {
-                if (call.request.uri.contains("settings/save")) return@intercept
-                if (call.request.uri.contains("static")) return@intercept
+                if (call.request.uri.startsWith("/settings/save")) return@intercept
+                if (call.request.uri.startsWith("/about")) return@intercept
+                if (call.request.uri == "/") return@intercept
+                if (call.request.uri.startsWith("/static")) return@intercept
                 if (call.request.uri.contains("invalidate-cache")) return@intercept
                 if (call.request.uri.startsWith("/statistic")) return@intercept
                 val s = call.parameters["q"]
@@ -95,7 +97,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                         header { +"Anfragekonfiguration fehlt" }
                         content {
                             +"Bitte nutzen Sie die Einstellungsleiste, um die Konfiguration der Anfrage durchzuführen"
-                            script(type = "application/javascript") {
+                            script(type = "text/javascript") {
                                 +"$(function() { $('#settings-modal').modal({focus:true}) });"
                             }
                         }
@@ -184,7 +186,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Diagramme" }
                     content {
-                        script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
                         drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", data)
                         drawBarChart("Anzahl der Probenarten", data2)
                     }
@@ -202,7 +204,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Diagramme" }
                     content {
-                        script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
                         drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", data)
                         drawBarChart("Anzahl der Probenarten", data2)
                     }
@@ -221,7 +223,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Diagramme" }
                     content {
-                        script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
                         div(classes = "container") {
                             div(classes = "row") {
                                 style = "height: 400px;"
@@ -285,7 +287,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                 }
                                 button(type = ButtonType.submit, classes = "btn btn-primary mb-2") { +"OK" }
                             }
-                            script("application/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                            script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
                             div(classes = "container") {
                                 div(classes = "row") {
                                     for ((germ, data) in mapOf(
@@ -295,6 +297,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                         "VRE" to vre
                                     )) {
                                         div(classes = "col-3") {
+                                            style = "height: 400px;"
                                             drawBarChart("Anzahl $germ", data.mapKeys { it.key.toString() })
                                         }
                                     }
@@ -302,55 +305,17 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                 }
                             }
                         } else {
-                            form(action = "/statistic") {
-                                call.parameters["q"]?.let {
-                                    hiddenInput(name = "q") { value = it }
+                            script(type = "text/javascript") {
+                                unsafe {
+                                    +"window.deleteReport = function (button, xQueryParams) {\n"
+                                    +"  button.disabled=true;\n"
+                                    +"  var formData = new FormData();\n"
+                                    +"  formData.append('toDelete', xQueryParams);\n"
+                                    +"  fetch('statistic/deleteReport', {method:'POST', body:  formData})\n"
+                                    +"  .then(res => window.location.reload())\n"
+                                    +"  return false;\n"
+                                    +"}"
                                 }
-                                for (cache in cachingUtility.getCachedParameters()
-                                    .map { cachingUtility.getCache(it)!! }) {
-                                    val xQueryParams = cache.metadata.xQueryParams
-                                    div(classes = "form-check") {
-                                        checkBoxInput(classes = "form-check-input", name = "year[]") {
-                                            id = "q${xQueryParams.year}"
-                                            value = "${xQueryParams.year}"
-                                            checked = xQueryParams.year in yearsEnabled
-                                        }
-                                        label(classes = "form-check-label") {
-                                            htmlFor = "q${xQueryParams.year}"
-                                            +xQueryParams.year.toString()
-                                            span(classes = "text-muted") {
-                                                +"Bericht erstellt: "
-                                                +cache.metadata.timeUpdated
-                                                +", zuletzt aktualisiert: "
-                                                +cache.metadata.timeUpdated
-                                                +", verfügbar: "
-                                                +(cache.germCache.filter { it.created != null }
-                                                    .joinToString { it.type })
-                                            }
-                                        }
-                                        form(action = "/statistic/deleteReport", method = FormMethod.post) {
-                                            hiddenInput {
-                                                name = "q"
-                                                value = Json.encodeToString(xQueryParams)
-                                            }
-                                            hiddenInput {
-                                                name = "toDelete"
-                                                value = Json.encodeToString(xQueryParams)
-                                            }
-                                            button(
-                                                type = ButtonType.submit,
-                                                classes = "btn btn-small btn-outline-danger "
-                                            ) {
-                                                +"delete"
-                                            }
-                                        }
-                                    }
-                                }
-
-                                button(
-                                    type = ButtonType.submit,
-                                    classes = "btn btn-secondary mb-2"
-                                ) { +"Diagramme erstellen" }
                             }
                             form(classes = "form-inline", method = FormMethod.post, action = "/statistic/create") {
                                 input(classes = "form-control b-2 mr-sm-2", name = "year") {
@@ -371,6 +336,49 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                     classes = "btn btn-light btn-mb-2"
                                 ) { +"Bericht erstellen" }
                             }
+                            form(action = "/statistic") {
+                                call.parameters["q"]?.let {
+                                    hiddenInput(name = "q") { value = it }
+                                }
+                                for (cache in cachingUtility.getCachedParameters()
+                                    .map { cachingUtility.getCache(it)!! }) {
+                                    val xQueryParams = cache.metadata.xQueryParams
+                                    div(classes = "form-check") {
+                                        checkBoxInput(classes = "form-check-input", name = "year[]") {
+                                            id = "q${xQueryParams.year}"
+                                            value = "${xQueryParams.year}"
+                                            checked = xQueryParams.year in yearsEnabled
+                                        }
+                                        label(classes = "form-check-label") {
+                                            htmlFor = "q${xQueryParams.year}"
+                                            +xQueryParams.year.toString()
+                                            span(classes = "text-muted") {
+                                                +"Bericht erstellt: "
+                                                +cache.metadata.timeUpdated
+                                                +", "
+                                                +(GermType.values().map { it.germtype }.toSet().minus(
+                                                    cache.germCache.filter { it.created != null }.map { it.type }
+                                                        .toSet()
+                                                ).joinToString())
+                                                +" werden erzeugt."
+                                            }
+                                        }
+                                        button(
+                                            type = ButtonType.submit,
+                                            classes = "btn btn-small btn-outline-danger "
+                                        ) {
+                                            onClick = "window.deleteReport(this,'${Json.encodeToString(xQueryParams)}')"
+                                            +"delete"
+                                        }
+                                    }
+                                }
+
+                                button(
+                                    type = ButtonType.submit,
+                                    classes = "btn btn-secondary mb-2"
+                                ) { +"Diagramme erstellen" }
+                            }
+
 
 
                         }
@@ -378,21 +386,20 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             post("/statistic/create") {
-                val xQueryParams = XQueryParams(call.receiveParameters()["year"]?.toInt())
+                val params = call.receiveParameters()
+                println(params)
+                val xQueryParams = XQueryParams(params["year"]?.toInt())
                 cachingUtility.getOrLoadGlobalInfo(xQueryParams, baseXClient)
                 cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
                 cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
                 cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
-                call.respondRedirect("/statistic?${call.parameters["q"]?.let { "q=$it" } ?: ""}")
+                call.respondRedirect("/statistic${params["q"]?.let { "?q=$it" } ?: ""}")
             }
             post("/statistic/deleteReport") {
-                val q = call.receiveParameters()["q"]!!
-                val xQueryParams = Json.decodeFromString<XQueryParams>(q)
-                cachingUtility.clearGlobalInfoCache(xQueryParams)
-                cachingUtility.clearGermInfo(xQueryParams, GermType.MRGN)
-                cachingUtility.clearGermInfo(xQueryParams, GermType.MRSA)
-                cachingUtility.clearGermInfo(xQueryParams, GermType.VRE)
-                call.respondRedirect("/statistic?${q.let { "q=$it" } ?: ""}")
+                val params = call.receiveParameters()
+                val xQueryParams = Json.decodeFromString<XQueryParams>(params["toDelete"]!!)
+                cachingUtility.clearCache(xQueryParams)
+                call.respondRedirect("/statistic${params["q"].let { "?q=$it" } ?: ""}")
             }
             get("/about") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {

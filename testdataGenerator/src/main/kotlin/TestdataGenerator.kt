@@ -22,7 +22,7 @@ class TestdataGenerator {
                 File("testdata").mkdir()
             }
 
-            val patients = createTestdata(Integer.parseInt(askUser("How many patients should be generated?")))
+            val patients = createTestdata(100)
             patients.forEachIndexed { index, patient ->
                 File("testdata/Patient$index").writeText(patient)
             }
@@ -39,7 +39,7 @@ fun createTestdata(numberOfTestdata: Int): List<String> {
     for(i in 1..numberOfTestdata) {
         val caseScope = listOf(CaseScope.MRSA, CaseScope.MRGN3, CaseScope.MRGN4).random() //TODO Add VRE
         result.add(createPatient(caseScope))
-        log.info("Created new Patient with $caseScope case. Patient no. $i")
+//        log.info("Created new Patient with $caseScope case. Patient no. $i")
     }
     return result
 }

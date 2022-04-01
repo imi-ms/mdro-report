@@ -252,7 +252,7 @@ private fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
                 }
                 div(classes = "modal-body modal-query") {
                     pre {
-                        +(entry.query + "\n")
+                        +(entry.query + "\n\n")
                     }
                 }
             }

@@ -4,10 +4,10 @@ object DataProcessor {
     fun countMRSATotal(caseList: List<Map<String, String>>) = caseList.size
 
     fun countMRSANosokomial(caseList: List<Map<String, String>>) =
-        caseList.count { it["nosokomial?"] == "true" }
+        caseList.count { it["nosokomial?"] == "nosokomial" }
 
     fun countMRSAImported(caseList: List<Map<String, String>>) =
-        caseList.count { it["nosokomial?"] != "true" }
+        caseList.count { it["nosokomial?"] != "nosokomial" }
 
     fun countMRGN3Cases(caseList: List<Map<String, String>>) =
         caseList.count { it["Piperacillin und Tazobactam Ergebnis"] == "MRGN3" }

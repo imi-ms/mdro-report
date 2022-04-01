@@ -129,10 +129,17 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     }
 
     fun getCachedParameters(): List<XQueryParams> {
-        val cached = File(cacheDirectory).listFiles().map { it.name.substringAfter("--").removeSuffix(".mdreport") }
+        val cached = File(cacheDirectory).listFiles().filter { it.name.startsWith(getBaseXPrefix()) }
+            .map { it.name.substringAfter("--").removeSuffix(".mdreport") }
         return cached.map { XQueryParams(it.toInt()) }
     }
 
+    fun clearCache(xQueryParams: XQueryParams) {
+        try {
+            File(cacheDirectory, getCacheFileName(xQueryParams)).delete()
+        } catch (_: Exception) {
+        }
+    }
 
     private fun getBaseXPrefix() = if (basexInfo is RestConnectionInfo) {
         "${sanitizeFilename(basexInfo.serverUrl)}-${sanitizeFilename(basexInfo.databaseId)}"
