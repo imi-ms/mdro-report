@@ -50,6 +50,7 @@ enum class GermType(val display: String, val SNOMED: String){
     E_HERMANNII("Escherichia hermannii", "85786000"),
     P_MIRABILIS("Proteus mirabilis", "73457008"),
     K_OXYTOCA("Klebsiella oxytoca", "40886007"),
+    A_BAUMANNII("Acinetobacter baumannii", "91288006")
 }
 
 enum class AntibioticType(val LOINC: String, val display: String) {
@@ -83,6 +84,7 @@ enum class AntibioticType(val LOINC: String, val display: String) {
     OXACILLIN("18961-3", "Oxacillin"),
     PIPERACILLIN("18969-6", "Piperacillin"),
     PIPERACILLIN_TAZOBACTAM("18970-4", "Piperacillin/Tazobactam"),
+    QUINUPRISTIN_DALFOPRISTIN("23640-6", "Quinupristin/Dalfopristin"),
     RIFAMPICIN("", "Rifampicin"),
     TEICOPLANIN("18989-4", "Teicoplanin"),
     TETRACYCLIN("18993-6", "Tetracyclin"),
@@ -95,11 +97,12 @@ enum class AntibioticType(val LOINC: String, val display: String) {
 enum class AntibioticsResult(val LOINC: String, val result: String) {
     RESISTANT("LA6676-6", "R"),
     SENSIBLE("LA24225-7", "S"),
-    INTERMEDIARY("", "I")
+    INTERMEDIARY("", "I"),
+    UNKNOWN("", "")
 }
 
 interface ProbabilityEnum{
-    val type: String
+    val type: Any
     val relativeProbability: Double
 }
 

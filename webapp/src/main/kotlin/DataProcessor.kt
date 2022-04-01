@@ -10,10 +10,10 @@ object DataProcessor {
         caseList.count { it["nosokomial?"] != "nosokomial" }
 
     fun countMRGN3Cases(caseList: List<Map<String, String>>) =
-        caseList.count { it["Piperacillin und Tazobactam Ergebnis"] == "MRGN3" }
+        caseList.count { it["Klasse"] == "MRGN3" }
 
     fun countMRGN4Cases(caseList: List<Map<String, String>>) =
-        caseList.count { it["Piperacillin und Tazobactam Ergebnis"] == "MRGN4" }
+        caseList.count { it["Klasse"] == "MRGN4" }
 
     fun countVREEfaeciumResistant(caseList: List<Map<String, String>>) = caseList.count {
         it["Vancomycin Ergebnis"] == "R" && it["Erreger"] == "Enterococcus faecium"

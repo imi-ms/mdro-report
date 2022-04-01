@@ -44,115 +44,298 @@ If you only want to use the web interface and connect to a separate running Base
 
 //TODO: Testdata is also provided here: 
 
-- The basic patient record will follow a specific XML format that will look similar to this example: 
+The MDReport Tool hosts an BaseX Instance that works with XML files that follow these model specifications:
 
-  ```xml
-  <patient birthYear="2000" sex="M" id="123456">
-    <case id="123456" from="2022-03-10T10:10:10" till="2022-03-20T10:10:10" type="S" state="E">
-        <location id="111111" from="2022-03-10T10:10:10" till="2022-03-15T10:10:10" clinic="CLINIC" ward="WARD"/>
-        <location id="111112"/>
-        <!--...-->
-        <location id="111113"/>
-  
-        <labReport id="123456">
-            <comment>This is a comment</comment>
-            <request from="2022-03-10T10:10:10" sender="SENDER">VRE</request>
-            <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">
-                <comment>A comment for the sample</comment>
-                <analysis OPUS="avre" display="Selektivagar VRE">
-                    <result OPUS="positiv" />
-                </analysis>
-                <germ class="VRE" id="123456" number="1" SNOMED="90272000" display="Enterococcus faecium">
-                    <comment>A comment for the germ detection</comment>
-                    <analysis><!--further analysis--></analysis>
-                    <!--...-->
-                    <!--antibiotic tests against the sample-->
+The main tree follows this structure:
+```xml
+<patient>
+	<case>
+		<location>
+		<labReport>
+			<request/>
+			<sample>
+				<comment></comment>
+				<germ>
+					<comment></comment>
+					<antibiotic>
+						<result/>
+					</antibiotic>
+				</germ>
+			</sample>
+		</labReport>
+	</case>
+</patient>
+```
+
+
+For each of these objects the following attributes are important: 
+### patient
+- **id** - the id of the patient. This can be any number. The ID has to be unique.
+- **birthYear** - each patient has a birth year. It is a four digit long number YYYY
+- **sex** - The sex of a patient. It can be "F" or "M"
+
+Example: 
+```xml
+<patient birthYear="1970" sex="F" id="5630133">...</patient>
+```
+### case
+- **id** - the id of the case. This can be any number. The ID has to be unique.
+- **from** - the start date-time of the case. It follows the ISO-8601 standard. 
+- **till** - the end date-time of the case. It follows the ISO-8601 standard.
+- **type** - the type of the case. With this tool only stationary cases are important so any other type than "S" will be ignored
+
+Example:
+```xml
+<case id="99814764" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" type="S">...</case>
+```
+
+### location
+- **id** - the id of the location. This can be any number. The ID has to be unique.
+- **from** - The date time when the patient was transferred to this location. It follows the ISO-8601 standard.
+- **till** - The date time when the patient was transferred to a different location or dismissed. It follows the ISO-8601 standard.
+
+Example:
+```xml
+<location id="8909885" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" clinic="FA_GYN"/>
+```
+
+### labReport
+- **id** - the id of the lab report. This can be any number. The ID has to be unique.
+- **source** - the source of the labReport data. The labReport is extracted in the ETL-process. This can be any string.
+
+Example:
+```xml
+<labReport id="32005541" source="MIBI">...</labReport>
+```
+
+### request
+- **from** - the date time when the request was received. It follows the ISO-8601 standard.
+- **sender** - which clinical department send the lab report request. This can be any string.
+
+Example:
+```xml
+<request from="2021-04-16T19:14:46" sender="Klinik für Gynäkologie"/>
+```
+
+### sample
+- **bodySiteDisplay** - the body site where the sample was taken. This can be any string
+- **display** - the type of sample (i.e. how the sample was taken). This can be any string
+- **from** - the date time when the sample was taken. It follows the ISO-8601 standard.
+
+Example:
+```xml
+<sample from="2021-04-16T19:14:46" bodySiteDisplay="Nase und Rachen" display="Abstrich-oberflächlich">...</sample>
+```
+
+### germ
+- **id** - the id of the germ. This can be any number. The ID has to be unique.
+- **display** - the type of germ. This can be any string containing the name
+- **SNOMED** - The conceptID of the germ from the SNOMED nomenclature. It can be any string
+
+Example:
+```xml
+<germ id="25403319" SNOMED="3092008" display="Staphylococcus aureus">...</germ>
+```
+
+### comment
+This explanation is specific to the comment that is attatched to the germ node.
+- **class** - The class of the germ. This can be any String, but only MRSA, MRGN3, MRGN4 and VRE will be processed by this tool. The class information is computed by various conditions during the ETL-Process
+
+Example:
+```xml
+<comment class="MRSA">...</comment>
+```
+
+### antibiotic
+- **LOINC** - The corresponding LOINC code for the antibiotic. This has to be the correct code, otherwise the antibiotics result can not be processed
+- **display** - The name of the antibiotic. This can be any string.
+
+Example:
+```xml
+<antibiotic LOINC="18862-3" display="Amoxicillin/Clavulansäure">...</antibiotic>
+```
+
+### result
+- **string** - The result string of the Antibiotics test. This can be "R" (Resistant), "S" (Sensible) or "I" (Intermediary)
+- **LOINC** - The corresponding LOINC code for the antibiotics result.
+
+Example:
+```xml
+<result string="R" LOINC="LA6676-6"/>
+```
+
+Following this structure a valid example for a VRE-case could look like this: 
+
+```xml
+<patient birthYear="1989" sex="M" id="14550404">
+	<case id="25136654" from="2021-03-11T23:33:15" till="2021-03-26T04:39:08" type="S">
+		<location id="38157576" from="2021-03-11T23:33:15" till="2021-03-26T04:39:08" clinic="FA_ANAES"/>
+		<labReport id="93047653" source="MIBI">
+			<request from="2021-03-12T23:33:15" sender="Anästhesie"/>
+			<sample from="2021-03-12T23:33:15" bodySiteDisplay="Blut-zentral entnommen" display="Blutkultur">
+				<comment>
+					No comment
+				</comment>
+				<germ id="39573318" SNOMED="90272000" display="Enterococcus faecium">
+					<comment class="VRE">
+						Germ generated by Testdata Generator
+					</comment>
+					<antibiotic LOINC="29258-1" display="Linezolid">
+						<result string="S" LOINC="LA24225-7"/>
+					</antibiotic>
+					<antibiotic LOINC="42357-4" display="Tigecyclin">
+						<result string="S" LOINC="LA24225-7"/>
+					</antibiotic>
+					<antibiotic LOINC="19000-9" display="Vancomycin">
+						<result string="R" LOINC="LA6676-6"/>
+					</antibiotic>
+					<antibiotic LOINC="18989-4" display="Teicoplanin">
+						<result string="R" LOINC="LA6676-6"/>
+					</antibiotic>
+					<antibiotic LOINC="23640-6" display="Quinupristin/Dalfopristin">
+						<result string="S" LOINC="LA24225-7"/>
+					</antibiotic>
+				</germ>
+			</sample>
+		</labReport>
+	</case>
+</patient>
+```
+
+## MRSA specifics
+
+The XML file for MRSA cases have to follow a specific scheme and additionally contain the following information:
+
+- Information about the PCR analysis of the germ with the Spa and cluster type. This will be attatched to the germ node.
+```xml
+<pcr-meta k="PatientID" v="5630133"/>
+<pcr-meta k="CaseID" v="99814764"/>
+<pcr-meta k="SampleID" v="92543248"/>
+<pcr-meta k="CollectionDate" v="2021-04-15T19:14:46"/>
+<pcr-meta k="Spa" v="t003"/>
+<pcr-meta k="ClusterType" v="CLUSTER_1550"/>
+```
+
+- A hygiene message containing information about the infection type. It is attatched to the case node.
+```xml
+<hygiene-message germ-name="Staphylococcus aureus" nosocomial="false" infection="true" MRG-class="MRSA"/>
+```
+
+Following these special requirements, a valid example for a MRSA-case could look like this: 
+```xml
+<patient birthYear="1948" sex="F" id="42018600">
+    <case id="30532036" from="2021-06-04T03:42:19" till="2021-06-14T19:09:17" type="S">
+        <location id="24538764" from="2021-06-04T03:42:19" till="2021-06-14T19:09:17" clinic="FA_KARD"/>
+        <labReport id="84456818" source="MIBI">
+            <request from="2021-06-05T03:42:19" sender="Department für Kardiologie u. Angiologie"/>
+            <sample from="2021-06-05T03:42:19" bodySiteDisplay="Nase und Rachen" display="Abstrich-oberflächlich">
+                <comment>
+                    No comment
+                </comment>
+                <germ id="19611916" SNOMED="3092008" display="Staphylococcus aureus">
+                    <comment class="MRSA">
+                        Germ generated by Testdata Generator
+                    </comment>
+                    <pcr-meta k="PatientID" v="42018600"/>
+                    <pcr-meta k="CaseID" v="30532036"/>
+                    <pcr-meta k="SampleID" v="23777252"/>
+                    <pcr-meta k="CollectionDate" v="2021-06-04T03:42:19"/>
+                    <pcr-meta k="Spa" v="t003"/>
+                    <pcr-meta k="ClusterType" v="CLUSTER_49"/>
                     <antibiotic LOINC="18862-3" display="Amoxicillin/Clavulansäure">
-                        <result string="R" LOINC="LA6676-6"/>
-                    </antibiotic>
-                    <antibiotic LOINC="18864-9" display="Ampicillin">
-                        <result string="R" LOINC="LA6676-6"/>
+                        <result string="I" LOINC=""/>
                     </antibiotic>
                     <antibiotic LOINC="18865-6" display="Ampicillin/Sulbactam">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="18906-8" display="Ciprofloxacin">
+                    <antibiotic LOINC="18866-4" display="Azithromycin">
                         <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18964-7" display="Benzylpenicillin">
+                        <result string="S" LOINC="LA24225-7"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18874-8" display="Cefaclor">
+                        <result string="" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="18878-9" display="Cefazolin">
+                        <result string="S" LOINC="LA24225-7"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18888-8" display="Cefoxitin Screen">
+                        <result string="S" LOINC="LA24225-7"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18907-6" display="Clarithromycin">
+                        <result string="" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="18908-4" display="Clindamycin">
+                        <result string="S" LOINC="LA24225-7"/>
+                    </antibiotic>
+                    <antibiotic LOINC="35789-7" display="Daptomycin">
+                        <result string="I" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="18919-1" display="Erythromycin">
+                        <result string="S" LOINC="LA24225-7"/>
+                    </antibiotic>
+                    <antibiotic LOINC="25596-8" display="Fosfomycin">
+                        <result string="I" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="18927-4" display="Fusidinsäure">
+                        <result string="" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="18928-2" display="Gentamicin">
+                        <result string="I" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="18932-4" display="Imipenem">
+                        <result string="" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="61188-9" display="Induzierbare Clindamycin-Resistenz">
+                        <result string="S" LOINC="LA24225-7"/>
                     </antibiotic>
                     <antibiotic LOINC="20629-2" display="Levofloxacin">
-                        <result string="R" LOINC="LA6676-6"/>
+                        <result string="I" LOINC=""/>
                     </antibiotic>
                     <antibiotic LOINC="29258-1" display="Linezolid">
-                        <result string="R" LOINC="LA24225-7"/>
+                        <result string="S" LOINC="LA24225-7"/>
                     </antibiotic>
-                    <antibiotic display="Norfloxacin">
+                    <antibiotic LOINC="18943-1" display="Meropenem">
+                        <result string="I" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="20389-3" display="Mupirocin">
+                        <result string="I" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="18961-3" display="Oxacillin">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
                     <antibiotic LOINC="18969-6" display="Piperacillin">
-                        <result string="R" LOINC="LA6676-6"/>
+                        <result string="I" LOINC=""/>
                     </antibiotic>
                     <antibiotic LOINC="18970-4" display="Piperacillin/Tazobactam">
                         <result string="R" LOINC="LA6676-6"/>
                     </antibiotic>
-                    <antibiotic LOINC="18989-4" display="Teicoplanin">
+                    <antibiotic LOINC="" display="Rifampicin">
                         <result string="R" LOINC="LA6676-6"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18989-4" display="Teicoplanin">
+                        <result string="S" LOINC="LA24225-7"/>
+                    </antibiotic>
+                    <antibiotic LOINC="18993-6" display="Tetracyclin">
+                        <result string="S" LOINC="LA24225-7"/>
                     </antibiotic>
                     <antibiotic LOINC="42357-4" display="Tigecyclin">
-                        <result string="R" LOINC="LA24225-7"/>
+                        <result string="I" LOINC=""/>
+                    </antibiotic>
+                    <antibiotic LOINC="18998-5" display="Trimethoprim/Sulfamethoxazol">
+                        <result string="I" LOINC=""/>
                     </antibiotic>
                     <antibiotic LOINC="19000-9" display="Vancomycin">
-                        <result string="R" LOINC="LA6676-6"/>
+                        <result string="I" LOINC=""/>
                     </antibiotic>
                 </germ>
             </sample>
         </labReport>
+        <hygiene-message germ-name="Staphylococcus aureus" nosocomial="true" infection="true" MRG-class="MRSA"/>
     </case>
-  </patient>
-  ```
-
-
-In order to be usable for this project the record has to at least contain the following objects: 
-
-- A patient with an id: 
-  ```xml
-  <patient id="">
-  ```
-- A corresponding case with an id, type and period: 
-  ```xml
-  <case id="" type="S" from="2022-02-22" till="2022-02-25">
-  ```
-  Type "S" tags inpatient cases ("**s**tationär").
-- A lab report for this case with an id: 
-  ```xml
-  <labReport id="">...</labReport>
-  ```
-- The lab report has to contain information about the sender of the request
-    ```xml
-    <request from="2022-03-10T10:10:10" sender="SENDER">VRE</request>
-    ```
-- The lab report has to contain information about the sample. It will display the sample type and time the sample was
-  collected
-    ```xml
-    <sample from="2022-03-10T10:10:10" bodySite="BODYSITE" bodySiteDisplay="BODYSITE" bodySiteLaterality="NONE" OPUS="ao" display="Anzeigename">...</sample>
-    ```
-  
-- The lab report has to have a germ with an id and the antibiotics analysis
-- The sample has to contain a positive analysis for MRSA, MRGN or VRE in order to appear in the statistics otherwise it will not be counted
-  - The data is analyzed in the ETL process and if it matches a certain criteria a class property will be added to the germ object
-  - This class is used for the data analysis in the tool and is therefore necessary to perform any meaningful analysis on testdata 
-  ```xml
-      <germ class="" id="" SNOMED="" display="">
-          <antibiotic LOINC="" display="">
-              <result string="" LOINC=""/>
-          </antibiotic>
-          ....
-      </germ>
-  ```
-`labReport/germ/@class` might be any String, but only "**MRSA**", "**MRGN**" and "**VRE**" are important for this tool
-
-`antibiotic/result/@string` might be "R" (resistent), "S" (sensibel) or "I" (intermediär)
-
-
+</patient>
+```
 ## Acknowledgement
 
 Supported by BMBF grant No. 01ZZ1802V (HiGHmed/Münster) 
