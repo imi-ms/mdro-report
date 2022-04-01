@@ -1,13 +1,18 @@
 package de.uni_muenster.imi.oegd.testdataGenerator
 
+import kotlin.random.Random
+
 val idGenerator = IDGenerator()
 
 class IDGenerator {
-    private val unusedIds = (1000000..99999999).toMutableList()
+    private val usedIds = hashSetOf<Int>()
 
     fun getUniqueId(): Int {
-        val id = unusedIds.random()
-        unusedIds.remove(id)
+        var id: Int
+        do {
+            id = Random.nextInt(1000000, 99999999)
+            val wasAdded = usedIds.add(id)
+        } while (!wasAdded)
         return id
     }
 }
