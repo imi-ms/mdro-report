@@ -427,7 +427,7 @@ private suspend fun CachingUtility.getOrLoadGermInfo(
 ): GermInfo {
     if (this.getGermForGermtype(xQueryParams, germ)?.created == null) {
         log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
-        val germInfo = WebappComponents.getGermInfo(baseXClient, germ, xQueryParams)
+        val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
         this.cache(xQueryParams, germInfo)
     }
     return this.getGermForGermtype(xQueryParams, germ)!!
@@ -440,7 +440,7 @@ private suspend fun CachingUtility.getOrLoadGlobalInfo(
 ): GlobalInfo {
     if (this.getGlobalInfo(xQueryParams)?.created == null) {
         log.info { "Loading GlobalInfo from server $xQueryParams" }
-        val overviewContent = WebappComponents.getGlobalStatistics(baseXClient, xQueryParams)
+        val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
         this.cache(xQueryParams, overviewContent)
     }
     return this.getGlobalInfo(xQueryParams)!!

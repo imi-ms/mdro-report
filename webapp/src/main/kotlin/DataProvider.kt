@@ -6,7 +6,7 @@ import de.uni_muenster.imi.oegd.common.IBaseXClient
 import de.uni_muenster.imi.oegd.common.parseCsv
 import java.time.LocalDateTime
 
-object WebappComponents {
+object DataProvider {
     suspend fun getGermInfo(basexClient: IBaseXClient, germ: GermType, xQueryParams: XQueryParams): GermInfo {
         when (germ) {
             GermType.MRSA -> {

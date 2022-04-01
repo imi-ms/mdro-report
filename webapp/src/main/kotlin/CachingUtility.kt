@@ -47,7 +47,7 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     fun clearGlobalInfoCache(xQueryParams: XQueryParams) {
         val cache = getOrCreateCache(xQueryParams)
 
-        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.globalCache.clear()
 
         writeCache(cache)
@@ -56,7 +56,7 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     fun clearGermInfo(xQueryParams: XQueryParams, germ: GermType) {
         val cache = getOrCreateCache(xQueryParams)
 
-        cache!!.metadata.timeUpdated = LocalDateTime.now().toString()
+        cache.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.removeIf { it.type == germ.germtype }
 
         writeCache(cache)
@@ -64,9 +64,7 @@ class CachingUtility(private val basexInfo: BasexInfo) {
 
 
     fun uploadExistingCache(cache: String) {
-        File(cacheDirectory).mkdirs()
-        val xQueryParams = Json.decodeFromString<CacheData>(cache).metadata.xQueryParams
-        File(cacheDirectory, getCacheFileName(xQueryParams)).writeText(cache)
+        writeCache(Json.decodeFromString(cache))
     }
 
 
@@ -85,23 +83,20 @@ class CachingUtility(private val basexInfo: BasexInfo) {
 
 
     private fun cacheExists(xQueryParams: XQueryParams): Boolean {
-        return File(cacheDirectory, getCacheFileName(xQueryParams)).exists()
+        return getCacheFile(xQueryParams).exists()
     }
 
     private fun writeCache(cache: CacheData) {
         val json = Json.encodeToString(cache)
         File(cacheDirectory).mkdirs()
-        File(
-            cacheDirectory,
-            getCacheFileName(cache.metadata.xQueryParams)
-        ).writeText(json) //TODO: Add caching path as property
+        getCacheFile(cache.metadata.xQueryParams).writeText(json) //TODO: Add caching path as property
     }
 
     fun getCache(xQueryParams: XQueryParams): CacheData? {
         if (cacheExists(xQueryParams)) {
             return try {
                 val json =
-                    File(cacheDirectory, getCacheFileName(xQueryParams)).readText() //TODO: Add caching path as property
+                    getCacheFile(xQueryParams).readText() //TODO: Add caching path as property
                 Json.decodeFromString(json)
             } catch (e: Exception) {
                 null
@@ -136,10 +131,13 @@ class CachingUtility(private val basexInfo: BasexInfo) {
 
     fun clearCache(xQueryParams: XQueryParams) {
         try {
-            File(cacheDirectory, getCacheFileName(xQueryParams)).delete()
+            getCacheFile(xQueryParams).delete()
         } catch (_: Exception) {
         }
     }
+
+    private fun getCacheFile(xQueryParams: XQueryParams) =
+        File(cacheDirectory, getCacheFileName(xQueryParams))
 
     private fun getBaseXPrefix() = if (basexInfo is RestConnectionInfo) {
         "${sanitizeFilename(basexInfo.serverUrl)}-${sanitizeFilename(basexInfo.databaseId)}"
