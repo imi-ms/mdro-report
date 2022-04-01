@@ -3,13 +3,14 @@
 This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html).
 
-# TODO Include fancy screenshot and concept art
+# Include fancy screenshot and concept art
 
-# TODO Licence
+![](images/concept-art.png)
 
 ## Download
 
-You can download the pre-built binaries from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/MeDIC/etl/oegd-report/-/releases). You can
+You can download the pre-built binaries
+from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/MeDIC/etl/oegd-report/-/releases). You can
 decide between a
 
 * Pre-build executable .jar file (*MDReport-Full.jar*, requires an installation of JRE)
@@ -17,6 +18,8 @@ decide between a
 * A .jar file, that does not include BaseX or JavaFX (*MDReport-Light.jar*, requires separately installed JRE and BaseX,
   run with command line to set connection data)
 * A .war file for server deployment (tested with tomcat, usage instructions see below)
+
+## Usage
 
 ## Building
 
@@ -41,8 +44,6 @@ If you only want to use the web interface and connect to a separate running Base
 4. Have fun!
 
 ## XML Format description
-
-//TODO: Testdata is also provided here: 
 
 The MDReport Tool hosts an BaseX Instance that works with XML files that follow these model specifications:
 
@@ -338,6 +339,13 @@ Following these special requirements, a valid example for a MRSA-case could look
     </case>
 </patient>
 ```
+
+## Testdata
+
+## Licence
+
+TODO
+
 ## Acknowledgement
 
 Supported by BMBF grant No. 01ZZ1802V (HiGHmed/Münster) 
