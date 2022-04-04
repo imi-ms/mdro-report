@@ -1,8 +1,7 @@
 # MDReport
 
 This tool is used to create the surveillance report according
-to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html).
-
+to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html) by running XQuery queries.
 
 ![](images/concept-art.png)
 
@@ -19,6 +18,27 @@ decide between a
 * A .war file for server deployment (tested with tomcat, usage instructions see below)
 
 ## Usage
+
+At startup, a window will ask you to enter the credentials to your BaseX instance.
+
+![](images/start.PNG)
+
+As an alternative, you can import a folder of .xml-files. A built-in BaseX-server will load all the files and answer the
+queries.
+
+After start, please use the navigation bar at the top to switch between the different germs. The data for each germ is
+created on demand and cached.
+
+![](images/dropdown.PNG)
+
+The queries are parameterized by year, so at first, you will be asked to set up a year. You can change the parameter by
+clicking on the gear on the top right.
+
+![](images/settings.PNG)
+
+![](images/overview.PNG)
+![](images/caselist.PNG)
+![](images/diagrams.PNG)
 
 ## Building
 

@@ -117,7 +117,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             post("{germ}/invalidate-cache") {
                 val value = call.parameters["germ"]!!
                 val parameters = call.receiveParameters()
-                val xQueryParams = Json.decodeFromString<XQueryParams>(parameters["q"]!!)
+                val xQueryParams = Json.decodeFromString<XQueryParams>(parameters["q"]!!.replace("%22", "\""))
                 if (value == "global") {
                     cachingUtility.clearGlobalInfoCache(xQueryParams)
                 } else {
@@ -334,7 +334,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                 button(
                                     type = ButtonType.submit,
                                     classes = "btn btn-light btn-mb-2"
-                                ) { +"Bericht erstellen" }
+                                ) { +"Teilbericht erstellen" }
                             }
                             form(action = "/statistic") {
                                 call.parameters["q"]?.let {
@@ -353,7 +353,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                             htmlFor = "q${xQueryParams.year}"
                                             +xQueryParams.year.toString()
                                             span(classes = "text-muted") {
-                                                +"Bericht erstellt: "
+                                                +"Teilbericht erstellt: "
                                                 +cache.metadata.timeUpdated
                                                 +", "
                                                 +(GermType.values().map { it.germtype }.toSet().minus(
@@ -387,7 +387,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             post("/statistic/create") {
                 val params = call.receiveParameters()
-                println(params)
                 val xQueryParams = XQueryParams(params["year"]?.toInt())
                 cachingUtility.getOrLoadGlobalInfo(xQueryParams, baseXClient)
                 cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
@@ -420,6 +419,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
     }
 }
 
+//TODO: Make synchronized with co-routines
 private suspend fun CachingUtility.getOrLoadGermInfo(
     xQueryParams: XQueryParams,
     germ: GermType,

@@ -187,7 +187,7 @@ private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
     div(classes = "btn-toolbar") {
         form(classes = "form-inline", action = "invalidate-cache", method = FormMethod.post) {
             label {
-                +"Bericht erstellt: $lastUpdate"
+                +"Teilbericht erstellt: $lastUpdate"
             }
             hiddenInput {
                 name = "q"
@@ -341,10 +341,10 @@ private fun FlowContent.drawSettingsModal(q: String?) {
                         }
                         div(classes = "form-group") {
                             button(type = ButtonType.submit, classes = "btn btn-secondary mt-2") {
-                                +"Cache hochladen"
+                                +"Report hochladen"
                             }
                             a(href = "/settings/downloadCache?q=$q", classes = "btn btn-secondary mt-2 ml-2") {
-                                +"Aktuellen Cache herunterladen"
+                                +"Report herunterladen"
                             }
                         }
                     }
