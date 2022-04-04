@@ -66,13 +66,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             intercept(ApplicationCallPipeline.Features) {
                 val params: XQueryParams? = call.parameters["q"]?.let {
-                    Json.decodeFromString(
-                        it.replace(
-                            "%22",
-                            "\""
-                        )
-                    )
-                } //TODO: Remove replace function
+                    //TODO: Remove replace function: Somehow the behaviour of JavaFX client and Firefox is different i guess or the issue is caused by post forms?
+                    Json.decodeFromString(it.replace("%22", "\""))
+                }
                 if (params != null) {
                     call.attributes.put(xqueryparams, params)
                 }
@@ -96,7 +92,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, s)) {
                         header { +"Anfragekonfiguration fehlt" }
                         content {
-                            +"Bitte nutzen Sie die Einstellungsleiste, um die Konfiguration der Anfrage durchzuführen"
+                            +"Bitte nutzen Sie die Einstellungsleiste, um die Konfiguration der Anfrage durchzuführen."
                             script(type = "text/javascript") {
                                 +"$(function() { $('#settings-modal').modal({focus:true}) });"
                             }
@@ -352,15 +348,18 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                         label(classes = "form-check-label") {
                                             htmlFor = "q${xQueryParams.year}"
                                             +xQueryParams.year.toString()
-                                            span(classes = "text-muted") {
-                                                +"Teilbericht erstellt: "
-                                                +cache.metadata.timeUpdated
-                                                +", "
-                                                +(GermType.values().map { it.germtype }.toSet().minus(
+                                            val teilberichteZuErstellen =
+                                                GermType.values().map { it.germtype }.toSet().minus(
                                                     cache.germCache.filter { it.created != null }.map { it.type }
                                                         .toSet()
-                                                ).joinToString())
-                                                +" werden erzeugt."
+                                                )
+                                            span(classes = "text-muted") {
+                                                +"Bericht erstellt: "
+                                                +cache.metadata.timeUpdated
+                                                if (teilberichteZuErstellen.isNotEmpty()) {
+                                                    +", Teilberichte für ${teilberichteZuErstellen.joinToString()} werden erzeugt."
+                                                }
+
                                             }
                                         }
                                         button(

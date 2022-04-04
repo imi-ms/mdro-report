@@ -14,7 +14,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.0"
+    version = "1.1"
 }
 
 java {

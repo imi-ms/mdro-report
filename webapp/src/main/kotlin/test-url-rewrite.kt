@@ -12,7 +12,7 @@ import java.io.ByteArrayOutputStream
 /** This is just a test project made by me to test if one could modify hrefs with session data during URL build process **/
 fun main() {
     println(buildString {
-        appendHTML().urlRewrite { it.substringBefore("?") + "?q={\"q\":2021}" }.html {
+        appendHTML().urlRewrite { it.substringBefore("?") + "?q=" }.html {
             head { }
             body {
                 a(href = "bar") {
@@ -23,40 +23,50 @@ fun main() {
                         +"Neu erstellen"
                     }
                 }
+                form(action = "list/invalidate-cache", method = FormMethod.get) {
+                    button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
+                        +"Neu erstellen"
+                    }
+                }
             }
         }
     })
 }
 
 fun <T> TagConsumer<T>.urlRewrite(rewriter: (String) -> String): TagConsumer<T> =
-    UrlRewriteTagConsumer(this, rewriter).delayed()
+    UrlRewriteTagConsumer(this, "{\"q\":2021}", "q").delayed()
 
-private class UrlRewriteTagConsumer<T>(val downstream: TagConsumer<T>, val rewriter: (String) -> String) :
+private class UrlRewriteTagConsumer<T>(
+    val downstream: TagConsumer<T>,
+    val sessionData: String,
+    val designator: String
+) :
     TagConsumer<T> by downstream {
     override fun onTagStart(tag: Tag) {
         if (tag is A) {
             val copy = A(tag.attributes.transformValue("href"), this)
             downstream.onTagStart(copy)
         } else if (tag is FORM) {
-            val copy = FORM(tag.attributes.transformValue("action"), this)
-            //if method is get, add hidden element instead
-            downstream.onTagStart(copy)
+            if (tag.method == FormMethod.get) {
+                downstream.onTagStart(tag)
+                tag.hiddenInput {
+                    value = sessionData
+                    name = designator
+                }
+            } else {
+                val copy = FORM(tag.attributes.transformValue("action"), this)
+                downstream.onTagStart(copy)
+            }
         } else {
             downstream.onTagStart(tag)
         }
-
-//        if(tag.tagName == "a" && tag.attributes["href"] != null) {
-//            tag.attributes["href"] = rewriter(tag.attributes["href"]!!)
-//        }
-//        if(tag.tagName == "form" && tag.attributes["action"] != null) {
-//            tag.attributes["action"] = rewriter(tag.attributes["action"]!!)
-//        }
-
     }
 
     fun Map<String, String>.transformValue(key: String): Map<String, String> {
+        //TODO: Only transform if required (different domain, etc.)
         val copy = HashMap(this)
-        copy[key] = rewriter(copy[key]!!)
+        val value = copy[key] ?: return copy
+        copy[key] = if (value.contains("?")) "$value&$designator=$sessionData" else "$value?$designator=$sessionData"
         return copy
     }
 

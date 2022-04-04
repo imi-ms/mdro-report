@@ -331,7 +331,7 @@ private fun FlowContent.drawSettingsModal(q: String?) {
                         div(classes = "form-group") {
                             label {
                                 attributes["for"] = "inputCache"
-                                +"Cache Datei hochladen"
+                                +"Report-Datei hochladen"
                             }
                             input(type = InputType.file) {
                                 classes = setOf("form-control-file")

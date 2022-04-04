@@ -53,7 +53,7 @@ class JavaFxApplication : Application() {
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"))
         primaryStage.scene = Scene(page)
         primaryStage.title = "MDReport"
-        primaryStage.icons.add(Image("icon.png"))
+        primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 
 
