@@ -134,7 +134,7 @@ fun generateResistantAntibioticsAnalysis(antibiotics: List<AntibioticType>): Lis
 }
 
 fun <T : ProbabilityEnum> getRandomTypeWithProbability(typeList: List<T>): T {
-    val p = Random.nextDouble(0.0, 1.0)
+    val p = Random.nextDouble(0.0, typeList.sumOf { it.relativeProbability })
     var cumulativeProbability = 0.0
     for (type in typeList) {
         cumulativeProbability += type.relativeProbability

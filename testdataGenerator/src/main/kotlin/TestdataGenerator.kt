@@ -1,4 +1,5 @@
 package de.uni_muenster.imi.oegd.testdataGenerator
+
 import mu.KotlinLogging
 import org.redundent.kotlin.xml.Node
 import org.redundent.kotlin.xml.xml
@@ -7,7 +8,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import kotlin.random.Random
 
-private val log = KotlinLogging.logger {  }
+private val log = KotlinLogging.logger { }
 
 class TestdataGenerator {
     private var startTimeRange = LocalDate.of(2021, 1, 1)
@@ -25,8 +26,8 @@ class TestdataGenerator {
                 File("testdata").mkdir()
             }
 
-            val patients =
-                TestdataGenerator().createTestdata(Integer.parseInt(askUser("How many patients should be generated?")))
+            val cnt = args.firstOrNull()?.toIntOrNull() ?: askUser("How many patients should be generated?").toInt()
+            val patients = TestdataGenerator().createTestdata(cnt)
             patients.forEachIndexed { index, patient ->
                 File("testdata/Patient$index").writeText(patient)
             }
@@ -66,9 +67,9 @@ class TestdataGenerator {
     fun createPatient(caseScope: CaseScope): Node {
         val caseInfo = CaseInfo(caseScope, this)
         val patient = xml("patient") {
-            attribute("birthYear", "${Random.nextInt(1940, 2010)}")
-            attribute("sex", "${if (Random.nextBoolean()) 'F' else 'M'}")
-            attribute("id", "${caseInfo.patientId}")
+            attribute("birthYear", Random.nextInt(1940, 2010))
+            attribute("sex", if (Random.nextBoolean()) 'F' else 'M')
+            attribute("id", caseInfo.patientId)
             addCase(caseInfo)
         }
         return patient
@@ -76,33 +77,33 @@ class TestdataGenerator {
 
     fun Node.addCase(caseInfo: CaseInfo) {
         addNode(xml("case") {
-            attribute("id", "${caseInfo.caseId}")
-            attribute("from", "${caseInfo.startDateTime}")
-            attribute("till", "${caseInfo.endDateTime}")
+            attribute("id", caseInfo.caseId)
+            attribute("from", caseInfo.startDateTime)
+            attribute("till", caseInfo.endDateTime)
             attribute("type", Casetype.STATIONAER.type)
             //TODO: Add AdmissionCause and state
             "location" {
-                attribute("id", "${caseInfo.locationId}")
-                attribute("from", "${caseInfo.startDateTime}")
-                attribute("till", "${caseInfo.endDateTime}")
+                attribute("id", caseInfo.locationId)
+                attribute("from", caseInfo.startDateTime)
+                attribute("till", caseInfo.endDateTime)
                 attribute("clinic", caseInfo.clinic.fa_code)
             }
             "labReport" {
-                attribute("id", "${caseInfo.labReportId}")
+                attribute("id", caseInfo.labReportId)
                 attribute("source", "MIBI")
                 "request" {
-                    attribute("from", "${caseInfo.requestDateTime}")
+                    attribute("from", caseInfo.requestDateTime)
                     attribute("sender", caseInfo.clinic.clinic)
                 }
                 "sample" {
-                    attribute("from", "${caseInfo.requestDateTime}")
+                    attribute("from", caseInfo.requestDateTime)
                     attribute("bodySiteDisplay", caseInfo.bodySite.bodySiteDisplay)
                     attribute("display", caseInfo.bodySite.display)
                     "comment" {
                         -"No comment"
                     }
                     "germ" {
-                        attribute("id", "${caseInfo.germId}")
+                        attribute("id", caseInfo.germId)
                         attribute("SNOMED", caseInfo.germType.SNOMED)
                         attribute("display", caseInfo.germType.display)
                         attribute("class", caseInfo.caseScope.type)
@@ -138,14 +139,14 @@ class TestdataGenerator {
                     attribute("germ-name", caseInfo.germType.display)
                     attribute("nosocomial", "${caseInfo.nosocomial}")
                     attribute("infection", "${caseInfo.infection}")
-                    attribute("MRG-class", "${caseInfo.caseScope}")
+                    attribute("MRG-class", caseInfo.caseScope)
                 }
             }
         })
     }
 
 
-    fun Node.addPCRMetaNode(k: String, v: String) {
+    fun Node.addPCRMetaNode(k: String, v: Any) {
         addNode(xml("pcr-meta") {
             attribute("k", k)
             attribute("v", v)

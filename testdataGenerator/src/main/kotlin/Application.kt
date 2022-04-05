@@ -87,7 +87,14 @@ class JavaFxApplication : Application() {
                 generator.setEndYear(yearEnd)
 
                 for(i in 1..numberOfPatients.toInt()) {
-                    generator.createTestdataFile(location)
+                    try {
+                        generator.createTestdataFile(location)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Platform.runLater {
+                            Alert(AlertType.ERROR, e.toString())
+                        }
+                    }
                     Platform.runLater {
                         (page.lookup("#loadingBar") as ProgressBar).progress = i / numberOfPatients
                     }
