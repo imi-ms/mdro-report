@@ -13,6 +13,9 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import io.ktor.webjars.*
+import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.html.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -23,6 +26,7 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 
 private val log = KotlinLogging.logger { }
+private val mutex = Mutex()
 
 fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit {
     val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
@@ -418,16 +422,32 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
     }
 }
 
-//TODO: Make synchronized with co-routines
 private suspend fun CachingUtility.getOrLoadGermInfo(
     xQueryParams: XQueryParams,
     germ: GermType,
     baseXClient: IBaseXClient
 ): GermInfo {
-    if (this.getGermForGermtype(xQueryParams, germ)?.created == null) {
-        log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
-        val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
-        this.cache(xQueryParams, germInfo)
+    if (!CachingUtility.RequestState.isRequestActive(germ)) {
+        if (this.getGermForGermtype(xQueryParams, germ)?.created == null) {
+            coroutineScope {
+                withContext(Dispatchers.Default) {
+                    mutex.withLock {
+                        log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
+                        CachingUtility.RequestState.markRequestActive(germ)
+                        val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
+                        cache(xQueryParams, germInfo)
+                        log.info("Done with ${germInfo.type}")
+                        CachingUtility.RequestState.markRequestInactive(germ)
+                    }
+                }
+            }
+        }
+    } else {
+        coroutineScope {
+            while (CachingUtility.RequestState.isRequestActive(germ)) {
+                delay(1000)
+            }
+        }
     }
     return this.getGermForGermtype(xQueryParams, germ)!!
 }
@@ -437,10 +457,27 @@ private suspend fun CachingUtility.getOrLoadGlobalInfo(
     xQueryParams: XQueryParams,
     baseXClient: IBaseXClient,
 ): GlobalInfo {
-    if (this.getGlobalInfo(xQueryParams)?.created == null) {
-        log.info { "Loading GlobalInfo from server $xQueryParams" }
-        val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
-        this.cache(xQueryParams, overviewContent)
+    if(!CachingUtility.RequestState.isRequestActive(null)) {
+        if (this.getGlobalInfo(xQueryParams)?.created == null) {
+            coroutineScope {
+                withContext(Dispatchers.Default) {
+                    mutex.withLock {
+                        log.info { "Loading GlobalInfo from server $xQueryParams" }
+                        CachingUtility.RequestState.markRequestActive(null)
+                        val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
+                        cache(xQueryParams, overviewContent)
+                        log.info("Done with Global Overview request")
+                        CachingUtility.RequestState.markRequestInactive(null)
+                    }
+                }
+            }
+        }
+    } else {
+        coroutineScope {
+            while (CachingUtility.RequestState.isRequestActive(null)) {
+                delay(1000)
+            }
+        }
     }
     return this.getGlobalInfo(xQueryParams)!!
 

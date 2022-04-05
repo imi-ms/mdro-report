@@ -19,6 +19,43 @@ fun MutableList<GermInfo>.findOrCreateByType(id: GermType): GermInfo {
 
 
 class CachingUtility(private val basexInfo: BasexInfo) {
+
+    object RequestState {
+        private val stateMap: HashMap<String, Boolean> = hashMapOf(
+            Pair("mrsaState", false),
+            Pair("mrgnState", false),
+            Pair("vreState", false),
+            Pair("globalState", false)
+        )
+
+        fun isRequestActive(germ: GermType?): Boolean {
+            return when (germ) {
+                GermType.MRSA -> this.stateMap["mrsaState"]!!
+                GermType.MRGN -> this.stateMap["mrgnState"]!!
+                GermType.VRE -> this.stateMap["vreState"]!!
+                else -> this.stateMap["globalState"]!!
+            }
+        }
+
+        fun markRequestActive(germ: GermType?) {
+            when (germ) {
+                GermType.MRSA -> this.stateMap["mrsaState"] = true
+                GermType.MRGN -> this.stateMap["mrgnState"] = true
+                GermType.VRE -> this.stateMap["vreState"] = true
+                else -> this.stateMap["globalState"] = true
+            }
+        }
+
+        fun markRequestInactive(germ: GermType?) {
+            when (germ) {
+                GermType.MRSA -> this.stateMap["mrsaState"] = false
+                GermType.MRGN -> this.stateMap["mrgnState"] = false
+                GermType.VRE -> this.stateMap["vreState"] = false
+                else -> this.stateMap["globalState"] = false
+            }
+        }
+    }
+
     private val log = KotlinLogging.logger { }
 
 
