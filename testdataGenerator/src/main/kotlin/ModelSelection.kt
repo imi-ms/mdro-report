@@ -1,33 +1,19 @@
 package de.uni_muenster.imi.oegd.testdataGenerator
 
+import  de.uni_muenster.imi.oegd.testdataGenerator.AntibioticType.*
+
 fun getMRSAAntibiotics(): List<AntibioticType> {
     return listOf(
-        AntibioticType.AMOXICILLIN_CLAVULANSAEURE, AntibioticType.AMPICILLIN_SULBACTAM,
-        AntibioticType.AZITHROMYCIN, AntibioticType.BENZYLPENICILLIN,
-        AntibioticType.CEFACLOR, AntibioticType.CEFAZOLIN,
-        AntibioticType.CEFOXITIN, AntibioticType.CLARITHROMYCIN,
-        AntibioticType.CLINDAMYCIN, AntibioticType.DAPTOMYCIN,
-        AntibioticType.ERYTHROMYCIN, AntibioticType.FOSFOMYCIN,
-        AntibioticType.FUSIDINSAEURE, AntibioticType.GENTAMICIN,
-        AntibioticType.IMIPENEM, AntibioticType.INDUCED_CLINDAMYCIN,
-        AntibioticType.LEVOFLOXACIN, AntibioticType.LINEZOLID,
-        AntibioticType.MEROPENEM, AntibioticType.MUPIROCIN,
-        AntibioticType.OXACILLIN, AntibioticType.PIPERACILLIN,
-        AntibioticType.PIPERACILLIN_TAZOBACTAM, AntibioticType.RIFAMPICIN,
-        AntibioticType.TEICOPLANIN, AntibioticType.TETRACYCLIN,
-        AntibioticType.TIGECYCLIN, AntibioticType.TRIMETHOPRIM_SULFAMETHOXAZOL,
-        AntibioticType.VANCOMYCIN
+        AMOXICILLIN_CLAVULANSAEURE, AMPICILLIN_SULBACTAM, AZITHROMYCIN, BENZYLPENICILLIN, CEFACLOR, CEFAZOLIN,
+        CEFOXITIN, CLARITHROMYCIN, CLINDAMYCIN, DAPTOMYCIN, ERYTHROMYCIN, FOSFOMYCIN, FUSIDINSAEURE, GENTAMICIN,
+        IMIPENEM, INDUCED_CLINDAMYCIN, LEVOFLOXACIN, LINEZOLID, MEROPENEM, MUPIROCIN, OXACILLIN, PIPERACILLIN,
+        PIPERACILLIN_TAZOBACTAM, RIFAMPICIN, TEICOPLANIN, TETRACYCLIN, TIGECYCLIN, TRIMETHOPRIM_SULFAMETHOXAZOL,
+        VANCOMYCIN
     )
 }
 
 fun getMRGNAntibiotics(): List<AntibioticType> {
-    return listOf(
-        AntibioticType.PIPERACILLIN_TAZOBACTAM, AntibioticType.CEFOTAXIM,
-        AntibioticType.CEFTAZIDIM, AntibioticType.CEFEPIM,
-        AntibioticType.MEROPENEM, AntibioticType.IMIPENEM,
-        AntibioticType.CIPROFLOXACIN
-
-    )
+    return listOf(PIPERACILLIN_TAZOBACTAM, CEFOTAXIM, CEFTAZIDIM, CEFEPIM, MEROPENEM, IMIPENEM, CIPROFLOXACIN)
 }
 
 fun getMRGNGermTypes(): List<GermType> {
@@ -46,11 +32,7 @@ fun getVREGermTypes(): List<GermType> {
 }
 
 fun getVREAntibiotics(): List<AntibioticType> {
-    return listOf(
-        AntibioticType.LINEZOLID, AntibioticType.TIGECYCLIN,
-        AntibioticType.VANCOMYCIN, AntibioticType.TEICOPLANIN,
-        AntibioticType.QUINUPRISTIN_DALFOPRISTIN
-    )
+    return listOf(LINEZOLID, TIGECYCLIN, VANCOMYCIN, TEICOPLANIN, QUINUPRISTIN_DALFOPRISTIN)
 }
 
 fun getSensibleOrIntermediaryRandomly(): AntibioticsResult {
@@ -69,10 +51,10 @@ enum class VREAntibioticsProbability(
     override val rProbability: Double,
     override val sProbability: Double,
     override val iProbability: Double
-): AntibioticsProbability {
+) : AntibioticsProbability {
     LINEZOLID(AntibioticType.LINEZOLID, 0.05, 0.95, 0.0),
     TIGECYCLIN(AntibioticType.TIGECYCLIN, 0.05, 0.95, 0.0),
     VANCOMYCIN(AntibioticType.VANCOMYCIN, 1.0, 0.0, 0.0),
     TEICOPLANIN(AntibioticType.TEICOPLANIN, 0.37, 0.63, 0.0),
-    QUINUPRISTIN(AntibioticType.QUINUPRISTIN_DALFOPRISTIN, 0.03, 0.72, 0.24)
+    QUINUPRISTIN(QUINUPRISTIN_DALFOPRISTIN, 0.03, 0.72, 0.24)
 }

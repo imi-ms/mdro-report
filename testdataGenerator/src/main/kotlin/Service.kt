@@ -1,5 +1,6 @@
 package de.uni_muenster.imi.oegd.testdataGenerator
 
+import de.uni_muenster.imi.oegd.testdataGenerator.AntibioticType.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -49,12 +50,9 @@ fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {
 }
 
 fun generateRandomAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
-    val result: MutableList<AntibioticsAnalysis> = mutableListOf()
-    for (antibiotic in antibiotics) {
-        val randomResult = AntibioticsResult.values().random()
-        result.add(AntibioticsAnalysis(antibiotic, randomResult))
+    return antibiotics.map {
+        AntibioticsAnalysis(it, AntibioticsResult.values().random())
     }
-    return result
 }
 
 fun generateMRGNAntibioticsAnalysis(
@@ -62,35 +60,26 @@ fun generateMRGNAntibioticsAnalysis(
     antibiotics: List<AntibioticType>,
     germType: GermType
 ): List<AntibioticsAnalysis> {
-    when (numberOfResistances) {
-        3 -> {
-            return when (germType) {
-                GermType.P_AERUGINOSA -> generatePseudomonasAntibioticsAnalysis(antibiotics.toMutableList())
-                else -> generateDefaultMRGNAntibioticsAnalysis(antibiotics)
-            }
+    return when (numberOfResistances) {
+        3 -> when (germType) {
+            GermType.P_AERUGINOSA -> generatePseudomonasAntibioticsAnalysis(antibiotics.toMutableList())
+            else -> generateDefaultMRGNAntibioticsAnalysis(antibiotics)
         }
-        4 -> return generateResistantAntibioticsAnalysis(antibiotics)
+        4 -> generateResistantAntibioticsAnalysis(antibiotics)
+        else -> listOf()
     }
-    return listOf()
 }
 
 fun generateDefaultMRGNAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
-    val result = mutableListOf<AntibioticsAnalysis>()
-    antibiotics.forEach {
+    return antibiotics.map {
         when (it) {
-            AntibioticType.IMIPENEM, AntibioticType.MEROPENEM -> {
-                result.add(AntibioticsAnalysis(it, getSensibleOrIntermediaryRandomly()))
-            }
-            else -> {
-                result.add(AntibioticsAnalysis(it, AntibioticsResult.RESISTANT))
-            }
+            IMIPENEM, MEROPENEM -> AntibioticsAnalysis(it, getSensibleOrIntermediaryRandomly())
+            else -> AntibioticsAnalysis(it, AntibioticsResult.RESISTANT)
         }
     }
-    return result
 }
 
 fun generatePseudomonasAntibioticsAnalysis(antibiotics: MutableList<AntibioticType>): List<AntibioticsAnalysis> {
-
     val randomSelection = antibiotics.random()
     antibiotics.remove(randomSelection)
 
@@ -105,28 +94,16 @@ fun generatePseudomonasAntibioticsAnalysis(antibiotics: MutableList<AntibioticTy
 }
 
 fun generateVREAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
-    val result = mutableListOf<AntibioticsAnalysis>()
-    for (antibiotic in antibiotics) {
-        when (antibiotic) {
-            AntibioticType.LINEZOLID -> result.add(
-                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.LINEZOLID)
-            )
-            AntibioticType.TIGECYCLIN -> result.add(
-                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.TIGECYCLIN)
-            )
-            AntibioticType.VANCOMYCIN -> result.add(
-                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.VANCOMYCIN)
-            )
-            AntibioticType.TEICOPLANIN -> result.add(
-                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.TEICOPLANIN)
-            )
-            AntibioticType.QUINUPRISTIN_DALFOPRISTIN -> result.add(
-                getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.QUINUPRISTIN)
-            )
-            else -> result.add(AntibioticsAnalysis(antibiotic, AntibioticsResult.UNKNOWN))
+    return antibiotics.map {
+        when (it) {
+            LINEZOLID -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.LINEZOLID)
+            TIGECYCLIN -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.TIGECYCLIN)
+            VANCOMYCIN -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.VANCOMYCIN)
+            TEICOPLANIN -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.TEICOPLANIN)
+            QUINUPRISTIN_DALFOPRISTIN -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.QUINUPRISTIN)
+            else -> AntibioticsAnalysis(it, AntibioticsResult.UNKNOWN)
         }
     }
-    return result
 }
 
 fun generateResistantAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
