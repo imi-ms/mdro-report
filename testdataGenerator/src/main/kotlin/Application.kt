@@ -58,13 +58,14 @@ class JavaFxApplication : Application() {
 
                 (page.lookup("#label_location") as Label).text = directory.absolutePath
                 (page.lookup("#button_ok") as Button).isDisable = false
-            } catch(e: Exception) {/*Nothing to do here*/}
+            } catch (e: Exception) {/*Nothing to do here*/
+            }
         }
-        (page.lookup("#selectBox_yearStart") as ChoiceBox<String>).items = getYearsList()
-        (page.lookup("#selectBox_yearStart") as ChoiceBox<String>).value = "2021"
+        (page.lookup("#selectBox_yearStart") as ChoiceBox<Int>).items = getYearsList()
+        (page.lookup("#selectBox_yearStart") as ChoiceBox<Int>).value = 2021
 
-        (page.lookup("#selectBox_yearEnd") as ChoiceBox<String>).items = getYearsList()
-        (page.lookup("#selectBox_yearEnd") as ChoiceBox<String>).value = "2022"
+        (page.lookup("#selectBox_yearEnd") as ChoiceBox<Int>).items = getYearsList()
+        (page.lookup("#selectBox_yearEnd") as ChoiceBox<Int>).value = 2022
 
         (page.lookup("#button_cancel") as Button).onAction = EventHandler {
             stop()
@@ -72,8 +73,8 @@ class JavaFxApplication : Application() {
 
         (page.lookup("#button_ok") as Button).onAction = EventHandler {
             val numberOfPatients = (page.lookup("#slider_numberOfPatients") as Slider).value
-            val yearStart = (page.lookup("#selectBox_yearStart") as ChoiceBox<String>).value
-            val yearEnd = (page.lookup("#selectBox_yearEnd") as ChoiceBox<String>).value
+            val yearStart = (page.lookup("#selectBox_yearStart") as ChoiceBox<Int>).value
+            val yearEnd = (page.lookup("#selectBox_yearEnd") as ChoiceBox<Int>).value
             val location = directory.absolutePath
             val generator = TestdataGenerator()
 
@@ -91,15 +92,15 @@ class JavaFxApplication : Application() {
                         (page.lookup("#loadingBar") as ProgressBar).progress = i / numberOfPatients
                     }
                 }
-                Platform.runLater{
-                    val alert = Alert(AlertType.INFORMATION)
-                    alert.title = "Generierung Erfolgreich"
-                    alert.headerText = "Die Generierung war erfolgreich"
-                    alert.contentText = "Die Testdaten wurden erfolgreich unter dem von " +
-                            "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
-                            "Sollten Sie noch weitere Daten generieren wollen, " +
-                            "führen Sie den Testdaten Generator erneut aus."
-                    alert.showAndWait()
+                Platform.runLater {
+                    Alert(AlertType.INFORMATION).apply {
+                        title = "Generierung Erfolgreich"
+                        headerText = "Die Generierung war erfolgreich"
+                        contentText = "Die Testdaten wurden erfolgreich unter dem von " +
+                                "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
+                                "Sollten Sie noch weitere Daten generieren wollen, " +
+                                "führen Sie den Testdaten Generator erneut aus."
+                    }.showAndWait()
 
                     stop()
                 }
@@ -123,7 +124,7 @@ class JavaFxApplication : Application() {
         }
     }
 
-    private fun getYearsList(): ObservableList<String> {
-        return FXCollections.observableList(listOf(1990..2030).flatten().map {it.toString()})
+    private fun getYearsList(): ObservableList<Int> {
+        return FXCollections.observableList((1990..2030).toList())
     }
 }

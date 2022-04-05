@@ -90,11 +90,11 @@ fun generateDefaultMRGNAntibioticsAnalysis(antibiotics: List<AntibioticType>): L
 }
 
 fun generatePseudomonasAntibioticsAnalysis(antibiotics: MutableList<AntibioticType>): List<AntibioticsAnalysis> {
-    val result = mutableListOf<AntibioticsAnalysis>()
 
     val randomSelection = antibiotics.random()
     antibiotics.remove(randomSelection)
 
+    val result = mutableListOf<AntibioticsAnalysis>()
     result.add(AntibioticsAnalysis(randomSelection, getSensibleOrIntermediaryRandomly()))
 
     for (antibiotic in antibiotics) {
@@ -130,24 +130,19 @@ fun generateVREAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<Anti
 }
 
 fun generateResistantAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
-    val result = mutableListOf<AntibioticsAnalysis>()
-    antibiotics.forEach {
-        result.add(AntibioticsAnalysis(it, AntibioticsResult.RESISTANT))
-    }
-    return result
+    return antibiotics.map { AntibioticsAnalysis(it, AntibioticsResult.RESISTANT) }
 }
 
-fun getRandomTypeWithProbability(typeList: List<ProbabilityEnum>): ProbabilityEnum? {
+fun <T : ProbabilityEnum> getRandomTypeWithProbability(typeList: List<T>): T {
     val p = Random.nextDouble(0.0, 1.0)
     var cumulativeProbability = 0.0
-
     for (type in typeList) {
         cumulativeProbability += type.relativeProbability
         if (p <= cumulativeProbability) {
             return type
         }
     }
-    return null //Should never be reached
+    error("Should never be reached")
 }
 
 fun getRandomAntibioticsAnalysisWithProbability(antibioticWithProbability: AntibioticsProbability): AntibioticsAnalysis {

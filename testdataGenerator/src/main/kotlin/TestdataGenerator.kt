@@ -25,7 +25,8 @@ class TestdataGenerator {
                 File("testdata").mkdir()
             }
 
-            val patients = TestdataGenerator().createTestdata(Integer.parseInt(askUser("How many patients should be generated?")))
+            val patients =
+                TestdataGenerator().createTestdata(Integer.parseInt(askUser("How many patients should be generated?")))
             patients.forEachIndexed { index, patient ->
                 File("testdata/Patient$index").writeText(patient)
             }
@@ -33,12 +34,12 @@ class TestdataGenerator {
     }
 
 
-    fun setStartYear(year: String) {
-        startTimeRange = LocalDate.of(year.toInt(), 1, 1)
+    fun setStartYear(year: Int) {
+        startTimeRange = LocalDate.of(year, 1, 1)
     }
 
-    fun setEndYear(year: String) {
-        endTimeRange = LocalDate.of(year.toInt(), 1, 1).minusDays(1)
+    fun setEndYear(year: Int) {
+        endTimeRange = LocalDate.of(year, 1, 1).minusDays(1)
     }
 
     fun getStartAndEndYear(): CaseDate {
@@ -49,7 +50,7 @@ class TestdataGenerator {
         val caseScope = CaseScope.values().random()
         val patient = createPatient(caseScope)
         val id = patient.get<String>("id")
-        File("$location/$id").writeText(patient.toString())
+        File("$location/$id.xml").writeText(patient.toString())
     }
 
     fun createTestdata(numberOfTestdata: Int): List<String> {
@@ -179,8 +180,8 @@ data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) 
         when (caseScope) {
             CaseScope.MRSA -> {
                 germType = GermType.S_AUREUS
-                spaType = getRandomTypeWithProbability(SpaType.values().toList())!! as SpaType
-                clusterType = getRandomTypeWithProbability(ClusterType.values().toList())!! as ClusterType
+                spaType = getRandomTypeWithProbability(SpaType.values().toList())
+                clusterType = getRandomTypeWithProbability(ClusterType.values().toList())
                 nosocomial = Random.nextBoolean()
                 infection = Random.nextBoolean()
             }
