@@ -3,8 +3,8 @@ import org.panteleyev.jpackage.JPackageTask
 System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
-    kotlin("jvm") version "1.6.10"
-    kotlin("plugin.serialization") version "1.6.10"
+    kotlin("jvm") version "1.6.20"
+    kotlin("plugin.serialization") version "1.6.20"
     id("java")
     id("application")
     id("org.openjfx.javafxplugin") version "0.0.12"
