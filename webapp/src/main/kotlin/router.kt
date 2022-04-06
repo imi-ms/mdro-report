@@ -427,13 +427,13 @@ private suspend fun CachingUtility.getOrLoadGermInfo(
     germ: GermType,
     baseXClient: IBaseXClient
 ): GermInfo {
-    if (!CachingUtility.RequestState.isRequestActive(germ)) {
-        if (this.getGermForGermtype(xQueryParams, germ)?.created == null) {
+    if (getGermForGermtype(xQueryParams, germ)?.created == null) {
+        if (!CachingUtility.RequestState.isRequestActive(germ)) {
             coroutineScope {
                 withContext(Dispatchers.Default) {
+                    CachingUtility.RequestState.markRequestActive(germ) //Mark as active while queuing coroutine
                     mutex.withLock {
                         log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
-                        CachingUtility.RequestState.markRequestActive(germ)
                         val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
                         cache(xQueryParams, germInfo)
                         log.info("Done with ${germInfo.type}")
@@ -441,11 +441,11 @@ private suspend fun CachingUtility.getOrLoadGermInfo(
                     }
                 }
             }
-        }
-    } else {
-        coroutineScope {
-            while (CachingUtility.RequestState.isRequestActive(germ)) {
-                delay(1000)
+        } else {
+            coroutineScope {
+                while (CachingUtility.RequestState.isRequestActive(germ)) {
+                    delay(1000)
+                }
             }
         }
     }
@@ -457,13 +457,13 @@ private suspend fun CachingUtility.getOrLoadGlobalInfo(
     xQueryParams: XQueryParams,
     baseXClient: IBaseXClient,
 ): GlobalInfo {
-    if(!CachingUtility.RequestState.isRequestActive(null)) {
-        if (this.getGlobalInfo(xQueryParams)?.created == null) {
+    if (getGlobalInfo(xQueryParams)?.created == null) {
+        if (!CachingUtility.RequestState.isRequestActive(null)) {
             coroutineScope {
                 withContext(Dispatchers.Default) {
+                    CachingUtility.RequestState.markRequestActive(null) //Mark as active while queuing coroutine
                     mutex.withLock {
                         log.info { "Loading GlobalInfo from server $xQueryParams" }
-                        CachingUtility.RequestState.markRequestActive(null)
                         val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
                         cache(xQueryParams, overviewContent)
                         log.info("Done with Global Overview request")
@@ -471,11 +471,11 @@ private suspend fun CachingUtility.getOrLoadGlobalInfo(
                     }
                 }
             }
-        }
-    } else {
-        coroutineScope {
-            while (CachingUtility.RequestState.isRequestActive(null)) {
-                delay(1000)
+        } else {
+            coroutineScope {
+                while (CachingUtility.RequestState.isRequestActive(null)) {
+                    delay(1000)
+                }
             }
         }
     }
