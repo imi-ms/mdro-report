@@ -39,7 +39,7 @@ class JavaFxApplication : Application() {
     override fun start(primaryStage: Stage) {
         var page = FXMLLoader.load<Parent>(javaClass.getResource("/testdataGenerator.fxml"))
         primaryStage.scene = Scene(page)
-        primaryStage.title = "MDReport Testdata Generator"
+        primaryStage.title = "MREReport Testdata Generator"
         primaryStage.show()
 
         (page.lookup("#label_sliderValue") as Label).textProperty().bind(

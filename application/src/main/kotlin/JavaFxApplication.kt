@@ -52,7 +52,7 @@ class JavaFxApplication : Application() {
     override fun start(primaryStage: Stage) {
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"))
         primaryStage.scene = Scene(page)
-        primaryStage.title = "MDReport"
+        primaryStage.title = "MREReport"
         primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 
@@ -154,7 +154,7 @@ class JavaFxApplication : Application() {
                 }
 
                 val file = FileChooser().apply {
-                    initialFileName = "report.mdreport"
+                    initialFileName = "report.mrereport"
                 }.showSaveDialog(primaryStage) ?: return@addListener
                 indicator2.visibleProperty().bind(data.runningProperty())
                 webView.disableProperty().bind(data.runningProperty())

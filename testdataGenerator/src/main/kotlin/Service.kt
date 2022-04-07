@@ -66,7 +66,7 @@ fun generateMRGNAntibioticsAnalysis(
             else -> generateDefaultMRGNAntibioticsAnalysis(antibiotics)
         }
         4 -> generateResistantAntibioticsAnalysis(antibiotics)
-        else -> listOf()
+        else -> emptyList()
     }
 }
 

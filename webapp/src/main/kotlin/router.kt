@@ -13,9 +13,12 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import io.ktor.util.*
 import io.ktor.webjars.*
-import kotlinx.coroutines.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.withContext
 import kotlinx.html.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -436,7 +439,7 @@ private suspend fun CachingUtility.getOrLoadGermInfo(
                         log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
                         val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
                         cache(xQueryParams, germInfo)
-                        log.info("Done with ${germInfo.type}")
+                        log.info { "Loading done of ${germInfo.type} for $xQueryParams" }
                         CachingUtility.RequestState.markRequestInactive(germ)
                     }
                 }

@@ -49,6 +49,6 @@ tasks {
         manifest {
             attributes(Pair("Main-Class", "de.uni_muenster.imi.oegd.webapp.ServerKt"))
         }
-        archiveFileName.set("MDReport-Light.jar")
+        archiveFileName.set("MREReport-Light.jar")
     }
 }

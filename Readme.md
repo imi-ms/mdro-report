@@ -1,4 +1,4 @@
-# MDReport
+# MREReport
 
 This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html) by running XQuery queries.
@@ -11,10 +11,10 @@ You can download the pre-built binaries
 from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/MeDIC/etl/oegd-report/-/releases). You can
 decide between a
 
-* Pre-build executable .jar file (*MDReport-Full.jar*, requires an installation of JRE)
-* an installer, which install MDReport alongside its own JRE
-* A .jar file, that does not include BaseX or JavaFX (*MDReport-Light.jar*, requires separately installed JRE and BaseX,
-  run with command line to set connection data)
+* Pre-build executable .jar file (*MREReport-Full.jar*, requires an installation of JRE)
+* an installer, which install MREReport alongside its own JRE
+* A .jar file, that does not include BaseX or JavaFX (*MREReport-Light.jar*, requires separately installed JRE and
+  BaseX, run with command line to set connection data)
 * A .war file for server deployment (tested with tomcat, usage instructions see below)
 
 ## Usage
@@ -64,7 +64,7 @@ If you only want to use the web interface and connect to a separate running Base
 
 ## XML Format description
 
-The MDReport Tool hosts an BaseX Instance that works with XML files that follow these model specifications:
+The MREReport Tool hosts an BaseX Instance that works with XML files that follow these model specifications:
 
 The main tree follows this structure:
 ```xml

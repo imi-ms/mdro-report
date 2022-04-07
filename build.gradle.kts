@@ -14,7 +14,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.1"
+    version = "1.2"
 }
 
 java {
@@ -64,7 +64,7 @@ tasks.register<JPackageTask>("CreateAppImage") {
     input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "MDReport"
+    appName = "MREReport"
     vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.jar.get().archiveFileName.get()
@@ -80,7 +80,7 @@ tasks.register<JPackageTask>("CreateEXE") {
     input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "MDReport"
+    appName = "MREReport"
     vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.jar.get().archiveFileName.get()
@@ -97,6 +97,6 @@ tasks.getByPath("build").finalizedBy("CreateAppImage")
 
 tasks {
     shadowJar {
-        archiveFileName.set("MDReport-Full.jar")
+        archiveFileName.set("MREReport-Full.jar")
     }
 }

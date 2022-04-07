@@ -31,7 +31,7 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
             div(classes = "wrapper") {
                 nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
                     a(classes = "navbar-brand", href = "/?q=$q") {
-                        +"MDReport"
+                        +"MREReport"
                     }
                     button(classes = "navbar-toggler") {
                         attributes["data-toggle"] = "collapse"

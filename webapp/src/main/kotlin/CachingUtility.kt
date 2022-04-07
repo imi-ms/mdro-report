@@ -19,8 +19,8 @@ fun MutableList<GermInfo>.findOrCreateByType(id: GermType): GermInfo {
 
 
 class CachingUtility(private val basexInfo: BasexInfo) {
-
-    object RequestState {
+    //TODO: Use ContextReceiver to get BasexInfo
+    object RequestState { //TODO: Make this also depending on XQueryParams
         private val stateMap: HashMap<String, Boolean> = hashMapOf(
             Pair("mrsaState", false),
             Pair("mrgnState", false),
@@ -151,18 +151,18 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     }
 
     private val cacheDirectory: String by lazy {
-        val userCacheDir = AppDirsFactory.getInstance().getUserCacheDir("mdreport", "1.0", "IMI")!!
+        val userCacheDir = AppDirsFactory.getInstance().getUserCacheDir("mrereport", "1.0", "IMI")!!
         log.info { "Using '$userCacheDir' as cache directory!" }
         userCacheDir
     }
 
     fun getCacheFileName(xQueryParams: XQueryParams): String {
-        return "${getBaseXPrefix()}--${xQueryParams.year}.mdreport"
+        return "${getBaseXPrefix()}--${xQueryParams.year}.mrereport"
     }
 
     fun getCachedParameters(): List<XQueryParams> {
         val cached = File(cacheDirectory).listFiles().filter { it.name.startsWith(getBaseXPrefix()) }
-            .map { it.name.substringAfter("--").removeSuffix(".mdreport") }
+            .map { it.name.substringAfter("--").removeSuffix(".mrereport") }
         return cached.map { XQueryParams(it.toInt()) }
     }
 

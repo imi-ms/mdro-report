@@ -2,42 +2,27 @@ package de.uni_muenster.imi.oegd.testdataGenerator
 
 import  de.uni_muenster.imi.oegd.testdataGenerator.AntibioticType.*
 
-fun getMRSAAntibiotics(): List<AntibioticType> {
-    return listOf(
-        AMOXICILLIN_CLAVULANSAEURE, AMPICILLIN_SULBACTAM, AZITHROMYCIN, BENZYLPENICILLIN, CEFACLOR, CEFAZOLIN,
-        CEFOXITIN, CLARITHROMYCIN, CLINDAMYCIN, DAPTOMYCIN, ERYTHROMYCIN, FOSFOMYCIN, FUSIDINSAEURE, GENTAMICIN,
-        IMIPENEM, INDUCED_CLINDAMYCIN, LEVOFLOXACIN, LINEZOLID, MEROPENEM, MUPIROCIN, OXACILLIN, PIPERACILLIN,
-        PIPERACILLIN_TAZOBACTAM, RIFAMPICIN, TEICOPLANIN, TETRACYCLIN, TIGECYCLIN, TRIMETHOPRIM_SULFAMETHOXAZOL,
-        VANCOMYCIN
-    )
-}
+fun getMRSAAntibiotics() = listOf(
+    AMOXICILLIN_CLAVULANSAEURE, AMPICILLIN_SULBACTAM, AZITHROMYCIN, BENZYLPENICILLIN, CEFACLOR, CEFAZOLIN,
+    CEFOXITIN, CLARITHROMYCIN, CLINDAMYCIN, DAPTOMYCIN, ERYTHROMYCIN, FOSFOMYCIN, FUSIDINSAEURE, GENTAMICIN,
+    IMIPENEM, INDUCED_CLINDAMYCIN, LEVOFLOXACIN, LINEZOLID, MEROPENEM, MUPIROCIN, OXACILLIN, PIPERACILLIN,
+    PIPERACILLIN_TAZOBACTAM, RIFAMPICIN, TEICOPLANIN, TETRACYCLIN, TIGECYCLIN, TRIMETHOPRIM_SULFAMETHOXAZOL,
+    VANCOMYCIN
+)
 
-fun getMRGNAntibiotics(): List<AntibioticType> {
-    return listOf(PIPERACILLIN_TAZOBACTAM, CEFOTAXIM, CEFTAZIDIM, CEFEPIM, MEROPENEM, IMIPENEM, CIPROFLOXACIN)
-}
+fun getMRGNAntibiotics() =
+    listOf(PIPERACILLIN_TAZOBACTAM, CEFOTAXIM, CEFTAZIDIM, CEFEPIM, MEROPENEM, IMIPENEM, CIPROFLOXACIN)
 
-fun getMRGNGermTypes(): List<GermType> {
-    return listOf(
-        GermType.A_BAUMANNII, GermType.E_COLI,
-        GermType.E_HERMANNII, GermType.K_AEROGENES,
-        GermType.K_OXYTOCA, GermType.M_MORGANII,
-        GermType.P_AERUGINOSA, GermType.P_MIRABILIS
-    )
-}
+fun getMRGNGermTypes() = listOf(
+    GermType.A_BAUMANNII, GermType.E_COLI, GermType.E_HERMANNII, GermType.K_AEROGENES,
+    GermType.K_OXYTOCA, GermType.M_MORGANII, GermType.P_AERUGINOSA, GermType.P_MIRABILIS
+)
 
-fun getVREGermTypes(): List<GermType> {
-    return listOf(
-        GermType.E_FAECIUM, GermType.E_FAECALIS
-    )
-}
+fun getVREGermTypes() = listOf(GermType.E_FAECIUM, GermType.E_FAECALIS)
 
-fun getVREAntibiotics(): List<AntibioticType> {
-    return listOf(LINEZOLID, TIGECYCLIN, VANCOMYCIN, TEICOPLANIN, QUINUPRISTIN_DALFOPRISTIN)
-}
+fun getVREAntibiotics() = listOf(LINEZOLID, TIGECYCLIN, VANCOMYCIN, TEICOPLANIN, QUINUPRISTIN_DALFOPRISTIN)
 
-fun getSensibleOrIntermediaryRandomly(): AntibioticsResult {
-    return listOf(AntibioticsResult.SENSIBLE, AntibioticsResult.INTERMEDIARY).random()
-}
+fun getSensibleOrIntermediaryRandomly() = listOf(AntibioticsResult.SENSIBLE, AntibioticsResult.INTERMEDIARY).random()
 
 interface AntibioticsProbability {
     val antibioticType: AntibioticType
