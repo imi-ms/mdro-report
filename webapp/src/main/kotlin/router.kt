@@ -337,7 +337,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                 button(
                                     type = ButtonType.submit,
                                     classes = "btn btn-light btn-mb-2"
-                                ) { +"Teilbericht erstellen" }
+                                ) { +"Bericht erstellen" }
                             }
                             form(action = "/statistic") {
                                 call.parameters["q"]?.let {
@@ -364,7 +364,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                                 +"Bericht erstellt: "
                                                 +cache.metadata.timeUpdated
                                                 if (teilberichteZuErstellen.isNotEmpty()) {
-                                                    +", Teilberichte für ${teilberichteZuErstellen.joinToString()} werden erzeugt."
+                                                    +", Teilbericht(e) für ${teilberichteZuErstellen.joinToString()} müssen noch erzeugt werden."
                                                 }
 
                                             }
