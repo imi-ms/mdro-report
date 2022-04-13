@@ -98,8 +98,13 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
                             +"© 2022 Copyright "
                         }
                         a(href = "https://imi.uni-muenster.de", target = "_blank") {
-                            +"Institut für Medizinische Informatik Münster"
+                            +"Institut für Medizinische Informatik"
                         }
+                        +" & "
+                        a(href = "https://www.ukm.de/institute/hygiene", target = "_blank") {
+                            +"Institut für Hygiene"
+                        }
+                        +" Münster"
                     }
                 }
             }

@@ -163,7 +163,7 @@ class JavaFxApplication : Application() {
                 }
                 Thread(data).apply { isDaemon = true }.start()
             }
-            if (newLocation.contains("imi.uni-muenster.de")) {
+            if (newLocation.contains("imi.uni-muenster.de") || newLocation.contains("ukm.de")) {
                 hostServices.showDocument(newLocation)
                 webView.engine.load(oldLocation)
             }
