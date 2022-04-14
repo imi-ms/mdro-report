@@ -11,6 +11,7 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.control.Alert.AlertType
+import javafx.scene.image.Image
 import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
 import java.io.File
@@ -40,6 +41,7 @@ class JavaFxApplication : Application() {
         var page = FXMLLoader.load<Parent>(javaClass.getResource("/testdataGenerator.fxml"))
         primaryStage.scene = Scene(page)
         primaryStage.title = "MREReport Testdata Generator"
+        primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 
         (page.lookup("#label_sliderValue") as Label).textProperty().bind(
