@@ -32,7 +32,7 @@ class Main {
     }
 }
 
-
+fun <T : javafx.scene.Node> javafx.scene.Node.find(cssSelector: String) = this.lookup(cssSelector) as T
 
 class JavaFxApplication : Application() {
     private lateinit var directory: File
@@ -44,15 +44,12 @@ class JavaFxApplication : Application() {
         primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 
-        (page.lookup("#label_sliderValue") as Label).textProperty().bind(
-            Bindings.format(
-                "%.0f",
-                (page.lookup("#slider_numberOfPatients") as Slider).valueProperty()
-            )
+        page.find<Label>("#label_sliderValue").textProperty().bind(
+            Bindings.format("%.0f", (page.lookup("#slider_numberOfPatients") as Slider).valueProperty())
         )
 
-        (page.lookup("#button_ok") as Button).isDisable = true
-        (page.lookup("#button_selectLocation") as Button).onAction = EventHandler {
+        page.find<Button>("#button_ok").isDisable = true
+        page.find<Button>("#button_selectLocation").onAction = EventHandler {
             try {
                 val directoryChooser = DirectoryChooser()
                 directoryChooser.title = "Wählen Sie ein Verzeichnis..."
@@ -63,8 +60,8 @@ class JavaFxApplication : Application() {
             } catch (e: Exception) {/*Nothing to do here*/
             }
         }
-        (page.lookup("#selectBox_yearStart") as ChoiceBox<Int>).items = getYearsList()
-        (page.lookup("#selectBox_yearStart") as ChoiceBox<Int>).value = 2021
+        page.find<ChoiceBox<Int>>("#selectBox_yearStart").items = getYearsList()
+        page.find<ChoiceBox<Int>>("#selectBox_yearStart").value = 2021
 
         (page.lookup("#selectBox_yearEnd") as ChoiceBox<Int>).items = getYearsList()
         (page.lookup("#selectBox_yearEnd") as ChoiceBox<Int>).value = 2022

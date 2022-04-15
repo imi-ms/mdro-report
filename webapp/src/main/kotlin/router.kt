@@ -20,6 +20,7 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.html.*
+import kotlinx.html.ButtonType.submit
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -216,13 +217,12 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("MRSA/statistic") {
                 val xQueryParams = call.attributes[xqueryparams]
                 val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
-                val data =
-                    germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"] ?: "null" }.eachCount()
-                        .mapValues { it.value.toString() }
-                val data2 = germInfo.caseList!!.groupingBy { it["Probeart"] ?: "null" }.eachCount()
-                    .mapValues { it.value.toString() }
-                val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"] ?: "null" }.eachCount()
-                    .mapValues { it.value.toString() }
+                val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"] ?: "null" }
+                    .eachCount().mapValues { it.value.toString() }
+                val data2 = germInfo.caseList!!.groupingBy { it["Probeart"] ?: "null" }
+                    .eachCount().mapValues { it.value.toString() }
+                val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"] ?: "null" }
+                    .eachCount().mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Diagramme" }
                     content {
@@ -253,10 +253,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val mrgn =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRGN, baseXClient) }
                 val mrgn3 =
-                    mrgn.map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
+                    mrgn.map { (k, v) -> k.year to v.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
                         .toMap()
                 val mrgn4 =
-                    mrgn.map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("4MRGN") }!!.data }
+                    mrgn.map { (k, v) -> k.year to v.overviewEntries!!.find { it.title.contains("4MRGN") }!!.data }
                         .toMap()
                 val mrsa =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA, baseXClient) }
@@ -270,7 +270,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     header { +"Diagramme" }
                     content {
                         if (yearsEnabled.isNotEmpty()) {
-
                             form(action = "/statistic") {
                                 call.parameters["q"]?.let {
                                     hiddenInput(name = "q") { value = it }
@@ -288,7 +287,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                         }
                                     }
                                 }
-                                button(type = ButtonType.submit, classes = "btn btn-primary mb-2") { +"OK" }
+                                button(type = submit, classes = "btn btn-primary mb-2") { +"OK" }
                             }
                             script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
                             div(classes = "container") {
@@ -334,10 +333,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                     }
                                 }
 
-                                button(
-                                    type = ButtonType.submit,
-                                    classes = "btn btn-light btn-mb-2"
-                                ) { +"Bericht erstellen" }
+                                button(type = submit, classes = "btn btn-light btn-mb-2") {
+                                    +"Bericht erstellen"
+                                }
                             }
                             form(action = "/statistic") {
                                 call.parameters["q"]?.let {
@@ -355,11 +353,8 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                         label(classes = "form-check-label") {
                                             htmlFor = "q${xQueryParams.year}"
                                             +xQueryParams.year.toString()
-                                            val teilberichteZuErstellen =
-                                                GermType.values().map { it.germtype }.toSet().minus(
-                                                    cache.germCache.filter { it.created != null }.map { it.type }
-                                                        .toSet()
-                                                )
+                                            val teilberichteZuErstellen = (GermType.values().map { it.germtype } -
+                                                    cache.germCache.filter { it.created != null }.map { it.type })
                                             span(classes = "text-muted") {
                                                 +"Bericht erstellt: "
                                                 +cache.metadata.timeUpdated
@@ -369,20 +364,16 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
 
                                             }
                                         }
-                                        button(
-                                            type = ButtonType.submit,
-                                            classes = "btn btn-small btn-outline-danger "
-                                        ) {
+                                        button(type = submit, classes = "btn btn-small btn-outline-danger") {
                                             onClick = "window.deleteReport(this,'${Json.encodeToString(xQueryParams)}')"
                                             +"delete"
                                         }
                                     }
                                 }
 
-                                button(
-                                    type = ButtonType.submit,
-                                    classes = "btn btn-secondary mb-2"
-                                ) { +"Diagramme erstellen" }
+                                button(type = submit, classes = "btn btn-secondary mb-2") {
+                                    +"Diagramme erstellen"
+                                }
                             }
 
 

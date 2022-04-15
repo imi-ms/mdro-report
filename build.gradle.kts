@@ -14,7 +14,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.2"
+    version = "1.2.1"
 }
 
 java {
@@ -55,19 +55,20 @@ task("copyDependencies", Copy::class) {
 }
 
 task("copyJar", Copy::class) {
-    from(tasks.jar).into("$buildDir/jars")
+    dependsOn(tasks.shadowJar)
+    from(tasks.shadowJar).into("$buildDir/jars")
 }
 
 tasks.register<JPackageTask>("CreateAppImage") {
-    dependsOn("build", "copyDependencies", "copyJar")
+    dependsOn("build", "copyJar")
 
     input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "MREReport"
+    appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"
 
-    mainJar = tasks.jar.get().archiveFileName.get()
+    mainJar = tasks.shadowJar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
 
     javaOptions = listOf("-Dfile.encoding=UTF-8")
@@ -75,15 +76,15 @@ tasks.register<JPackageTask>("CreateAppImage") {
 }
 
 tasks.register<JPackageTask>("CreateEXE") {
-    dependsOn("build", "copyDependencies", "copyJar")
+    dependsOn("build", "copyJar")
 
     input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
-    appName = "MREReport"
+    appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"
 
-    mainJar = tasks.jar.get().archiveFileName.get()
+    mainJar = tasks.shadowJar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
 
     javaOptions = listOf("-Dfile.encoding=UTF-8")
@@ -98,5 +99,14 @@ tasks.getByPath("build").finalizedBy("CreateAppImage")
 tasks {
     shadowJar {
         archiveFileName.set("MREReport-Full.jar")
+        exclude {
+            it.path.contains("META-INF/resources/webjars") &&
+                    it.name !in setOf(
+                "jquery.min.js", "Chart.min.js", "bootstrap.min.js", "bootstrap-icons.css",
+                "bootstrap-icons.woff2", "bootstrap-icons.woff", "bootstrap.min.css"
+            )
+        }
+        exclude { it.path.startsWith("META-INF/maven") }
     }
 }
+

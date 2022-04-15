@@ -29,6 +29,7 @@ dependencies {
     implementation("io.ktor:ktor-client-cio:$ktor_version")
     implementation("io.ktor:ktor-client-auth-jvm:$ktor_version")
     implementation("io.ktor:ktor-webjars:$ktor_version")
+    implementation("io.ktor:ktor-server-core:$ktor_version")
     implementation("io.ktor:ktor-server-servlet:$ktor_version")
     implementation("io.ktor:ktor-auth:$ktor_version")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
@@ -41,14 +42,14 @@ dependencies {
     implementation("org.webjars.npm:bootstrap-icons:1.8.1")
     implementation("org.webjars.npm:popper.js:1.16.1")
     implementation("org.webjars.npm:github-com-chartjs-Chart-js:2.8.0")
-    implementation("io.ktor:ktor-server-core:1.6.8")
 }
 
 tasks {
     shadowJar {
         manifest {
-            attributes(Pair("Main-Class", "de.uni_muenster.imi.oegd.webapp.ServerKt"))
+            attributes("Main-Class" to "de.uni_muenster.imi.oegd.webapp.ServerKt")
         }
+
         archiveFileName.set("MREReport-Light.jar")
     }
 }

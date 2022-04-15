@@ -1,4 +1,4 @@
-# MREReport
+# MRE-Report
 
 This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html) by running XQuery queries.
@@ -11,8 +11,8 @@ You can download the pre-built binaries
 from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/MeDIC/etl/oegd-report/-/releases). You can
 decide between a
 
-* Pre-build executable .jar file (*MREReport-Full.jar*, requires an installation of JRE)
-* an installer, which install MREReport alongside its own JRE
+* Pre-build executable .jar file (*MREReport-Full.jar*, requires an installation of the Java Runtime Environment)
+* An executable installer, which will install MRE-Report alongside its own JRE and creates a Start Menu entry
 * A .jar file, that does not include BaseX or JavaFX (*MREReport-Light.jar*, requires separately installed JRE and
   BaseX, run with command line to set connection data)
 * A .war file for server deployment (tested with tomcat, usage instructions see below)
@@ -64,7 +64,7 @@ If you only want to use the web interface and connect to a separate running Base
 
 ## XML Format description
 
-The MREReport Tool hosts an BaseX Instance that works with XML files that follow these model specifications:
+MRE-Report uses a BaseX instance that provides XML data. The XML data has to follow these model specifications:
 
 The main tree follows this structure:
 ```xml
@@ -377,9 +377,6 @@ but edge cases are not considered. Some relative frequencies have been
 implemented as well to provide statistics that are close to real data. 
 
 **Important note**: Generated IDs are only unique within each generated batch. For new testdata IDs could repeat, although it is unlikely
-## Licence
-
-TODO
 
 ## Acknowledgement
 

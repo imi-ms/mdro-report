@@ -9,6 +9,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd.testdataGenerator"
+    version = "1.2.1"
 }
 
 repositories {
