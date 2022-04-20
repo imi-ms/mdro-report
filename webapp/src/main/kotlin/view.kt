@@ -22,10 +22,8 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
             link(rel = "stylesheet", href = "/webjars/bootstrap/dist/css/bootstrap.min.css")
             link(rel = "stylesheet", href = "/webjars/bootstrap-icons/font/bootstrap-icons.css")
             link(rel = "stylesheet", href = "/static/custom-styles.css")
-
             script(src = "/webjars/jquery/dist/jquery.min.js") {}
             script(src = "/webjars/bootstrap/dist/js/bootstrap.min.js") {}
-
         }
         body {
             div(classes = "wrapper") {

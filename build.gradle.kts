@@ -12,6 +12,15 @@ plugins {
     id("org.panteleyev.jpackageplugin") version "1.3.1"
 }
 
+buildscript {
+    repositories {
+        mavenCentral() // For the ProGuard Gradle Plugin and anything else.
+    }
+    dependencies {
+        classpath("com.guardsquare:proguard-gradle:7.2.1")  // The ProGuard Gradle plugin.
+    }
+}
+
 kotlin {
     group = "de.uni_muenster.imi.oegd"
     version = "1.2.1"
@@ -58,6 +67,62 @@ task("copyJar", Copy::class) {
     dependsOn(tasks.shadowJar)
     from(tasks.shadowJar).into("$buildDir/jars")
 }
+tasks.register<proguard.gradle.ProGuardTask>("minimizedJar") {
+    dependsOn("copyJar")
+    verbose()
+//    ignorewarnings()
+
+    injars("$buildDir/jars/MREReport-Full.jar")
+    outjars("$buildDir/jars/MREReport.min.jar")
+
+    val javaHome = System.getProperty("java.home")
+    // Automatically handle the Java version of this build.
+    if (System.getProperty("java.version").startsWith("1.")) {
+        // Before Java 9, the runtime classes were packaged in a single jar file.
+        libraryjars("$javaHome/lib/rt.jar")
+    } else {
+        // As of Java 9, the runtime classes are packaged in modular jmod files.
+        for (module in listOf(
+            "java.base", "jdk.xml.dom", "jdk.jsobject", "java.xml", "java.desktop",
+            "java.datatransfer", "java.logging", "java.management", "java.naming", "java.net.http",
+            "java.xml.crypto", "java.sql", "java.scripting"
+        )) {
+            libraryjars(
+                mapOf("jarfilter" to "!**.jar", "filter" to "!module-info.class"),
+                "$javaHome/jmods/$module.jmod"
+            )
+        }
+    }
+
+//    overloadaggressively()
+//    repackageclasses("")
+    allowaccessmodification()
+
+    printmapping("build/proguard-mapping.txt")
+    dontobfuscate()
+    dontoptimize()
+//    dontwarn()
+
+    keep("class de.uni_muenster.imi.oegd.application.Main { *;  }")
+    keep("public class com.sun.javafx.tk.quantum.QuantumToolkit { *;  }")
+    keep("public class com.sun.prism.**Pipeline { *;  }")
+    keep("class com.sun.glass.ui.win.WinPlatformFactory")
+    keep("class kotlin.reflect.jvm.internal.** { *;  }")
+    keep("class kotlin.text.RegexOption { *;  }")
+    keep("public class ch.qos.logback.** { *; }")
+    dontwarn("ch.qos.logback.**")
+    dontwarn("groovy.**")
+    dontwarn("org.codehaus.groovy.**")
+    dontwarn("io.netty.**")
+    dontwarn("com.sun.javafx.logging.jfr.**")
+    dontwarn("kotlinx.coroutines.debug.**")
+    dontwarn("com.sun.marlin.**")
+    dontwarn("io.ktor.server.**")
+    ignorewarnings()
+//    dontwarn("org.w3c.**")
+
+}
+
 
 tasks.register<JPackageTask>("CreateAppImage") {
     dependsOn("build", "copyJar")
