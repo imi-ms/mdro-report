@@ -67,13 +67,14 @@ task("copyJar", Copy::class) {
     dependsOn(tasks.shadowJar)
     from(tasks.shadowJar).into("$buildDir/jars")
 }
+
 tasks.register<proguard.gradle.ProGuardTask>("minimizedJar") {
     dependsOn("copyJar")
     verbose()
 //    ignorewarnings()
 
     injars("$buildDir/jars/MREReport-Full.jar")
-    outjars("$buildDir/jars/MREReport.min.jar")
+    outjars("$buildDir/minJar/MREReport.min.jar")
 
     val javaHome = System.getProperty("java.home")
     // Automatically handle the Java version of this build.
@@ -137,15 +138,15 @@ tasks.register<proguard.gradle.ProGuardTask>("minimizedJar") {
 
 
 tasks.register<JPackageTask>("CreateAppImage") {
-    dependsOn("build", "copyJar")
+    dependsOn("build", "minimizedJar")
 
-    input = "$buildDir/jars"
+    input = "$buildDir/minJar"
     destination = "$buildDir/dist"
 
     appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"
 
-    mainJar = tasks.shadowJar.get().archiveFileName.get()
+    mainJar = "MREReport.min.jar"
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
 
     javaOptions = listOf("-Dfile.encoding=UTF-8")
@@ -153,15 +154,15 @@ tasks.register<JPackageTask>("CreateAppImage") {
 }
 
 tasks.register<JPackageTask>("CreateEXE") {
-    dependsOn("build", "copyJar")
+    dependsOn("build", "minimizedJar")
 
-    input = "$buildDir/jars"
+    input = "$buildDir/minJar"
     destination = "$buildDir/dist"
 
     appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"
 
-    mainJar = tasks.shadowJar.get().archiveFileName.get()
+    mainJar = "MREReport.min.jar"
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
 
     javaOptions = listOf("-Dfile.encoding=UTF-8")
@@ -170,8 +171,6 @@ tasks.register<JPackageTask>("CreateEXE") {
     winDirChooser = true
     winMenu = true
 }
-
-tasks.getByPath("build").finalizedBy("CreateAppImage")
 
 tasks {
     shadowJar {
