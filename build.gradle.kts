@@ -105,6 +105,16 @@ tasks.register<proguard.gradle.ProGuardTask>("minimizedJar") {
 
     keep("class de.uni_muenster.imi.oegd.application.Main { *;  }")
     keep("public class com.sun.javafx.tk.quantum.QuantumToolkit { *;  }")
+    keep("class com.sun.glass.ui.** { *;  }")
+    keep("class com.sun.javafx.** { *;  }")
+    keep("class javafx.fxml.** { *;  }")
+    keep("class javafx.scene.** { *;  }")
+    keep("class javafx.geometry.** { *;  }")
+    keep("class javafx.css.** { *;  }")
+    keep("class com.sun.prism.shader.** { *;  }")
+    keep("class com.sun.prism.es2.** { *;  }")
+    keep("class com.sun.scenario.effect.impl.prism.** { *;  }")
+    keep("class com.sun.scenario.effect.impl.es2.** { *;  }")
     keep("public class com.sun.prism.**Pipeline { *;  }")
     keep("class com.sun.glass.ui.win.WinPlatformFactory")
     keep("class kotlin.reflect.jvm.internal.** { *;  }")
@@ -119,6 +129,8 @@ tasks.register<proguard.gradle.ProGuardTask>("minimizedJar") {
     dontwarn("com.sun.marlin.**")
     dontwarn("io.ktor.server.**")
     ignorewarnings()
+    adaptresourcefilenames("**.so")
+    adaptresourcefilecontents("**.so")
 //    dontwarn("org.w3c.**")
 
 }
