@@ -8,7 +8,8 @@ to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html) by running XQ
 ## Download
 
 You can download the pre-built binaries
-from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/MeDIC/etl/oegd-report/-/releases). You can
+from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/published/medic/mre-report/-/releases). You
+can
 decide between a
 
 * Pre-build executable .jar file (*MREReport-Full.jar*, requires an installation of the Java Runtime Environment)
