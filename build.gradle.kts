@@ -23,7 +23,7 @@ buildscript {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.2.1"
+    version = "1.2.2"
 }
 
 java {
@@ -176,8 +176,8 @@ tasks {
     shadowJar {
         archiveFileName.set("MREReport-Full.jar")
         exclude {
-            it.path.contains("META-INF/resources/webjars") &&
-                    it.name !in setOf(
+            it.path.contains("META-INF/resources/webjars")
+                    && it.name !in setOf(
                 "jquery.min.js", "Chart.min.js", "bootstrap.min.js", "bootstrap-icons.css",
                 "bootstrap-icons.woff2", "bootstrap-icons.woff", "bootstrap.min.css"
             )
