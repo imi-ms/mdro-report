@@ -182,67 +182,95 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             get("MRGN/statistic") {
                 val xQueryParams = call.attributes[xqueryparams]
-                val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
-                val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
-                    .mapValues { it.value.toString() }
-                val data2 =
-                    germInfo.caseList!!.groupingBy { it["Probenart"]!! }.eachCount().mapValues { it.value.toString() }
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Diagramme" }
-                    content {
-                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                        drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", data)
-                        drawBarChart("Anzahl der Probenarten", data2)
+                try {
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
+                    val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
+                        .mapValues { it.value.toString() }
+                    val data2 =
+                        germInfo.caseList!!.groupingBy { it["Probenart"]!! }.eachCount()
+                            .mapValues { it.value.toString() }
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                        header { +"Diagramme" }
+                        content {
+                            script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                            drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", data)
+                            drawBarChart("Anzahl der Probenarten", data2)
+                        }
+                    }
+                } catch (e: Exception) {
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                        header { +"Fehler" }
+                        content {
+                            +"Für die angegebene Jahreszahl konnten aus den Daten keine Diagramme erstellt werden. Versuchen Sie es mit anderen Einstellungen erneut."
+                        }
                     }
                 }
             }
             get("VRE/statistic") {
                 val xQueryParams = call.attributes[xqueryparams]
-                val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
-                val data =
-                    germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"] ?: "null" }.eachCount()
-                        .mapValues { it.value.toString() }
-                val data2 =
-                    germInfo.caseList!!.groupingBy { it["Probenart"] ?: "null" }.eachCount()
-                        .mapValues { it.value.toString() }
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Diagramme" }
-                    content {
-                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                        drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", data)
-                        drawBarChart("Anzahl der Probenarten", data2)
+                try {
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
+                    val data =
+                        germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
+                            .mapValues { it.value.toString() }
+                    val data2 =
+                        germInfo.caseList!!.groupingBy { it["Probenart"]!! }.eachCount()
+                            .mapValues { it.value.toString() }
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                        header { +"Diagramme" }
+                        content {
+                            script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                            drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", data)
+                            drawBarChart("Anzahl der Probenarten", data2)
+                        }
+                    }
+                } catch (e: Exception) {
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                        header { +"Fehler" }
+                        content {
+                            +"Für die angegebene Jahreszahl konnten aus den Daten keine Diagramme erstellt werden. Versuchen Sie es mit anderen Einstellungen erneut."
+                        }
                     }
                 }
             }
             get("MRSA/statistic") {
                 val xQueryParams = call.attributes[xqueryparams]
-                val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
-                val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"] ?: "null" }
-                    .eachCount().mapValues { it.value.toString() }
-                val data2 = germInfo.caseList!!.groupingBy { it["Probeart"] ?: "null" }
-                    .eachCount().mapValues { it.value.toString() }
-                val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"] ?: "null" }
-                    .eachCount().mapValues { it.value.toString() }
-                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Diagramme" }
-                    content {
-                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                        div(classes = "container") {
-                            div(classes = "row") {
-                                style = "height: 400px;"
-                                div(classes = "col") {
-                                    drawBarChart("MRSA Nachweis in den einzelnen Fachabteilungen", data)
+                try {
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
+                    val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                        .eachCount().mapValues { it.value.toString() }
+                    val data2 = germInfo.caseList!!.groupingBy { it["Probeart"]!! }
+                        .eachCount().mapValues { it.value.toString() }
+                    val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"]!! }
+                        .eachCount().mapValues { it.value.toString() }
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                        header { +"Diagramme" }
+                        content {
+                            script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                            div(classes = "container") {
+                                div(classes = "row") {
+                                    style = "height: 400px;"
+                                    div(classes = "col") {
+                                        drawBarChart("MRSA Nachweis in den einzelnen Fachabteilungen", data)
+                                    }
+                                }
+                                div(classes = "row") {
+                                    style = "height: 400px;"
+                                    div(classes = "col-6") {
+                                        drawBarChart("Anzahl der Probenarten", data2)
+                                    }
+                                    div(classes = "col-6") {
+                                        drawPieChart("Anzahl Import/Nosokomial", data3)
+                                    }
                                 }
                             }
-                            div(classes = "row") {
-                                style = "height: 400px;"
-                                div(classes = "col-6") {
-                                    drawBarChart("Anzahl der Probenarten", data2)
-                                }
-                                div(classes = "col-6") {
-                                    drawPieChart("Anzahl Import/Nosokomial", data3)
-                                }
-                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                        header { +"Fehler" }
+                        content {
+                            +"Für die angegebene Jahreszahl konnten aus den Daten keine Diagramme erstellt werden. Versuchen Sie es mit anderen Einstellungen erneut."
                         }
                     }
                 }
@@ -325,6 +353,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                     min = "2000"
                                     max = LocalDate.now().year.toString()
                                     placeholder = "Jahr"
+                                    required = true
                                 }
                                 if (call.parameters["q"] != null) {
                                     hiddenInput {
