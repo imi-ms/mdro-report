@@ -23,7 +23,7 @@ buildscript {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.2.2"
+    version = "1.2.3"
 }
 
 java {
@@ -138,15 +138,15 @@ tasks.register<proguard.gradle.ProGuardTask>("minimizedJar") {
 
 
 tasks.register<JPackageTask>("CreateAppImage") {
-    dependsOn("build", "minimizedJar")
+    dependsOn("build", "copyJar")
 
-    input = "$buildDir/minJar"
+    input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
     appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"
 
-    mainJar = "MREReport.min.jar"
+    mainJar = tasks.shadowJar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
 
     javaOptions = listOf("-Dfile.encoding=UTF-8")
@@ -154,15 +154,15 @@ tasks.register<JPackageTask>("CreateAppImage") {
 }
 
 tasks.register<JPackageTask>("CreateEXE") {
-    dependsOn("build", "minimizedJar")
+    dependsOn("build", "copyJar")
 
-    input = "$buildDir/minJar"
+    input = "$buildDir/jars"
     destination = "$buildDir/dist"
 
     appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"
 
-    mainJar = "MREReport.min.jar"
+    mainJar = tasks.shadowJar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
 
     javaOptions = listOf("-Dfile.encoding=UTF-8")
