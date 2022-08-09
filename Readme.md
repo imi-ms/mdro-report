@@ -103,11 +103,13 @@ Example:
 - **id** - the id of the case. This can be any number. The ID has to be unique.
 - **from** - the start date-time of the case. It follows the ISO-8601 standard. 
 - **till** - the end date-time of the case. It follows the ISO-8601 standard.
-- **type** - the type of the case. With this tool only stationary cases are important so any other type than "S" will be ignored
+- **type** - the type of the case. With this tool only stationary cases are important so any other type than "
+  STATIONAER" will be ignored
 
 Example:
 ```xml
-<case id="99814764" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" type="S">...</case>
+
+<case id="99814764" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" type="STATIONAER">...</case>
 ```
 
 ### location

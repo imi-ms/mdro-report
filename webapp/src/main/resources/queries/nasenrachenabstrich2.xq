@@ -2,7 +2,7 @@
 count(
     distinct-values(
         /patient/case[
-            @type="S" and
+            @type="STATIONAER" and
             (xs:dateTime(@from) > xs:dateTime("#YEAR_START") and xs:dateTime(@from) < xs:dateTime("#YEAR_END")) and
             labReport/sample[
                 @bodySiteDisplay="Nase" or @bodySiteDisplay="Nase und Rachen" or @bodySiteDisplay="Rachen"

@@ -3,7 +3,7 @@ let $input :=
 {
 for $x in /patient/case/labReport/sample
 where (xs:dateTime($x/../../@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/../../@from) < xs:dateTime("#YEAR_END"))
-where $x/../../@type="S"
+where $x/../../@type="STATIONAER"
 where $x/germ/@display="Enterococcus faecalis"
 let $ids:=$x/../../@id
 group by $ids

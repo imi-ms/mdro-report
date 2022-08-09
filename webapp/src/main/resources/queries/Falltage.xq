@@ -4,7 +4,7 @@ let $input :=
 for $x in /patient/case
 where xs:dateTime($x/@from) < xs:dateTime("#YEAR_START")
 where xs:dateTime($x/@till) > xs:dateTime("#YEAR_START")
-where $x/@type="S"
+where $x/@type="STATIONAER"
 let $date1:=xs:dateTime("#YEAR_START")
 let $date2:=xs:dateTime($x/@till)
 let $datediff:=ceiling(($date2 - $date1)div xs:dayTimeDuration("P1D"))
@@ -21,7 +21,7 @@ let $input2 :=
 for $x in /patient/case
 where (xs:dateTime($x/@from) >= xs:dateTime("#YEAR_START") and xs:dateTime($x/@from) <= xs:dateTime("#YEAR_END"))
 where (xs:dateTime($x/@till) >= xs:dateTime("#YEAR_START") and xs:dateTime($x/@till) <= xs:dateTime("#YEAR_END"))
-where $x/@type="S"
+where $x/@type="STATIONAER"
 let $date1:=xs:dateTime($x/@from)
 let $date2:=xs:dateTime($x/@till)
 let $datediff:=ceiling(($date2 - $date1)div xs:dayTimeDuration("P1D"))
@@ -38,7 +38,7 @@ let $input3 :=
 for $x in /patient/case
 where (xs:dateTime($x/@from) >= xs:dateTime("#YEAR_START") and xs:dateTime($x/@from) <= xs:dateTime("#YEAR_END"))
 where xs:dateTime($x/@till) > xs:dateTime("#YEAR_END")
-where $x/@type="S"
+where $x/@type="STATIONAER"
 let $date1:=xs:dateTime($x/@from)
 let $date2:=xs:dateTime("#YEAR_END")
 let $datediff:=ceiling(($date2 - $date1)div xs:dayTimeDuration("P1D"))
@@ -55,7 +55,7 @@ let $input4 :=
 for $x in /patient/case
 where (xs:dateTime($x/@from) >= xs:dateTime("#YEAR_START") and xs:dateTime($x/@from) <= xs:dateTime("#YEAR_END"))
 where not($x/@till)
-where $x/@type="S"
+where $x/@type="STATIONAER"
 let $date1:=xs:dateTime($x/@from)
 let $date2:=xs:dateTime("#YEAR_END")
 let $datediff:=ceiling(($date2 - $date1)div xs:dayTimeDuration("P1D"))

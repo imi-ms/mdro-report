@@ -8,13 +8,13 @@ enum class CaseScope(val type: String) {
 }
 
 enum class Casetype(val type: String) {
-    STATIONAER("S"),
-    NACHSTATIONAER("NS"),
-    VORSTATIONAER("V"),
-    TEILSTATIONAER("TS"),
-    AMBULANT("A"),
-    BEGLEITPERSON("H"),
-    GEPLANTER_FALL("P")
+    STATIONAER("STATIONAER"),
+    NACHSTATIONAER("NACHSTATIONAER"),
+    VORSTATIONAER("VORSTATIONAER"),
+    TEILSTATIONAER("TEILSTATIONAER"),
+    AMBULANT("AMBULANT"),
+    BEGLEITPERSON("BEGLEITPERSON"),
+    GEPLANTER_FALL("GEPLANTER_FALL")
 }
 
 enum class Department(val clinic: String, val fa_code: String) {
