@@ -47,7 +47,7 @@ dependencies {
 tasks {
     shadowJar {
         manifest {
-            attributes("Main-Class" to "de.uni_muenster.imi.oegd.webapp.ServerKt")
+            attributes("Main-Class" to "de.uni_muenster.imi.oegd.webapp.EntrypointsKt")
         }
 
         archiveFileName.set("MREReport-Light.jar")

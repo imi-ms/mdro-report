@@ -1,0 +1,11 @@
+docs/*
+out/*
+**/build/**
+**/.gradle/**
+**/gradle/**
+**/.idea
+.git
+.gitignore
+.gradle
+.idea
+build
