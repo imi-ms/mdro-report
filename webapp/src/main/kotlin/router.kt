@@ -2,7 +2,6 @@ package de.uni_muenster.imi.oegd.webapp
 
 
 import de.uni_muenster.imi.oegd.common.GermType
-import de.uni_muenster.imi.oegd.common.IBaseXClient
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -26,7 +25,9 @@ import kotlinx.html.ButtonType.submit
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import model.*
 import mu.KotlinLogging
+import view.*
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
@@ -148,11 +149,12 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
                 call.response.header(
                     HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
-                        ContentDisposition.Parameters.FileName, cachingUtility.getCacheFileName(xQueryParams)
+                        ContentDisposition.Parameters.FileName,
+                        cachingUtility.cacheProvider.getCacheFileName(xQueryParams)
                     ).toString()
                 )
                 call.respondText(
-                    Json.encodeToString(cachingUtility.getCache(xQueryParams)),
+                    Json.encodeToString(cachingUtility.cacheProvider.getCache(xQueryParams)),
                     contentType = ContentType.Application.Json
                 )
             }
@@ -307,7 +309,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                 call.parameters["q"]?.let {
                                     hiddenInput(name = "q") { value = it }
                                 }
-                                for (year in cachingUtility.getCachedParameters()) {
+                                for (year in cachingUtility.cacheProvider.getCachedParameters()) {
                                     div(classes = "form-check form-check-inline") {
                                         checkBoxInput(classes = "form-check-input", name = "year[]") {
                                             id = "p${year.year}"
@@ -375,8 +377,8 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                 call.parameters["q"]?.let {
                                     hiddenInput(name = "q") { value = it }
                                 }
-                                for (cache in cachingUtility.getCachedParameters()
-                                    .map { cachingUtility.getCache(it)!! }) {
+                                for (cache in cachingUtility.cacheProvider.getCachedParameters()
+                                    .map { cachingUtility.cacheProvider.getCache(it)!! }) {
                                     val xQueryParams = cache.metadata.xQueryParams
                                     div(classes = "form-check") {
                                         checkBoxInput(classes = "form-check-input", name = "year[]") {
@@ -427,7 +429,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             post("/statistic/deleteReport") {
                 val params = call.receiveParameters()
                 val xQueryParams = Json.decodeFromString<XQueryParams>(params["toDelete"]!!)
-                cachingUtility.clearCache(xQueryParams)
+                cachingUtility.cacheProvider.clearCache(xQueryParams)
                 call.respondRedirect("/statistic${params["q"].let { "?q=$it" } ?: ""}")
             }
             get("/about") {
@@ -461,7 +463,7 @@ private suspend fun CachingUtility.getOrLoadGermInfo(
                     CachingUtility.RequestState.markRequestActive(germ) //Mark as active while queuing coroutine
                     mutex.withLock {
                         log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
-                        val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
+                        val germInfo = model.DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
                         cache(xQueryParams, germInfo)
                         log.info { "Loading done of ${germInfo.type} for $xQueryParams" }
                         CachingUtility.RequestState.markRequestInactive(germ)
@@ -491,7 +493,7 @@ private suspend fun CachingUtility.getOrLoadGlobalInfo(
                     CachingUtility.RequestState.markRequestActive(null) //Mark as active while queuing coroutine
                     mutex.withLock {
                         log.info { "Loading GlobalInfo from server $xQueryParams" }
-                        val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
+                        val overviewContent = model.DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
                         cache(xQueryParams, overviewContent)
                         log.info("Done with Global Overview request")
                         CachingUtility.RequestState.markRequestInactive(null)

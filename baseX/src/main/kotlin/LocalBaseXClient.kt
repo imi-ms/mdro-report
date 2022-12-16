@@ -1,7 +1,7 @@
 package de.uni_muenster.imi.oegd.baseX
 
-import de.uni_muenster.imi.oegd.common.IBaseXClient
-import de.uni_muenster.imi.oegd.webapp.LocalBasexInfo
+import model.IBaseXClient
+import model.LocalBasexInfo
 import org.basex.core.Context
 import org.basex.core.cmd.*
 import java.io.File

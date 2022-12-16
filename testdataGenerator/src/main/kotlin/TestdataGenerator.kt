@@ -10,30 +10,26 @@ import kotlin.random.Random
 
 private val log = KotlinLogging.logger { }
 
+fun main(args: Array<String>) {
+    fun askUser(message: String): String {
+        println(message)
+        return readLine()!!
+    }
+
+    if (!File("testdata").exists()) {
+        File("testdata").mkdir()
+    }
+
+    val cnt = args.firstOrNull()?.toIntOrNull() ?: askUser("How many patients should be generated?").toInt()
+    val patients = TestdataGenerator().createTestdata(cnt)
+    patients.forEachIndexed { index, patient ->
+        File("testdata/Patient$index").writeText(patient)
+    }
+}
+
 class TestdataGenerator {
     private var startTimeRange = LocalDate.of(2021, 1, 1)
     private var endTimeRange = LocalDate.of(2022, 2, 28)
-
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            fun askUser(message: String): String {
-                println(message)
-                return readLine()!!
-            }
-
-            if (!File("testdata").exists()) {
-                File("testdata").mkdir()
-            }
-
-            val cnt = args.firstOrNull()?.toIntOrNull() ?: askUser("How many patients should be generated?").toInt()
-            val patients = TestdataGenerator().createTestdata(cnt)
-            patients.forEachIndexed { index, patient ->
-                File("testdata/Patient$index").writeText(patient)
-            }
-        }
-    }
-
 
     fun setStartYear(year: Int) {
         startTimeRange = LocalDate.of(year, 1, 1)

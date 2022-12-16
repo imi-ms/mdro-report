@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.oegd.webapp
+package model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

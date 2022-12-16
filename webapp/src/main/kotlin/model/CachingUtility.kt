@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.oegd.webapp
+package model
 
 import de.uni_muenster.imi.oegd.common.GermType
 import kotlinx.serialization.decodeFromString
@@ -9,13 +9,6 @@ import net.harawata.appdirs.AppDirsFactory
 import java.io.File
 import java.time.LocalDateTime
 
-
-fun MutableList<GermInfo>.findOrCreateByType(id: GermType): GermInfo {
-    return find { it.type == id.germtype }
-        ?: GermInfo(
-            type = id.germtype,
-        ).also { this.add(it) }
-}
 
 
 class CachingUtility(private val basexInfo: BasexInfo) {
@@ -30,33 +23,34 @@ class CachingUtility(private val basexInfo: BasexInfo) {
 
         fun isRequestActive(germ: GermType?): Boolean {
             return when (germ) {
-                GermType.MRSA -> this.stateMap["mrsaState"]!!
-                GermType.MRGN -> this.stateMap["mrgnState"]!!
-                GermType.VRE -> this.stateMap["vreState"]!!
-                else -> this.stateMap["globalState"]!!
+                GermType.MRSA -> stateMap["mrsaState"]!!
+                GermType.MRGN -> stateMap["mrgnState"]!!
+                GermType.VRE -> stateMap["vreState"]!!
+                else -> stateMap["globalState"]!!
             }
         }
 
         fun markRequestActive(germ: GermType?) {
             when (germ) {
-                GermType.MRSA -> this.stateMap["mrsaState"] = true
-                GermType.MRGN -> this.stateMap["mrgnState"] = true
-                GermType.VRE -> this.stateMap["vreState"] = true
-                else -> this.stateMap["globalState"] = true
+                GermType.MRSA -> stateMap["mrsaState"] = true
+                GermType.MRGN -> stateMap["mrgnState"] = true
+                GermType.VRE -> stateMap["vreState"] = true
+                else -> stateMap["globalState"] = true
             }
         }
 
         fun markRequestInactive(germ: GermType?) {
             when (germ) {
-                GermType.MRSA -> this.stateMap["mrsaState"] = false
-                GermType.MRGN -> this.stateMap["mrgnState"] = false
-                GermType.VRE -> this.stateMap["vreState"] = false
-                else -> this.stateMap["globalState"] = false
+                GermType.MRSA -> stateMap["mrsaState"] = false
+                GermType.MRGN -> stateMap["mrgnState"] = false
+                GermType.VRE -> stateMap["vreState"] = false
+                else -> stateMap["globalState"] = false
             }
         }
     }
 
     private val log = KotlinLogging.logger { }
+    val cacheProvider = CacheProvider(basexInfo)
 
 
     fun cache(xQueryParams: XQueryParams, germ: GermInfo) {
@@ -64,21 +58,15 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         cache.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.removeIf { it.type == germ.type }
         cache.germCache.add(germ)
-        writeCache(cache)
+        cacheProvider.writeCache(cache)
     }
 
     fun cache(xQueryParams: XQueryParams, data: GlobalInfo) {
         val cache = getOrCreateCache(xQueryParams)
         cache.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.globalCache = data
-        writeCache(cache)
+        cacheProvider.writeCache(cache)
     }
-
-
-    private fun getOrCreateCache(xQueryParams: XQueryParams) =
-        if (!cacheExists(xQueryParams)) createCache(xQueryParams) else getCache(xQueryParams) ?: createCache(
-            xQueryParams
-        )
 
 
     fun clearGlobalInfoCache(xQueryParams: XQueryParams) {
@@ -87,7 +75,7 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         cache.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.globalCache.clear()
 
-        writeCache(cache)
+        cacheProvider.writeCache(cache)
     }
 
     fun clearGermInfo(xQueryParams: XQueryParams, germ: GermType) {
@@ -96,14 +84,25 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         cache.metadata.timeUpdated = LocalDateTime.now().toString()
         cache.germCache.removeIf { it.type == germ.germtype }
 
-        writeCache(cache)
+        cacheProvider.writeCache(cache)
     }
 
 
     fun uploadExistingCache(cache: String) {
-        writeCache(Json.decodeFromString(cache))
+        cacheProvider.writeCache(Json.decodeFromString(cache))
     }
 
+
+    fun getGermForGermtype(xQueryParams: XQueryParams, germ: GermType): GermInfo? {
+        return cacheProvider.getCache(xQueryParams)?.germCache?.find { it.type == germ.germtype }
+    }
+
+    fun getGlobalInfo(xQueryParams: XQueryParams): GlobalInfo? {
+        return cacheProvider.getCache(xQueryParams)?.globalCache
+    }
+
+    fun getOrCreateCache(xQueryParams: XQueryParams) =
+        cacheProvider.getCache(xQueryParams) ?: createCache(xQueryParams)
 
     private fun createCache(xQueryParams: XQueryParams): CacheData {
         return CacheData(
@@ -119,45 +118,35 @@ class CachingUtility(private val basexInfo: BasexInfo) {
     }
 
 
+}
+
+
+class CacheProvider(val basexInfo: BasexInfo) {
+
+    private val log = KotlinLogging.logger { }
+    fun clearCache(xQueryParams: XQueryParams) {
+        try {
+            getCacheFile(xQueryParams).delete()
+        } catch (_: Exception) {
+        }
+    }
+
     private fun cacheExists(xQueryParams: XQueryParams): Boolean {
         return getCacheFile(xQueryParams).exists()
     }
 
-    private fun writeCache(cache: CacheData) {
-        val json = Json.encodeToString(cache)
-        File(cacheDirectory).mkdirs()
-        getCacheFile(cache.metadata.xQueryParams).writeText(json) //TODO: Add caching path as property
+    fun getCacheFileName(xQueryParams: XQueryParams): String {
+        return "${getBaseXPrefix()}--${xQueryParams.year}.mrereport"
     }
 
-    fun getCache(xQueryParams: XQueryParams): CacheData? {
-        if (cacheExists(xQueryParams)) {
-            return try {
-                val json =
-                    getCacheFile(xQueryParams).readText() //TODO: Add caching path as property
-                Json.decodeFromString(json)
-            } catch (e: Exception) {
-                null
-            }
-        }
-        return null
-    }
-
-    fun getGermForGermtype(xQueryParams: XQueryParams, germ: GermType): GermInfo? {
-        return getCache(xQueryParams)?.germCache?.find { it.type == germ.germtype }
-    }
-
-    fun getGlobalInfo(xQueryParams: XQueryParams): GlobalInfo? {
-        return getCache(xQueryParams)?.globalCache
-    }
+    private fun getCacheFile(xQueryParams: XQueryParams) =
+        File(cacheDirectory, getCacheFileName(xQueryParams))
 
     private val cacheDirectory: String by lazy {
         val userCacheDir = AppDirsFactory.getInstance().getUserCacheDir("mrereport", "1.0", "IMI")!!
         log.info { "Using '$userCacheDir' as cache directory!" }
+        //TODO: Add caching path as property
         userCacheDir
-    }
-
-    fun getCacheFileName(xQueryParams: XQueryParams): String {
-        return "${getBaseXPrefix()}--${xQueryParams.year}.mrereport"
     }
 
     fun getCachedParameters(): List<XQueryParams> {
@@ -166,15 +155,24 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         return cached.map { XQueryParams(it.toInt()) }
     }
 
-    fun clearCache(xQueryParams: XQueryParams) {
-        try {
-            getCacheFile(xQueryParams).delete()
-        } catch (_: Exception) {
-        }
+    fun writeCache(cache: CacheData) {
+        val json = Json.encodeToString(cache)
+        File(cacheDirectory).mkdirs()
+        getCacheFile(cache.metadata.xQueryParams).writeText(json)
     }
 
-    private fun getCacheFile(xQueryParams: XQueryParams) =
-        File(cacheDirectory, getCacheFileName(xQueryParams))
+    fun getCache(xQueryParams: XQueryParams): CacheData? {
+        if (cacheExists(xQueryParams)) {
+            return try {
+                val json = getCacheFile(xQueryParams).readText()
+                Json.decodeFromString(json)
+            } catch (e: Exception) {
+                null
+            }
+        }
+        return null
+    }
+
 
     private fun getBaseXPrefix() = if (basexInfo is RestConnectionInfo) {
         "${sanitizeFilename(basexInfo.serverUrl)}-${sanitizeFilename(basexInfo.databaseId)}"
@@ -182,6 +180,7 @@ class CachingUtility(private val basexInfo: BasexInfo) {
         basexInfo as LocalBasexInfo
         "local-${sanitizeFilename(basexInfo.directory)}"
     }
+
 
     private fun sanitizeFilename(inputName: String) = inputName.replace(Regex("[^a-zA-Z0-9_]"), "_")
 

@@ -1,7 +1,5 @@
-package de.uni_muenster.imi.oegd.common
+package model
 
-import de.uni_muenster.imi.oegd.webapp.BasexInfo
-import de.uni_muenster.imi.oegd.webapp.RestConnectionInfo
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.plugins.*
@@ -52,7 +50,7 @@ class RestClient(
                 setBody("<query><text><![CDATA[ $xquery ]]></text></query>")
             }.body()
         } catch (e: Exception) {
-            println(xquery)
+            println("Error when executing: $xquery")
             e.printStackTrace()
             throw e
         }

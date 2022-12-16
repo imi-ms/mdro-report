@@ -1,8 +1,6 @@
-package de.uni_muenster.imi.oegd.webapp
+package model
 
-import de.uni_muenster.imi.oegd.common.BaseXQueries
 import de.uni_muenster.imi.oegd.common.GermType
-import de.uni_muenster.imi.oegd.common.IBaseXClient
 import de.uni_muenster.imi.oegd.common.parseCsv
 import java.time.LocalDateTime
 

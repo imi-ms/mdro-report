@@ -1,4 +1,4 @@
-package de.uni_muenster.imi.oegd.webapp
+package model
 
 object DataProcessor {
     fun countMRSATotal(caseList: List<Map<String, String>>) = caseList.size

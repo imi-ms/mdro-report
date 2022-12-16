@@ -1,6 +1,4 @@
-package de.uni_muenster.imi.oegd.common
-
-import de.uni_muenster.imi.oegd.webapp.XQueryParams
+package model
 
 object BaseXQueries {
     fun getMRSA() = readFile("mrsa_excelv3.xq")

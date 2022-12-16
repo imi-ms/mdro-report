@@ -1,7 +1,7 @@
 package de.uni_muenster.imi.oegd.webapp
 
-import de.uni_muenster.imi.oegd.common.BaseXQueries
-import de.uni_muenster.imi.oegd.common.RestClient
+import model.BaseXQueries
+import model.RestClient
 import kotlin.system.measureTimeMillis
 
 /**

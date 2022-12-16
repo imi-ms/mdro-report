@@ -1,8 +1,6 @@
 package de.uni_muenster.imi.oegd.application
 
 import de.uni_muenster.imi.oegd.baseX.LocalBaseXClient
-import de.uni_muenster.imi.oegd.common.IBaseXClient
-import de.uni_muenster.imi.oegd.common.RestClient
 import de.uni_muenster.imi.oegd.common.findOpenPortInRange
 import de.uni_muenster.imi.oegd.webapp.createServer
 import io.ktor.server.netty.*
@@ -25,8 +23,11 @@ import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import kotlinx.coroutines.runBlocking
+import model.IBaseXClient
+import model.RestClient
 import java.io.File
 import java.net.URL
+import java.util.*
 import kotlin.system.exitProcess
 
 /**
@@ -52,7 +53,8 @@ class JavaFxApplication : Application() {
     private var directory: File? = null
 
     override fun start(primaryStage: Stage) {
-        val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"))
+        val i18n = ResourceBundle.getBundle("internationalization")
+        val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"), i18n)
         primaryStage.scene = Scene(page)
         primaryStage.title = "MREReport"
         primaryStage.icons.add(Image("label.png"))
