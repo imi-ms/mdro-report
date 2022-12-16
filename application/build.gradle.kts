@@ -16,10 +16,10 @@ repositories {
 val ktor_version: String by project
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("io.ktor:ktor-server-netty:$ktor_version")
 
     implementation(project(":baseX"))
     implementation(project(":webapp"))
+    implementation("io.ktor:ktor-server-netty-jvm:2.2.1")
 }
 
 javafx {

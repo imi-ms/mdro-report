@@ -3,9 +3,10 @@ package de.uni_muenster.imi.oegd.common
 import de.uni_muenster.imi.oegd.webapp.BasexInfo
 import de.uni_muenster.imi.oegd.webapp.RestConnectionInfo
 import io.ktor.client.*
-import io.ktor.client.features.*
-import io.ktor.client.features.auth.*
-import io.ktor.client.features.auth.providers.*
+import io.ktor.client.call.*
+import io.ktor.client.plugins.*
+import io.ktor.client.plugins.auth.*
+import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
 
 /**
@@ -47,9 +48,12 @@ class RestClient(
 
     override suspend fun executeXQuery(xquery: String): String {
         try {
-            return this.client.post<String>("$baseURL/$database") {
-                body = """<query><text><![CDATA[ $xquery ]]></text></query>"""
+            return this.client.post("$baseURL/$database") {
+
+                setBody("""<query><text><![CDATA[ $xquery ]]></text></query>""")
+
             }
+                .body<String>()
         } catch (e: Exception) {
             println(xquery)
             e.printStackTrace()

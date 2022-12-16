@@ -3,16 +3,17 @@ package de.uni_muenster.imi.oegd.webapp
 
 import de.uni_muenster.imi.oegd.common.GermType
 import de.uni_muenster.imi.oegd.common.IBaseXClient
-import io.ktor.application.*
-import io.ktor.features.*
-import io.ktor.html.*
 import io.ktor.http.*
 import io.ktor.http.content.*
-import io.ktor.request.*
-import io.ktor.response.*
-import io.ktor.routing.*
+import io.ktor.server.application.*
+import io.ktor.server.html.*
+import io.ktor.server.http.content.*
+import io.ktor.server.plugins.statuspages.*
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+import io.ktor.server.webjars.*
 import io.ktor.util.*
-import io.ktor.webjars.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -38,7 +39,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
         val cachingUtility = CachingUtility(baseXClient.getInfo())
         install(Webjars)
         install(StatusPages) {
-            status(HttpStatusCode.NotFound) {
+            status(HttpStatusCode.NotFound) { call, status ->
                 call.respondHtmlTemplate(
                     status = HttpStatusCode.NotFound,
                     template = LayoutTemplate(call.request.uri, call.parameters["q"])
@@ -47,7 +48,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     content { +"No route defined for URL: ${call.request.uri}" }
                 }
             }
-            exception<Throwable> { cause ->
+            exception<Throwable> { call, cause ->
                 cause.printStackTrace()
                 call.respondHtmlTemplate(
                     status = HttpStatusCode.InternalServerError,
@@ -404,7 +405,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                     +"Diagramme erstellen"
                                 }
                             }
-
 
 
                         }

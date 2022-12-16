@@ -1,7 +1,7 @@
 package de.uni_muenster.imi.oegd.webapp
 
 import de.uni_muenster.imi.oegd.common.GermType
-import io.ktor.html.*
+import io.ktor.server.html.*
 import kotlinx.html.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
@@ -330,7 +330,11 @@ private fun FlowContent.drawSettingsModal(q: String?) {
                         }
                     }
                     hr {}
-                    form(action = "/settings/uploadCache", method = FormMethod.post, encType = FormEncType.multipartFormData) {
+                    form(
+                        action = "/settings/uploadCache",
+                        method = FormMethod.post,
+                        encType = FormEncType.multipartFormData
+                    ) {
                         div(classes = "form-group") {
                             label {
                                 attributes["for"] = "inputCache"
@@ -384,7 +388,7 @@ fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>
         height = "100%"
     }
     val labels = Json.encodeToString(data.keys)
-    val dataValues = Json.encodeToString(data.values.toList())
+    val dataValues = Json.encodeToString(data.values.map { it.toInt() }.toList())
     script(type = "text/javascript") {
         unsafe {
             +"""new Chart(document.getElementById('$randomId').getContext('2d'), {

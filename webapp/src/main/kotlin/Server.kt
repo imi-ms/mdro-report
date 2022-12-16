@@ -3,7 +3,7 @@ package de.uni_muenster.imi.oegd.webapp
 import de.uni_muenster.imi.oegd.common.IBaseXClient
 import de.uni_muenster.imi.oegd.common.RestClient
 import de.uni_muenster.imi.oegd.common.findOpenPortInRange
-import io.ktor.application.*
+import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import mu.KotlinLogging
