@@ -3,6 +3,9 @@ package de.uni_muenster.imi.oegd.webapp
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+/**
+ * Parameters that effect the XQueries
+ */
 @Serializable
 data class XQueryParams(
     val year: Int? = null,

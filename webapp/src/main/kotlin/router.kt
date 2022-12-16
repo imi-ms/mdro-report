@@ -6,6 +6,7 @@ import de.uni_muenster.imi.oegd.common.IBaseXClient
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
+import io.ktor.server.application.ApplicationCallPipeline.ApplicationPhase.Plugins
 import io.ktor.server.html.*
 import io.ktor.server.http.content.*
 import io.ktor.server.plugins.statuspages.*
@@ -33,6 +34,9 @@ import java.time.LocalDate
 private val log = KotlinLogging.logger { }
 private val mutex = Mutex()
 
+/**
+ * @param serverMode do not block non-localhost connections
+ */
 fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit {
     val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
     return {
@@ -73,7 +77,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     }
                 }
             }
-            intercept(ApplicationCallPipeline.Features) {
+            intercept(Plugins) {
                 val params: XQueryParams? = call.parameters["q"]?.let {
                     //TODO: Remove replace function: Somehow the behaviour of JavaFX client and Firefox is different i guess or the issue is caused by post forms?
                     Json.decodeFromString(it.replace("%22", "\""))

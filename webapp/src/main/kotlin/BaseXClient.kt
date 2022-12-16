@@ -49,11 +49,8 @@ class RestClient(
     override suspend fun executeXQuery(xquery: String): String {
         try {
             return this.client.post("$baseURL/$database") {
-
-                setBody("""<query><text><![CDATA[ $xquery ]]></text></query>""")
-
-            }
-                .body<String>()
+                setBody("<query><text><![CDATA[ $xquery ]]></text></query>")
+            }.body()
         } catch (e: Exception) {
             println(xquery)
             e.printStackTrace()

@@ -43,6 +43,7 @@ fun createServer(baseXClient: IBaseXClient, port: Int = 8080) =
 
 /**
  * Entrypoint for deployment as .war file (Tomcat, ...)
+ * Config will be loaded from application.conf
  */
 fun Application.warEntrypoint() {
     val baseXClient = with(environment.config.config("BaseX")) {

@@ -32,7 +32,7 @@ object BaseXQueries {
         return applyYearFilter(query, xQueryParams)
     }
 
-    fun applyYearFilter(query: String, xQueryParams: XQueryParams): String {
+    private fun applyYearFilter(query: String, xQueryParams: XQueryParams): String {
         val startDate = "${xQueryParams.year}-01-01T00:00:00"
         val endDate = "${xQueryParams.year}-12-31T23:59:59"
 

@@ -23,7 +23,6 @@ enum class GermType(val germtype: String) {
 }
 
 
-fun findOpenPortInRange(portRange: ClosedRange<Int>): Int? =
-    (portRange.start..portRange.endInclusive).find { isLocalPortFree(it) }
+fun findOpenPortInRange(portRange: IntRange): Int? = portRange.find { isLocalPortFree(it) }
 
 private fun isLocalPortFree(port: Int): Boolean = runCatching { ServerSocket(port).close() }.isSuccess
