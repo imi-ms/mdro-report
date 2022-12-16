@@ -32,6 +32,7 @@ class Main {
     }
 }
 
+@Suppress("UNCHECKED_CAST")
 fun <T : javafx.scene.Node> javafx.scene.Node.find(cssSelector: String) = this.lookup(cssSelector) as T
 
 class JavaFxApplication : Application() {
@@ -60,20 +61,24 @@ class JavaFxApplication : Application() {
             } catch (e: Exception) {/*Nothing to do here*/
             }
         }
-        page.find<ChoiceBox<Int>>("#selectBox_yearStart").items = getYearsList()
-        page.find<ChoiceBox<Int>>("#selectBox_yearStart").value = 2021
+        page.find<ChoiceBox<Int>>("#selectBox_yearStart").apply {
+            items = getYearsList()
+            value = 2021
+        }
 
-        (page.lookup("#selectBox_yearEnd") as ChoiceBox<Int>).items = getYearsList()
-        (page.lookup("#selectBox_yearEnd") as ChoiceBox<Int>).value = 2022
+        page.find<ChoiceBox<Int>>("#selectBox_yearEnd").apply {
+            items = getYearsList()
+            value = 2022
+        }
 
-        (page.lookup("#button_cancel") as Button).onAction = EventHandler {
+        page.find<Button>("#button_cancel").onAction = EventHandler {
             stop()
         }
 
-        (page.lookup("#button_ok") as Button).onAction = EventHandler {
-            val numberOfPatients = (page.lookup("#slider_numberOfPatients") as Slider).value
-            val yearStart = (page.lookup("#selectBox_yearStart") as ChoiceBox<Int>).value
-            val yearEnd = (page.lookup("#selectBox_yearEnd") as ChoiceBox<Int>).value
+        page.find<Button>("#button_ok").onAction = EventHandler {
+            val numberOfPatients = page.find<Slider>("#slider_numberOfPatients").value
+            val yearStart = page.find<ChoiceBox<Int>>("#selectBox_yearStart").value
+            val yearEnd = page.find<ChoiceBox<Int>>("#selectBox_yearEnd").value
             val location = directory.absolutePath
             val generator = TestdataGenerator()
 
@@ -112,10 +117,6 @@ class JavaFxApplication : Application() {
                 }
             }.start()
         }
-    }
-
-    override fun init() {
-        super.init()
     }
 
     override fun stop(): Nothing {
