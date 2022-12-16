@@ -4,40 +4,27 @@ import de.uni_muenster.imi.oegd.testdataGenerator.AntibioticType.*
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
 
-fun generateStartAndEnddate(startTimeRange: LocalDate, endTimeRange: LocalDate): CaseDate {
-    val startEpochDay = startTimeRange.toEpochDay()
-    val endEpochDay = endTimeRange.toEpochDay()
+fun generateStartAndEnddate(startTimeRange: LocalDate, endTimeRange: LocalDate): Pair<LocalDateTime, LocalDateTime> {
     val randomStartDay = LocalDate.ofEpochDay(
-        ThreadLocalRandom
-            .current()
-            .nextLong(startEpochDay, endEpochDay)
+        Random.nextLong(startTimeRange.toEpochDay(), endTimeRange.toEpochDay())
     )
     val randomEndDay = randomStartDay
         .plusWeeks(Random.nextLong(1, 4))
         .plusDays(Random.nextLong(0, 6))
 
-    val randomStartTime = LocalTime.of(
-        Random.nextInt(1, 24),
-        Random.nextInt(1, 60),
-        Random.nextInt(1, 60)
-    )
+    val startDateTime = LocalDateTime.of(randomStartDay, randomTime())
+    val endDateTime = LocalDateTime.of(randomEndDay, randomTime())
 
-    val randomEndTime = LocalTime.of(
-        Random.nextInt(1, 24),
-        Random.nextInt(1, 60),
-        Random.nextInt(1, 60)
-    )
-
-    val startDateTime = LocalDateTime.of(randomStartDay, randomStartTime)
-    val endDateTime = LocalDateTime.of(randomEndDay, randomEndTime)
-
-    return CaseDate(startDateTime, endDateTime)
+    return Pair(startDateTime, endDateTime)
 }
 
-data class CaseDate(val startTimeDate: LocalDateTime, val endDateTime: LocalDateTime)
+private fun randomTime(): LocalTime? = LocalTime.of(
+    Random.nextInt(1, 24),
+    Random.nextInt(1, 60),
+    Random.nextInt(1, 60)
+)
 
 
 fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {

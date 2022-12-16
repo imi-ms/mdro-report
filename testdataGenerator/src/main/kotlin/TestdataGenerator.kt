@@ -43,7 +43,7 @@ class TestdataGenerator {
         endTimeRange = LocalDate.of(year, 1, 1).minusDays(1)
     }
 
-    fun getStartAndEndYear(): CaseDate {
+    fun getStartAndEndYear(): Pair<LocalDateTime, LocalDateTime> {
         return generateStartAndEnddate(startTimeRange, endTimeRange)
     }
 
@@ -166,9 +166,9 @@ data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) 
     val clinic: Department = Department.values().random()
     val bodySite: SmearType = SmearType.values().random()
 
-    private val startAndEndDateTime: CaseDate = generator.getStartAndEndYear()
-    val startDateTime: LocalDateTime = startAndEndDateTime.startTimeDate
-    val endDateTime: LocalDateTime = startAndEndDateTime.endDateTime
+    private val startAndEndDateTime = generator.getStartAndEndYear()
+    val startDateTime: LocalDateTime = startAndEndDateTime.first
+    val endDateTime: LocalDateTime = startAndEndDateTime.second
     val requestDateTime: LocalDateTime = startDateTime.plusDays(1) //Request always one day after start
 
     var germType: GermType
