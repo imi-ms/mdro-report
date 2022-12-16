@@ -10,7 +10,6 @@ import javafx.application.Application
 import javafx.application.Platform
 import javafx.concurrent.Task
 import javafx.concurrent.Worker
-import javafx.event.ActionEvent
 import javafx.event.EventHandler
 import javafx.fxml.FXMLLoader
 import javafx.geometry.Insets
@@ -44,10 +43,13 @@ class Main {
     }
 }
 
+@Suppress("UNCHECKED_CAST")
+fun <T : javafx.scene.Node> javafx.scene.Node.find(cssSelector: String) = this.lookup(cssSelector) as T
+
 class JavaFxApplication : Application() {
     private val webappPort = findOpenPortInRange(1024..49151) ?: error("Cannot find free port for internal webserver!")
     private var server: NettyApplicationEngine? = null
-    private lateinit var directory: File
+    private var directory: File? = null
 
     override fun start(primaryStage: Stage) {
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"))
@@ -57,37 +59,32 @@ class JavaFxApplication : Application() {
         primaryStage.show()
 
 
-        (page.lookup("#button_file") as Button).onAction = EventHandler<ActionEvent> {
+        page.find<Button>("#button_file").onAction = EventHandler {
             val directoryChooser = DirectoryChooser()
             directoryChooser.title = "Wähle Verzeichnis mit XML Dateien..."
             directory = directoryChooser.showDialog(primaryStage)
 
-            (page.lookup("#label_file") as Label).text = directory.absolutePath
+            page.find<Label>("#label_file").text = directory?.absolutePath ?: "Kein Verzeichnes ausgewählt!"
         }
 
-        (page.lookup("#button_confirm") as Button).onAction = EventHandler<ActionEvent> {
+        (page.lookup("#button_confirm") as Button).onAction = EventHandler {
             val basex: IBaseXClient
-            if ((page.lookup("#radio_basex") as RadioButton).isSelected) {
+            if (page.find<RadioButton>("#radio_basex").isSelected) {
                 basex = RestClient(
-                    (page.lookup("#server") as TextField).text,
-                    (page.lookup("#database") as TextField).text,
-                    (page.lookup("#username") as TextField).text,
-                    (page.lookup("#password") as PasswordField).text
+                    page.find<TextField>("#server").text,
+                    page.find<TextField>("#database").text,
+                    page.find<TextField>("#username").text,
+                    page.find<PasswordField>("#password").text
                 )
-                try {
-                    assert("Test" == runBlocking { basex.executeXQuery("\"Test\"") })
-                } catch (e: Exception) {
-                    Alert(Alert.AlertType.ERROR).apply {
-                        title = "Fehlermeldung"
-                        headerText =
-                            "Etwas ist schief gelaufen. Bitte überprüfen Sie die Verbindung zum BaseX-Server und die Zugangsdaten!"
-                        contentText = "$e"
-                    }.showAndWait()
+                if (!checkBaseXConnection(basex)) return@EventHandler
+            } else {
+                if (directory == null) {
+                    Alert(Alert.AlertType.ERROR, "Please select folder first!").showAndWait()
                     return@EventHandler
                 }
-            } else {
+
                 try {
-                    basex = LocalBaseXClient(directory)
+                    basex = LocalBaseXClient(directory!!)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     Alert(Alert.AlertType.ERROR).apply {
@@ -106,15 +103,27 @@ class JavaFxApplication : Application() {
             startWebView(primaryStage)
         }
 
-        (page.lookup("#button_cancel") as Button).onAction = EventHandler<ActionEvent> {
+        page.find<Button>("#button_cancel").onAction = EventHandler {
             stop()
         }
 
     }
 
-    override fun init() {
-        super.init()
+    private fun checkBaseXConnection(basex: IBaseXClient): Boolean {
+        try {
+            assert("Test" == runBlocking { basex.executeXQuery("\"Test\"") })
+        } catch (e: Exception) {
+            Alert(Alert.AlertType.ERROR).apply {
+                title = "Fehlermeldung"
+                headerText =
+                    "Etwas ist schief gelaufen. Bitte überprüfen Sie die Verbindung zum BaseX-Server und die Zugangsdaten!"
+                contentText = "$e"
+            }.showAndWait()
+            return false
+        }
+        return true
     }
+
 
     override fun stop(): Nothing {
         super.stop()
