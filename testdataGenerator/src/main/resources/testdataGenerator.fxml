@@ -7,12 +7,12 @@
    <children>
       <HBox alignment="BOTTOM_RIGHT" layoutY="361.0" prefHeight="50.0" prefWidth="600.0">
          <children>
-            <Button id="button_cancel" mnemonicParsing="false" text="Abbrechen">
+            <Button id="button_cancel" mnemonicParsing="false" text="%abortLabel">
                <HBox.margin>
-                  <Insets left="5.0" right="5.0" />
+                  <Insets left="5.0" right="5.0"/>
                </HBox.margin>
             </Button>
-            <Button id="button_ok" mnemonicParsing="false" defaultButton="true" text="Daten generieren">
+            <Button id="button_ok" mnemonicParsing="false" defaultButton="true" text="%generateLabel">
                <HBox.margin>
                   <Insets left="5.0" right="5.0"/>
                </HBox.margin>
@@ -26,9 +26,9 @@
          <children>
             <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0">
                <children>
-                  <Label contentDisplay="CENTER" text="Wie viele Patienten sollen generiert werden? ">
+                  <Label contentDisplay="CENTER" text="%numberLabel">
                      <HBox.margin>
-                        <Insets right="20.0" />
+                        <Insets right="20.0"/>
                      </HBox.margin>
                   </Label>
                   <Label id="label_sliderValue" text="0 Patienten" />
@@ -46,9 +46,9 @@
       </VBox>
       <VBox layoutY="138.0" prefHeight="223.0" prefWidth="600.0">
          <children>
-            <Label text="Wählen Sie ein Verzeichnis aus, wo die Testdaten abgelegt werden sollen:">
+            <Label text="%chooseDirectoryLabel">
                <VBox.margin>
-                  <Insets bottom="10.0" />
+                  <Insets bottom="10.0"/>
                </VBox.margin>
             </Label>
             <HBox alignment="CENTER_LEFT" prefHeight="38.0" prefWidth="561.0">
@@ -58,7 +58,8 @@
                         <Insets right="20.0" />
                      </HBox.margin>
                   </Button>
-                  <Label id="label_location" maxWidth="1.7976931348623157E308" text="Kein Verzeichnis ausgewählt... " textOverrun="CENTER_ELLIPSIS" />
+                  <Label id="label_location" maxWidth="1.7976931348623157E308" text="%noDirectorySelected"
+                         textOverrun="CENTER_ELLIPSIS"/>
                </children>
             </HBox>
             <Separator prefWidth="200.0">
@@ -66,9 +67,9 @@
                   <Insets bottom="20.0" top="20.0" />
                </VBox.margin>
             </Separator>
-            <Label text="Wählen Sie eine Jahresspanne aus, in der die Fälle generiert werden sollen: ">
+            <Label text="%chooseTimeSpan">
                <VBox.margin>
-                  <Insets bottom="10.0" />
+                  <Insets bottom="10.0"/>
                </VBox.margin>
             </Label>
             <HBox alignment="CENTER_LEFT" prefHeight="38.0" prefWidth="561.0">

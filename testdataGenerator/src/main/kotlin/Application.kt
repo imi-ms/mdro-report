@@ -15,6 +15,7 @@ import javafx.scene.image.Image
 import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
 import java.io.File
+import java.util.*
 import kotlin.system.exitProcess
 
 
@@ -39,14 +40,15 @@ class JavaFxApplication : Application() {
     private lateinit var directory: File
 
     override fun start(primaryStage: Stage) {
-        var page = FXMLLoader.load<Parent>(javaClass.getResource("/testdataGenerator.fxml"))
+        val i18n = ResourceBundle.getBundle("internationalization")
+        val page = FXMLLoader.load<Parent>(javaClass.getResource("/testdataGenerator.fxml"), i18n)
         primaryStage.scene = Scene(page)
         primaryStage.title = "MREReport Testdata Generator"
         primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 
         page.find<Label>("#label_sliderValue").textProperty().bind(
-            Bindings.format("%.0f", (page.lookup("#slider_numberOfPatients") as Slider).valueProperty())
+            Bindings.format("%.0f", page.find<Slider>("#slider_numberOfPatients").valueProperty())
         )
 
         page.find<Button>("#button_ok").isDisable = true
@@ -74,47 +76,56 @@ class JavaFxApplication : Application() {
         }
 
         page.find<Button>("#button_ok").onAction = EventHandler {
-            val numberOfPatients = page.find<Slider>("#slider_numberOfPatients").value
+            val numberOfPatients = page.find<Slider>("#slider_numberOfPatients").value.toInt()
             val yearStart = page.find<ChoiceBox<Int>>("#selectBox_yearStart").value
             val yearEnd = page.find<ChoiceBox<Int>>("#selectBox_yearEnd").value
             val location = directory.absolutePath
+            generateData(primaryStage, yearStart, yearEnd, numberOfPatients, location)
+        }
+    }
+
+    private fun generateData(
+        primaryStage: Stage,
+        yearStart: Int,
+        yearEnd: Int,
+        numberOfPatients: Int,
+        location: String
+    ) {
+        val progressView = FXMLLoader.load<Parent>(javaClass.getResource("/progressView.fxml"))
+        primaryStage.scene = Scene(progressView)
+        primaryStage.show()
+
+        Thread {
             val generator = TestdataGenerator()
+            generator.setStartYear(yearStart)
+            generator.setEndYear(yearEnd)
 
-            page = FXMLLoader.load(javaClass.getResource("/progressView.fxml"))
-            primaryStage.scene = Scene(page)
-            primaryStage.show()
-
-            Thread {
-                generator.setStartYear(yearStart)
-                generator.setEndYear(yearEnd)
-
-                for(i in 1..numberOfPatients.toInt()) {
-                    try {
-                        generator.createTestdataFile(location)
-                    } catch (e: Exception) {
-                        e.printStackTrace()
-                        Platform.runLater {
-                            Alert(AlertType.ERROR, e.toString()).showAndWait()
-                        }
-                    }
+            for (i in 1..numberOfPatients) {
+                try {
+                    generator.createTestdataFile(location)
+                } catch (e: Exception) {
+                    e.printStackTrace()
                     Platform.runLater {
-                        page.find<ProgressBar>("#loadingBar").progress = i / numberOfPatients
+                        Alert(AlertType.ERROR, e.toString()).showAndWait()
                     }
                 }
                 Platform.runLater {
-                    Alert(AlertType.INFORMATION).apply {
-                        title = "Generierung erfolgreich"
-                        headerText = "Die Generierung war erfolgreich"
-                        contentText = "Die Testdaten wurden erfolgreich unter dem von " +
-                                "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
-                                "Sollten Sie noch weitere Daten generieren wollen, " +
-                                "führen Sie den Testdaten Generator erneut aus."
-                    }.showAndWait()
-
-                    stop()
+                    progressView.find<ProgressBar>("#loadingBar").progress = i / numberOfPatients.toDouble()
                 }
-            }.start()
-        }
+            }
+            Platform.runLater {
+                Alert(AlertType.INFORMATION).apply {
+                    title = "Generierung erfolgreich"
+                    headerText = "Die Generierung war erfolgreich"
+                    contentText = "Die Testdaten wurden erfolgreich unter dem von " +
+                            "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
+                            "Sollten Sie noch weitere Daten generieren wollen, " +
+                            "führen Sie den Testdaten Generator erneut aus."
+                }.showAndWait()
+
+                stop()
+            }
+        }.start()
     }
 
     override fun stop(): Nothing {
