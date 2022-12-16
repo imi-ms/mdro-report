@@ -29,10 +29,10 @@ private fun randomTime(): LocalTime? = LocalTime.of(
 
 fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {
     return when (caseInfo.caseScope) {
-        CaseScope.MRSA -> generateRandomAntibioticsAnalysis(getMRSAAntibiotics()) //TODO: Add Logic
-        CaseScope.MRGN3 -> generateMRGNAntibioticsAnalysis(3, getMRGNAntibiotics(), caseInfo.germType)
-        CaseScope.MRGN4 -> generateMRGNAntibioticsAnalysis(4, getMRGNAntibiotics(), caseInfo.germType)
-        CaseScope.VRE -> generateVREAntibioticsAnalysis(getVREAntibiotics())
+        CaseScope.MRSA -> generateRandomAntibioticsAnalysis(MRSAAntibiotics) //TODO: Add Logic
+        CaseScope.MRGN3 -> generateMRGNAntibioticsAnalysis(3, MRGNAntibiotics, caseInfo.germType)
+        CaseScope.MRGN4 -> generateMRGNAntibioticsAnalysis(4, MRGNAntibiotics, caseInfo.germType)
+        CaseScope.VRE -> generateVREAntibioticsAnalysis(VREAntibiotics)
     }
 }
 

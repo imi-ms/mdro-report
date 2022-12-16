@@ -187,10 +187,10 @@ data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) 
                 infection = Random.nextBoolean()
             }
             CaseScope.MRGN3, CaseScope.MRGN4 -> {
-                germType = getMRGNGermTypes().random()
+                germType = MRGNGermTypes.random()
             }
             CaseScope.VRE -> {
-                germType = getVREGermTypes().random()
+                germType = VREGermTypes.random()
             }
         }
     }
