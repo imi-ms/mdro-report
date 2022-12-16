@@ -52,12 +52,10 @@ class JavaFxApplication : Application() {
         page.find<Button>("#button_ok").isDisable = true
         page.find<Button>("#button_selectLocation").onAction = EventHandler {
             try {
-                val directoryChooser = DirectoryChooser()
-                directoryChooser.title = "Wählen Sie ein Verzeichnis..."
-                directory = directoryChooser.showDialog(primaryStage)
+                directory = DirectoryChooser().showDialog(primaryStage)
 
-                (page.lookup("#label_location") as Label).text = directory.absolutePath
-                (page.lookup("#button_ok") as Button).isDisable = false
+                page.find<Label>("#label_location").text = directory.absolutePath
+                page.find<Button>("#button_ok").isDisable = false
             } catch (e: Exception) {/*Nothing to do here*/
             }
         }
@@ -96,16 +94,16 @@ class JavaFxApplication : Application() {
                     } catch (e: Exception) {
                         e.printStackTrace()
                         Platform.runLater {
-                            Alert(AlertType.ERROR, e.toString())
+                            Alert(AlertType.ERROR, e.toString()).showAndWait()
                         }
                     }
                     Platform.runLater {
-                        (page.lookup("#loadingBar") as ProgressBar).progress = i / numberOfPatients
+                        page.find<ProgressBar>("#loadingBar").progress = i / numberOfPatients
                     }
                 }
                 Platform.runLater {
                     Alert(AlertType.INFORMATION).apply {
-                        title = "Generierung Erfolgreich"
+                        title = "Generierung erfolgreich"
                         headerText = "Die Generierung war erfolgreich"
                         contentText = "Die Testdaten wurden erfolgreich unter dem von " +
                                 "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
