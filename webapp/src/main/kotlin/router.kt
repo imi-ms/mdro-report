@@ -20,8 +20,9 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import kotlinx.html.*
-import kotlinx.html.ButtonType.submit
+import kotlinx.html.div
+import kotlinx.html.script
+import kotlinx.html.style
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -30,7 +31,6 @@ import mu.KotlinLogging
 import view.*
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
-import java.time.LocalDate
 
 private val log = KotlinLogging.logger { }
 private val mutex = Mutex()
@@ -79,10 +79,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             intercept(Plugins) {
-                val params: XQueryParams? = call.parameters["q"]?.let {
-                    //TODO: Remove replace function: Somehow the behaviour of JavaFX client and Firefox is different i guess or the issue is caused by post forms?
-                    Json.decodeFromString(it.replace("%22", "\""))
-                }
+                val params: XQueryParams? = XQueryParams.fromJson(call.parameters["q"])
                 if (params != null) {
                     call.attributes.put(xqueryparams, params)
                 }
@@ -108,7 +105,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                         content {
                             +"Bitte nutzen Sie die Einstellungsleiste, um die Konfiguration der Anfrage durchzuführen."
                             script(type = "text/javascript") {
-                                +"$(function() { $('#settings-modal').modal({focus:true}) });"
+                                +"$(function(){ $('#settings-modal').modal({focus:true}) });"
                             }
                         }
                     }
@@ -127,7 +124,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             post("{germ}/invalidate-cache") {
                 val value = call.parameters["germ"]!!
                 val parameters = call.receiveParameters()
-                val xQueryParams = Json.decodeFromString<XQueryParams>(parameters["q"]!!.replace("%22", "\""))
+                val xQueryParams = XQueryParams.fromJson(parameters["q"])!!
                 if (value == "global") {
                     cachingUtility.clearGlobalInfoCache(xQueryParams)
                 } else {
@@ -284,135 +281,41 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             get("/statistic") {
                 val yearsEnabled = call.parameters.getAll("year[]")?.map { it.toInt() } ?: emptyList()
+                val years = cachingUtility.cacheProvider.getCachedParameters().map { it.year!! }
                 val xqueryParams = yearsEnabled.map { XQueryParams(it) }
-                val mrgn =
+                val mrgnData =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRGN, baseXClient) }
-                val mrgn3 =
-                    mrgn.map { (k, v) -> k.year to v.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
+                val mrgn3TotalNumberByYear =
+                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
                         .toMap()
-                val mrgn4 =
-                    mrgn.map { (k, v) -> k.year to v.overviewEntries!!.find { it.title.contains("4MRGN") }!!.data }
+                val mrgn4TotalNumberByYear =
+                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { it.title.contains("4MRGN") }!!.data }
                         .toMap()
-                val mrsa =
+                val mrsaTotalNumberByYear =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA, baseXClient) }
                         .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Gesamtanzahl aller") }!!.data }
                         .toMap()
-                val vre = xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE, baseXClient) }
-                    .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)") }!!.data }
-                    .toMap() //TODO
+                val vreTotalNumberByYear =
+                    xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE, baseXClient) }
+                        .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)") }!!.data }
+                        .toMap() //TODO
 
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Diagramme" }
                     content {
                         if (yearsEnabled.isNotEmpty()) {
-                            form(action = "/statistic") {
-                                call.parameters["q"]?.let {
-                                    hiddenInput(name = "q") { value = it }
-                                }
-                                for (year in cachingUtility.cacheProvider.getCachedParameters()) {
-                                    div(classes = "form-check form-check-inline") {
-                                        checkBoxInput(classes = "form-check-input", name = "year[]") {
-                                            id = "p${year.year}"
-                                            value = "${year.year}"
-                                            checked = year.year in yearsEnabled
-                                        }
-                                        label(classes = "form-check-label") {
-                                            htmlFor = "p${year.year}"
-                                            +year.year.toString()
-                                        }
-                                    }
-                                }
-                                button(type = submit, classes = "btn btn-primary mb-2") { +"OK" }
-                            }
-                            script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                            div(classes = "container") {
-                                div(classes = "row") {
-                                    for ((germ, data) in mapOf(
-                                        "3MRGN" to mrgn3,
-                                        "4MRGN" to mrgn4,
-                                        "MRSA" to mrsa,
-                                        "VRE" to vre
-                                    )) {
-                                        div(classes = "col-3") {
-                                            style = "height: 400px;"
-                                            drawBarChart("Anzahl $germ", data.mapKeys { it.key.toString() })
-                                        }
-                                    }
-
-                                }
-                            }
+                            drawDiagrams(
+                                mapOf(
+                                    "3MRGN" to mrgn3TotalNumberByYear,
+                                    "4MRGN" to mrgn4TotalNumberByYear,
+                                    "MRSA" to mrsaTotalNumberByYear,
+                                    "VRE" to vreTotalNumberByYear
+                                ), years, yearsEnabled, call.parameters["q"]
+                            )
                         } else {
-                            script(type = "text/javascript") {
-                                unsafe {
-                                    +"window.deleteReport = function (button, xQueryParams) {\n"
-                                    +"  button.disabled=true;\n"
-                                    +"  var formData = new FormData();\n"
-                                    +"  formData.append('toDelete', xQueryParams);\n"
-                                    +"  fetch('statistic/deleteReport', {method:'POST', body:  formData})\n"
-                                    +"  .then(res => window.location.reload())\n"
-                                    +"  return false;\n"
-                                    +"}"
-                                }
-                            }
-                            form(classes = "form-inline", method = FormMethod.post, action = "/statistic/create") {
-                                input(classes = "form-control b-2 mr-sm-2", name = "year") {
-                                    type = InputType.number
-                                    min = "2000"
-                                    max = LocalDate.now().year.toString()
-                                    placeholder = "Jahr"
-                                    required = true
-                                }
-                                if (call.parameters["q"] != null) {
-                                    hiddenInput {
-                                        name = "q"
-                                        value = call.parameters["q"]!!
-                                    }
-                                }
-
-                                button(type = submit, classes = "btn btn-light btn-mb-2") {
-                                    +"Bericht erstellen"
-                                }
-                            }
-                            form(action = "/statistic") {
-                                call.parameters["q"]?.let {
-                                    hiddenInput(name = "q") { value = it }
-                                }
-                                for (cache in cachingUtility.cacheProvider.getCachedParameters()
-                                    .map { cachingUtility.cacheProvider.getCache(it)!! }) {
-                                    val xQueryParams = cache.metadata.xQueryParams
-                                    div(classes = "form-check") {
-                                        checkBoxInput(classes = "form-check-input", name = "year[]") {
-                                            id = "q${xQueryParams.year}"
-                                            value = "${xQueryParams.year}"
-                                            checked = xQueryParams.year in yearsEnabled
-                                        }
-                                        label(classes = "form-check-label") {
-                                            htmlFor = "q${xQueryParams.year}"
-                                            +xQueryParams.year.toString()
-                                            val teilberichteZuErstellen = (GermType.values().map { it.germtype } -
-                                                    cache.germCache.filter { it.created != null }.map { it.type })
-                                            span(classes = "text-muted") {
-                                                +"Bericht erstellt: "
-                                                +cache.metadata.timeUpdated
-                                                if (teilberichteZuErstellen.isNotEmpty()) {
-                                                    +", Teilbericht(e) für ${teilberichteZuErstellen.joinToString()} müssen noch erzeugt werden."
-                                                }
-
-                                            }
-                                        }
-                                        button(type = submit, classes = "btn btn-small btn-outline-danger") {
-                                            onClick = "window.deleteReport(this,'${Json.encodeToString(xQueryParams)}')"
-                                            +"delete"
-                                        }
-                                    }
-                                }
-
-                                button(type = submit, classes = "btn btn-secondary mb-2") {
-                                    +"Diagramme erstellen"
-                                }
-                            }
-
-
+                            val cacheData = cachingUtility.cacheProvider.getCachedParameters()
+                                .map { cachingUtility.cacheProvider.getCache(it)!! }
+                            drawYearSelector(cacheData, call.parameters["q"])
                         }
                     }
                 }
@@ -424,13 +327,19 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
                 cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
                 cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
-                call.respondRedirect("/statistic${params["q"]?.let { "?q=$it" } ?: ""}")
+                call.respondRedirect {
+                    path("/statistic")
+                    params["q"]?.let { parameters.append("q", it) }
+                }
             }
             post("/statistic/deleteReport") {
                 val params = call.receiveParameters()
                 val xQueryParams = Json.decodeFromString<XQueryParams>(params["toDelete"]!!)
                 cachingUtility.cacheProvider.clearCache(xQueryParams)
-                call.respondRedirect("/statistic${params["q"].let { "?q=$it" } ?: ""}")
+                call.respondRedirect {
+                    path("/statistic")
+                    params["q"]?.let { parameters.append("q", it) }
+                }
             }
             get("/about") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {

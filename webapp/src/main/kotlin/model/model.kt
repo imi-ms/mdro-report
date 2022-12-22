@@ -2,6 +2,9 @@ package model
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 /**
  * Parameters that effect the XQueries
@@ -9,7 +12,19 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class XQueryParams(
     val year: Int? = null,
-)
+) {
+    companion object {
+        fun fromJson(json: String?): XQueryParams? {
+            if (json == null || json == "null") {
+                return null
+            }
+            //TODO: Remove replace function: Somehow the behaviour of JavaFX client and Firefox is different i guess or the issue is caused by post forms?
+            return Json.decodeFromString(json.replace("%22", "\""))
+        }
+    }
+
+    fun toJson() = Json.encodeToString(this)
+}
 
 @Serializable
 data class CacheData(

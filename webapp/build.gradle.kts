@@ -20,7 +20,7 @@ repositories {
 
 
 val ktor_version: String by project
-val kotlinx_html_version = "0.7.2"
+val kotlinx_html_version = "0.8.0"
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")

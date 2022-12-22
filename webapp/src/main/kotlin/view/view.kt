@@ -3,18 +3,16 @@ package view
 import de.uni_muenster.imi.oegd.common.GermType
 import io.ktor.server.html.*
 import kotlinx.html.*
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 import model.*
 import java.time.LocalDate
-import kotlin.random.Random
+import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 
 class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
     val header = Placeholder<FlowContent>()
     val content = Placeholder<FlowContent>()
-    val url = url2.removePrefix("/")
+    private val url = url2.removePrefix("/")
     override fun HTML.apply() {
         head {
             meta(charset = "UTF-8")
@@ -47,7 +45,7 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
                             for (germ in GermType.values().map { it.germtype }) {
                                 li(classes = "nav-item dropdown") {
                                     if (url.startsWith(germ)) {
-                                        classes += "active"
+                                        classes = classes + "active"
                                     }
 //                                attributes["aria-haspopup"] = "true"
                                     a(classes = "nav-link dropdown-toggle", href = "#") {
@@ -73,7 +71,6 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
                         }
                     }
                     div(classes = "navbar float-left") {
-
                         ul(classes = "navbar-nav") {
                             drawSettingsModal(q)
                         }
@@ -113,7 +110,7 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
     private fun UL.navItem(href: String, label: String) {
         li(classes = "nav-item") {
             if (url.startsWith(href.substringBefore("?"))) {
-                classes += "active"
+                classes = classes + "active"
             }
             a(classes = "nav-link", href = "/$href") {
                 +label
@@ -191,7 +188,8 @@ private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
     div(classes = "btn-toolbar") {
         form(classes = "form-inline", action = "invalidate-cache", method = FormMethod.post) {
             label {
-                +"Teilbericht erstellt: $lastUpdate"
+                title = lastUpdate
+                +"Teilbericht erstellt: ${LocalDateTime.parse(lastUpdate).toDifferenceFromNow()}"
             }
             hiddenInput {
                 name = "q"
@@ -223,207 +221,146 @@ fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String,
     }
 }
 
-private fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
-    button(classes = "btn btn-link text-muted") {
-        attributes["data-toggle"] = "modal"
-        attributes["data-target"] = "#query-modal-$index"
-        i {
-            attributes["class"] = "bi bi-info-circle"
+fun FlowContent.drawDiagrams(
+    data: Map<String, Map<Int?, String>>,
+    years: List<Int>,
+    yearEnabled: List<Int>,
+    q: String?
+) {
+    form(action = "/statistic") {
+        if (q != null) {
+            hiddenInput(name = "q") { value = q }
         }
-    }
-    div(classes = "modal fade") {
-        id = "query-modal-$index"
-        attributes["tabindex"] = "-1"
-        attributes["role"] = "dialog"
-        attributes["aria-labelledby"] = "#query-modal-$index-title"
-        attributes["aria-hidden"] = "true"
-        div(classes = "modal-dialog modal-lg") {
-            attributes["role"] = "document"
-            div(classes = "modal-content") {
-                div(classes = "modal-header") {
-                    h5(classes = "modal-title") {
-                        id = "query-modal-$index-title"
-                        +"${entry.title} - Query"
-                    }
-                    button(classes = "close", type = ButtonType.button) {
-                        attributes["data-dismiss"] = "modal"
-                        attributes["aria-label"] = "close"
-                        span {
-                            attributes["aria-hidden"] = "true"
-                            +"×"
-                        }
-                    }
+        for (year in years) {
+            div(classes = "form-check form-check-inline") {
+                checkBoxInput(classes = "form-check-input", name = "year[]") {
+                    id = "p${year}"
+                    value = "$year"
+                    checked = year in yearEnabled
                 }
-                div(classes = "modal-body modal-query") {
-                    pre {
-                        +(entry.query + "\n\n")
-                    }
+                label(classes = "form-check-label") {
+                    htmlFor = "p${year}"
+                    +year.toString()
                 }
             }
+        }
+        button(type = ButtonType.submit, classes = "btn btn-primary mb-2") { +"OK" }
+    }
+
+    script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+    div(classes = "container") {
+        div(classes = "row") {
+            for ((germ, data) in data) {
+                div(classes = "col-3") {
+                    style = "height: 400px;"
+                    drawBarChart("Anzahl $germ", data.mapKeys { it.key.toString() })
+                }
+            }
+
         }
     }
 }
 
-private fun FlowContent.drawSettingsModal(q: String?) {
-    val q2 = if (q == "null") null else q?.let { Json.decodeFromString<XQueryParams>(it.replace("%22", "\"")) }
-    a(classes = "navbar-text") {
-        attributes["data-toggle"] = "modal"
-        attributes["data-target"] = "#settings-modal"
-        q2?.let {
-            span(classes = "text-muted") { +"Jahr: " }
-            span(classes = "font-weight-bold") { +("" + q2.year) }
-        }
-    }
-
-    button(classes = "btn") {
-        attributes["data-toggle"] = "modal"
-        attributes["data-target"] = "#settings-modal"
-        i(classes = "bi bi-gear-fill") { }
-    }
-
-    div(classes = "modal fade") {
-        id = "settings-modal"
-        attributes["tabindex"] = "-1"
-        attributes["role"] = "dialog"
-        attributes["aria-labelledby"] = "#settings-title"
-        attributes["aria-hidden"] = "true"
-        div(classes = "modal-dialog modal-dialog-slideout modal-md") {
-            attributes["role"] = "document"
-            div(classes = "modal-content") {
-                div(classes = "modal-header") {
-                    h5(classes = "modal-title") {
-                        id = "settings-title"
-                        +"Einstellungen"
-                    }
-                    button(classes = "close", type = ButtonType.button) {
-                        attributes["data-dismiss"] = "modal"
-                        attributes["aria-label"] = "close"
-                        span {
-                            attributes["aria-hidden"] = "true"
-                            +"×"
-                        }
-                    }
-                }
-                div(classes = "modal-body") {
-                    form(action = "/settings/save", method = FormMethod.post) {
-                        div(classes = "form-group") {
-                            label {
-                                attributes["for"] = "inputYear"
-                                +"Jahr"
-                            }
-                            input(type = InputType.number) {
-                                id = "inputYear"
-                                min = "2000"
-                                max = LocalDate.now().year.toString()
-                                classes = setOf("form-control")
-                                name = "year"
-                                value = q2?.year?.toString() ?: ""
-                            }
-                        }
-                        div(classes = "form-group") {
-                            button(classes = "btn btn-light") {
-                                attributes["data-dismiss"] = "modal"
-                                +"Abbrechen"
-                            }
-                            button(type = ButtonType.submit, classes = "btn btn-secondary ml-2") {
-                                +"Änderungen übernehmen"
-                            }
-                        }
-                    }
-                    hr {}
-                    form(
-                        action = "/settings/uploadCache",
-                        method = FormMethod.post,
-                        encType = FormEncType.multipartFormData
-                    ) {
-                        div(classes = "form-group") {
-                            label {
-                                attributes["for"] = "inputCache"
-                                +"Report-Datei hochladen"
-                            }
-                            input(type = InputType.file) {
-                                classes = setOf("form-control-file")
-                                id = "inputCache"
-                                name = "uploadedCache"
-                            }
-                        }
-                        div(classes = "form-group") {
-                            button(type = ButtonType.submit, classes = "btn btn-secondary mt-2") {
-                                +"Report hochladen"
-                            }
-                            a(href = "/settings/downloadCache?q=$q", classes = "btn btn-secondary mt-2 ml-2") {
-                                +"Report herunterladen"
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-fun FlowContent.drawBarChart(label: String, data: Map<String, String>) = drawChart("bar", label, data)
-fun FlowContent.drawPieChart(label: String, data: Map<String, String>) = drawChart("pie", label, data)
-
-fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>) {
-    val backgroundColors = listOf(
-        "rgba(255, 99, 132, 0.2)",
-        "rgba(54, 162, 235, 0.2)",
-        "rgba(255, 206, 86, 0.2)",
-        "rgba(75, 192, 192, 0.2)",
-        "rgba(153, 102, 255, 0.2)",
-        "rgba(255, 159, 64, 0.2)"
-    )
-    val borderColors = listOf(
-        "rgba(255, 99, 132, 1)",
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 206, 86, 1)",
-        "rgba(75, 192, 192, 1)",
-        "rgba(153, 102, 255, 1)",
-        "rgba(255, 159, 64, 1)"
-    )
-    val randomId = "myChart" + Random.nextInt(100000)
-    canvas {
-        id = randomId
-        width = "100%"
-        height = "100%"
-    }
-    val labels = Json.encodeToString(data.keys)
-    val dataValues = Json.encodeToString(data.values.map { it.toInt() }.toList())
+fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
     script(type = "text/javascript") {
         unsafe {
-            +"""new Chart(document.getElementById('$randomId').getContext('2d'), {
-    type: '$type',
-    data: {
-        labels: $labels,
-        datasets: [{
-            label: "$label",
-            data: $dataValues,
-            backgroundColor: ${
-                if (type == "pie") Json.encodeToString(backgroundColors) else Json.encodeToString(
-                    backgroundColors[0]
-                )
-            },
-            borderColor: ${
-                if (type == "pie") Json.encodeToString(borderColors) else Json.encodeToString(
-                    backgroundColors[0]
-                )
-            },
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: {
-                beginAtZero: true,
+            +"window.deleteReport = function(button,xQueryParams) {"
+            +"  button.disabled=true;"
+            +"  var formData=new FormData();"
+            +"  formData.append('toDelete', xQueryParams);"
+            +"  fetch('statistic/deleteReport', {method: 'POST', body: formData})"
+            +"      .then(res => window.location.reload());"
+            +"  return false;"
+            +"}"
+        }
+    }
+    form(classes = "form-inline", method = FormMethod.post, action = "/statistic/create") {
+        input(classes = "form-control b-2 mr-sm-2", name = "year", type = InputType.number) {
+            min = "2000"
+            max = LocalDate.now().year.toString()
+            placeholder = "Jahr"
+            required = true
+        }
+        if (q != null) {
+            hiddenInput(name = "q") { value = q }
+        }
+
+        button(type = ButtonType.submit, classes = "btn btn-light btn-mb-2") {
+            +"Bericht erstellen"
+        }
+    }
+    form(action = "/statistic") {
+        if (q != null) {
+            hiddenInput(name = "q") { value = q }
+        }
+        for (cache in cacheData) {
+            val xQueryParams = cache.metadata.xQueryParams
+            div(classes = "form-check") {
+                checkBoxInput(classes = "form-check-input", name = "year[]") {
+                    id = "q${xQueryParams.year}"
+                    value = "${xQueryParams.year}"
+//                    checked = xQueryParams.year in yearsEnabled
+                }
+                label(classes = "form-check-label") {
+                    htmlFor = "q${xQueryParams.year}"
+                    +xQueryParams.year.toString()
+                    val teilberichteZuErstellen = GermType.values().map { it.germtype } -
+                            cache.germCache.filter { it.created != null }.map { it.type }
+                    span(classes = "text-muted") {
+                        +"Bericht erstellt: "
+                        +LocalDateTime.parse(cache.metadata.timeUpdated).toDifferenceFromNow()
+                        if (teilberichteZuErstellen.isNotEmpty()) {
+                            +", Teilbericht(e) für ${teilberichteZuErstellen.joinToString()} müssen noch erzeugt werden."
+                        }
+
+                    }
+                }
+                button(type = ButtonType.submit, classes = "btn btn-outline-danger btn-small") {
+                    onClick = "window.deleteReport(this,'${xQueryParams.toJson()}')"
+                    +"delete"
+                }
             }
         }
-    }
-});"""
+
+        button(type = ButtonType.submit, classes = "btn btn-secondary mb-2") {
+            +"Diagramme erstellen"
         }
     }
+}
 
 
+fun LocalDateTime.toDifferenceFromNow(): String {
+    val now = LocalDateTime.now()
+    val years = ChronoUnit.YEARS.between(this, now)
+    if (years == 1L) {
+        return "$years year ago"
+    } else if (years > 1) {
+        return "$years years ago"
+    }
+    val month = ChronoUnit.MONTHS.between(this, now)
+    if (month == 1L) {
+        return "$month month ago"
+    } else if (month > 1) {
+        return "$month months ago"
+    }
+    val days = ChronoUnit.DAYS.between(this, now)
+    if (days == 1L) {
+        return "$days day ago"
+    } else if (days > 1) {
+        return "$days days ago"
+    }
+    val hours = ChronoUnit.HOURS.between(this, now)
+    if (hours == 1L) {
+        return "$hours hour ago"
+    } else if (hours > 1) {
+        return "$hours hours ago"
+    }
+    val minutes = ChronoUnit.MINUTES.between(this, now)
+    if (minutes == 1L) {
+        return "$minutes minute ago"
+    } else if (minutes > 1) {
+        return "$minutes minutes ago"
+    }
+    val seconds = ChronoUnit.SECONDS.between(this, now)
+    return "$seconds second(s) ago"
 }
