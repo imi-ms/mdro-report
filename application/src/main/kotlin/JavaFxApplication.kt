@@ -63,10 +63,10 @@ class JavaFxApplication : Application() {
 
         page.find<Button>("#button_file").onAction = EventHandler {
             val directoryChooser = DirectoryChooser()
-            directoryChooser.title = "Wähle Verzeichnis mit XML Dateien..."
+            directoryChooser.title = i18n.getString("directoryChooser.header")
             directory = directoryChooser.showDialog(primaryStage)
 
-            page.find<Label>("#label_file").text = directory?.absolutePath ?: "Kein Verzeichnes ausgewählt!"
+            page.find<Label>("#label_file").text = directory?.absolutePath ?: i18n.getString("noDirectorySelected")
         }
 
         (page.lookup("#button_confirm") as Button).onAction = EventHandler {
@@ -78,10 +78,10 @@ class JavaFxApplication : Application() {
                     page.find<TextField>("#username").text,
                     page.find<PasswordField>("#password").text
                 )
-                if (!checkBaseXConnection(basex)) return@EventHandler
+                if (!checkBaseXConnection(basex, i18n)) return@EventHandler
             } else {
                 if (directory == null) {
-                    Alert(Alert.AlertType.ERROR, "Please select folder first!").showAndWait()
+                    Alert(Alert.AlertType.ERROR, i18n.getString("errorNoFolderSelected")).showAndWait()
                     return@EventHandler
                 }
 
@@ -90,11 +90,8 @@ class JavaFxApplication : Application() {
                 } catch (e: Exception) {
                     e.printStackTrace()
                     Alert(Alert.AlertType.ERROR).apply {
-                        title = "Fehlermeldung"
-                        headerText = "Etwas ist schief gelaufen."
-                        contentText = "Möglicherweise handelt es sich bei den Dateien im von Ihnen angegebenen " +
-                                "Verzeichnis nicht um gültige BaseX Dateien. Starten Sie die Applikation erneut und " +
-                                "wählen ein gültiges Verzeichnis!"
+                        headerText = i18n.getString("errorHeader")
+                        contentText = i18n.getString("errorLocalBaseXContent")
                     }.showAndWait()
                     stop()
                 }
@@ -111,14 +108,12 @@ class JavaFxApplication : Application() {
 
     }
 
-    private fun checkBaseXConnection(basex: IBaseXClient): Boolean {
+    private fun checkBaseXConnection(basex: IBaseXClient, i18n: ResourceBundle): Boolean {
         try {
             assert("Test" == runBlocking { basex.executeXQuery("\"Test\"") })
         } catch (e: Exception) {
             Alert(Alert.AlertType.ERROR).apply {
-                title = "Fehlermeldung"
-                headerText =
-                    "Etwas ist schief gelaufen. Bitte überprüfen Sie die Verbindung zum BaseX-Server und die Zugangsdaten!"
+                headerText = i18n.getString("errorBaseXConnection")
                 contentText = "$e"
             }.showAndWait()
             return false

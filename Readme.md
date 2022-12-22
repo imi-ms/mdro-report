@@ -429,6 +429,10 @@ implemented as well to provide statistics that are close to real data.
 **Important note**: Generated IDs are only unique within each generated batch. For new testdata IDs could repeat,
 although it is unlikely.
 
+## I18n
+
+Add `-Duser.language=en` or `-Duser.language=en` to JVM properties to change language.
+
 ## Contact
 
 * Johannes Oehm | johannes.oehm@uni-muenster.de

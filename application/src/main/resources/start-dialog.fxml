@@ -7,7 +7,7 @@
       xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
     <children>
         <RadioButton id="radio_basex" fx:id="radio_basex" mnemonicParsing="false" selected="true"
-                     text="Verbindung mit BaseX-Datenbank aufbauen:" VBox.vgrow="ALWAYS">
+                     text="%label.connectToServer" VBox.vgrow="ALWAYS">
             <padding>
                 <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
             </padding>
@@ -27,13 +27,13 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Label text="Server-URL:" />
+                <Label text="%label.serverUrl"/>
                 <TextField id="server" text="https://basex.ukmuenster.de/rest" GridPane.columnIndex="1" GridPane.vgrow="ALWAYS" />
-                <Label text="Nutzername:" GridPane.rowIndex="1" />
+                <Label text="%label.username" GridPane.rowIndex="1"/>
                 <TextField id="username" text="oehm" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                <Label text="Passwort:" GridPane.rowIndex="2" />
+                <Label text="%label.password" GridPane.rowIndex="2"/>
                 <PasswordField id="password" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <Label text="Datenbank:" GridPane.rowIndex="3" />
+                <Label text="%label.database" GridPane.rowIndex="3"/>
                 <TextField id="database" text="2021" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             </children>
             <padding>
@@ -44,19 +44,20 @@
             </VBox.margin>
         </GridPane>
         <Separator/>
-        <RadioButton id="radio_file" fx:id="radio_file" mnemonicParsing="false" text="Verzeichnis einlesen:" toggleGroup="$group1" VBox.vgrow="ALWAYS">
+        <RadioButton id="radio_file" fx:id="radio_file" mnemonicParsing="false" text="%label.createLocalServer"
+                     toggleGroup="$group1" VBox.vgrow="ALWAYS">
             <VBox.margin>
-                <Insets />
+                <Insets/>
             </VBox.margin>
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
             </padding>
         </RadioButton>
         <HBox disable="${! radio_file.selected}" spacing="5.0">
             <children>
                 <Button id="button_file" mnemonicParsing="false" prefHeight="28.0" prefWidth="136.0"
                         text="Durchsuchen..."/>
-                <Label id="label_file" prefHeight="27.0" text="Kein Verzeichnis ausgewählt">
+                <Label id="label_file" prefHeight="27.0" text="%noDirectorySelected">
                     <HBox.margin>
                         <Insets left="10.0"/>
                     </HBox.margin>
@@ -71,8 +72,8 @@
         </HBox>
         <ButtonBar id="button_bar" prefHeight="53.0">
             <buttons>
-                <Button id="button_cancel" mnemonicParsing="false" text="Abbrechen"/>
-                <Button id="button_confirm" mnemonicParsing="false" text="OK" defaultButton="true"/>
+                <Button id="button_cancel" mnemonicParsing="false" text="%button.abort"/>
+                <Button id="button_confirm" mnemonicParsing="false" text="%button.start" defaultButton="true"/>
             </buttons>
             <VBox.margin>
                 <Insets left="20.0" right="20.0"/>
