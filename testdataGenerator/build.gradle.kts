@@ -55,6 +55,9 @@ tasks.register<JPackageTask>("CreateAppImage") {
     type = org.panteleyev.jpackage.ImageType.APP_IMAGE
 }
 
+val javafx_version: String by project
+
 javafx {
-    modules("javafx.base","javafx.controls","javafx.fxml", "javafx.graphics")
+    version = javafx_version
+    modules("javafx.base", "javafx.controls", "javafx.fxml", "javafx.graphics")
 }

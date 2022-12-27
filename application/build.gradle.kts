@@ -19,10 +19,15 @@ dependencies {
 
     implementation(project(":baseX"))
     implementation(project(":webapp"))
-    implementation("io.ktor:ktor-server-netty-jvm:2.2.1")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
 }
 
+val javafx_version: String by project
+
 javafx {
-    modules("javafx.base","javafx.controls","javafx.fxml",
-        "javafx.graphics","javafx.web")
+    version = javafx_version
+    modules(
+        "javafx.base", "javafx.controls", "javafx.fxml",
+        "javafx.graphics", "javafx.web"
+    )
 }

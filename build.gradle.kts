@@ -7,7 +7,7 @@ plugins {
     kotlin("plugin.serialization") version "1.7.21"
     id("java")
     id("application")
-    id("org.openjfx.javafxplugin") version "0.0.12"
+    id("org.openjfx.javafxplugin") version "0.0.13"
     id("com.github.johnrengelman.shadow") version "7.1.2"
     id("org.panteleyev.jpackageplugin") version "1.3.1"
 }
