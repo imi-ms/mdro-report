@@ -1,7 +1,6 @@
 package de.uni_muenster.imi.oegd.webapp
 
 
-import de.uni_muenster.imi.oegd.common.GermType
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -20,6 +19,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.html.button
 import kotlinx.html.div
 import kotlinx.html.script
 import kotlinx.html.style
@@ -117,6 +117,11 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Willkommen" }
                     content {
+                        button {
+                            attributes["onclick"] = "Downloader.downloadFile('test.json');"
+                            +"Test Download function"
+                        }
+
                         drawIndex(baseXClient.getInfo())
                     }
                 }
@@ -372,7 +377,7 @@ private suspend fun CachingUtility.getOrLoadGermInfo(
                     CachingUtility.RequestState.markRequestActive(germ) //Mark as active while queuing coroutine
                     mutex.withLock {
                         log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
-                        val germInfo = model.DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
+                        val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
                         cache(xQueryParams, germInfo)
                         log.info { "Loading done of ${germInfo.type} for $xQueryParams" }
                         CachingUtility.RequestState.markRequestInactive(germ)

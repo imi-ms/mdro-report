@@ -1,6 +1,5 @@
 package model
 
-import de.uni_muenster.imi.oegd.common.GermType
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

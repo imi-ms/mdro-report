@@ -14,7 +14,7 @@ can decide between a
 * Pre-build executable .jar file (*MREReport-Full.jar*, requires an installation of the Java Runtime Environment)
 * An executable installer, which will install MRE-Report alongside its own JRE and creates a Start Menu entry
 * A .jar file, that does not include BaseX or JavaFX (*MREReport-Light.jar*, requires separately installed JRE and
-  BaseX server, run with command line to set connection data)
+  [BaseX](https://basex.org/) server, run with command line to set connection data)
 * A .war file for server deployment (tested with tomcat, usage instructions see below)
 * A Docker container (run `docker pull wwwuimi/mrereport`)
 
@@ -43,16 +43,18 @@ clicking on the gear on the top right.
 
 ## Building
 
+**Requires: Java 17**
+
 Run
 
-* `./gradlew shadowJar` to create an executable .jar file.
+* `./gradlew shadowJar` to create an executable .jar file (*MREReport-Full.jar*).
 * `./gradlew CreateEXE` to create a Windows installer, that will also install JRE. Note you have to
-  install [WiX](https://github.com/wixtoolset/wix3) first.
+  use Windows and install [WiX](https://github.com/wixtoolset/wix3) first.
 
 If you only want to use the web interface and connect to a separate running BaseX-instance, run:
 
 * `./gradlew :webapp:war` to create a .war file.
-* `./gradlew :webapp:shadowJar` to create an executable .jar with built-in Netty server.
+* `./gradlew :webapp:shadowJar` to create an executable .jar with built-in Netty server (*MREReport-Light.jar*).
 
 ## Server Deployment via Tomcat or WildFly
 

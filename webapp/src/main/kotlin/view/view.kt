@@ -1,6 +1,5 @@
 package view
 
-import de.uni_muenster.imi.oegd.common.GermType
 import io.ktor.server.html.*
 import kotlinx.html.*
 import model.*

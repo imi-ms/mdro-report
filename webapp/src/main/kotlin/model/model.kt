@@ -26,6 +26,12 @@ data class XQueryParams(
     fun toJson() = Json.encodeToString(this)
 }
 
+enum class GermType(val germtype: String) {
+    MRSA("MRSA"),
+    MRGN("MRGN"),
+    VRE("VRE")
+}
+
 @Serializable
 data class CacheData(
     @SerialName("meta") val metadata: CacheMetadata,
@@ -42,8 +48,7 @@ data class CacheMetadata(
 )
 
 @Serializable
-sealed class BasexInfo {
-}
+sealed class BasexInfo
 
 @Serializable
 @SerialName("rest")

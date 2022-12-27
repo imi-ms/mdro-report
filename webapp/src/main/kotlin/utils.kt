@@ -16,12 +16,6 @@ fun parseCsv(text: String, headers: List<String>, separator: String = "||"): Lis
     }
 }
 
-enum class GermType(val germtype: String) {
-    MRSA("MRSA"),
-    MRGN("MRGN"),
-    VRE("VRE")
-}
-
 
 fun findOpenPortInRange(portRange: IntRange): Int? = portRange.find { isLocalPortFree(it) }
 
