@@ -47,13 +47,13 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
 }
 
 fun FlowContent.drawSettingsModal(q: String?) {
-    val q2 = XQueryParams.fromJson(q)
+    val q_ = XQueryParams.fromJson(q)
     a(classes = "navbar-text") {
         attributes["data-toggle"] = "modal"
         attributes["data-target"] = "#settings-modal"
-        if (q2 != null) {
+        if (q_ != null) {
             span(classes = "text-muted") { +"Jahr: " }
-            span(classes = "font-weight-bold") { +q2.year.toString() }
+            span(classes = "font-weight-bold") { +q_.year.toString() }
         }
     }
 
@@ -93,13 +93,11 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                 attributes["for"] = "inputYear"
                                 +"Jahr"
                             }
-                            input(type = InputType.number) {
+                            numberInput(name = "year", classes = "form-control") {
                                 id = "inputYear"
                                 min = "2000"
                                 max = LocalDate.now().year.toString()
-                                classes = setOf("form-control")
-                                name = "year"
-                                value = q2?.year?.toString() ?: ""
+                                value = q_?.year?.toString() ?: ""
                             }
                         }
                         div(classes = "form-group") {
@@ -120,12 +118,11 @@ fun FlowContent.drawSettingsModal(q: String?) {
                     ) {
                         div(classes = "form-group") {
                             label {
-                                attributes["for"] = "inputCache"
+                                htmlFor = "inputCache"
                                 +"Report-Datei hochladen"
                             }
-                            input(type = InputType.file, classes = "form-control-file") {
+                            fileInput(classes = "form-control-file", name = "uploadedCache") {
                                 id = "inputCache"
-                                name = "uploadedCache"
                             }
                         }
                         div(classes = "form-group") {
