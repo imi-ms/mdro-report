@@ -51,9 +51,9 @@ fun FlowContent.drawSettingsModal(q: String?) {
     a(classes = "navbar-text") {
         attributes["data-toggle"] = "modal"
         attributes["data-target"] = "#settings-modal"
-        q2?.let {
+        if (q2 != null) {
             span(classes = "text-muted") { +"Jahr: " }
-            span(classes = "font-weight-bold") { +("" + q2.year) }
+            span(classes = "font-weight-bold") { +q2.year.toString() }
         }
     }
 

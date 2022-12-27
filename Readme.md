@@ -14,8 +14,9 @@ can decide between a
 * Pre-build executable .jar file (*MREReport-Full.jar*, requires an installation of the Java Runtime Environment)
 * An executable installer, which will install MRE-Report alongside its own JRE and creates a Start Menu entry
 * A .jar file, that does not include BaseX or JavaFX (*MREReport-Light.jar*, requires separately installed JRE and
-  BaseX, run with command line to set connection data)
+  BaseX server, run with command line to set connection data)
 * A .war file for server deployment (tested with tomcat, usage instructions see below)
+* A Docker container (run `docker pull wwwuimi/mrereport`)
 
 ## Usage
 
@@ -62,10 +63,12 @@ If you only want to use the web interface and connect to a separate running Base
    **Or**: Download .war file from releases, unzip, edit `WEB-INF/classes/application.conf`, rezip and deploy.
 4. Have fun!
 
-## Deployment via Docker 🐳
+## Server Deployment via Docker 🐳
 
 You can create run the server to connect with an external BaseX-instance. To build and run, check out and execute:
-`docker build -t wwuimi/mrereport . && docker run -p 127.0.0.1:8080:8080 wwuimi/mrereport https://basex.ukmuenster.de/ username password database`
+`docker build -t wwuimi/mrereport . && docker run -p 127.0.0.1:8080:8080 -e SERVER_URL=https://basex.ukmuenster.de/ -e USERNAME=oehm -e PASSWORD=secret -e DATABASE=2022 wwuimi/mrereport`
+
+Please add some password protected reverse proxy in front of the application when deployed to a public server.
 
 ## XML Format description
 
@@ -429,9 +432,11 @@ implemented as well to provide statistics that are close to real data.
 **Important note**: Generated IDs are only unique within each generated batch. For new testdata IDs could repeat,
 although it is unlikely.
 
-## I18n
+## Internationalization
 
-Add `-Duser.language=en` or `-Duser.language=en` to JVM properties to change language.
+Language is automatically chosen based on your systems settings.
+Add `-Duser.language=en` or `-Duser.language=de` to JVM properties to change language (only German and English are
+supported).
 
 ## Contact
 
