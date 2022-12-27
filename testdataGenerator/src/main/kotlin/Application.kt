@@ -5,6 +5,7 @@ import javafx.application.Platform
 import javafx.beans.binding.Bindings
 import javafx.collections.FXCollections
 import javafx.collections.ObservableList
+import javafx.concurrent.Task
 import javafx.event.EventHandler
 import javafx.fxml.FXMLLoader
 import javafx.scene.Parent
@@ -95,37 +96,40 @@ class JavaFxApplication : Application() {
         primaryStage.scene = Scene(progressView)
         primaryStage.show()
 
-        Thread {
-            val generator = TestdataGenerator()
-            generator.setStartYear(yearStart)
-            generator.setEndYear(yearEnd)
+        val task = object : Task<Unit>() {
+            override fun call() {
+                val generator = TestdataGenerator()
+                generator.setStartYear(yearStart)
+                generator.setEndYear(yearEnd)
 
-            for (i in 1..numberOfPatients) {
-                try {
-                    generator.createTestdataFile(location)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    Platform.runLater {
-                        Alert(AlertType.ERROR, e.toString()).showAndWait()
+                for (i in 1..numberOfPatients) {
+                    try {
+                        generator.createTestdataFile(location)
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                        Platform.runLater {
+                            Alert(AlertType.ERROR, e.toString()).showAndWait()
+                        }
                     }
-                }
-                Platform.runLater {
-                    progressView.find<ProgressBar>("#loadingBar").progress = i / numberOfPatients.toDouble()
-                }
-            }
-            Platform.runLater {
-                Alert(AlertType.INFORMATION).apply {
-                    title = "Generierung erfolgreich"
-                    headerText = "Die Generierung war erfolgreich"
-                    contentText = "Die Testdaten wurden erfolgreich unter dem von " +
-                            "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
-                            "Sollten Sie noch weitere Daten generieren wollen, " +
-                            "führen Sie den Testdaten Generator erneut aus."
-                }.showAndWait()
+                    updateProgress(i.toLong(), numberOfPatients.toLong())
 
-                stop()
+                }
             }
-        }.start()
+        }
+        task.onSucceeded = EventHandler {
+            Alert(AlertType.INFORMATION).apply {
+                title = "Generierung erfolgreich"
+                headerText = "Die Generierung war erfolgreich"
+                contentText = "Die Testdaten wurden erfolgreich unter dem von " +
+                        "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
+                        "Sollten Sie noch weitere Daten generieren wollen, " +
+                        "führen Sie den Testdaten Generator erneut aus."
+            }.showAndWait()
+
+            stop()
+        }
+        progressView.find<ProgressBar>("#loadingBar").progressProperty().bind(task.progressProperty())
+        Thread(task).start()
     }
 
     override fun stop(): Nothing {
