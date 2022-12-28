@@ -176,6 +176,7 @@ tasks {
     shadowJar {
         archiveFileName.set("MREReport-Full.jar")
         exclude {
+            //Only include minified versions of webjar library into the distributed bundle
             it.path.contains("META-INF/resources/webjars")
                     && it.name !in setOf(
                 "jquery.min.js", "Chart.min.js", "bootstrap.min.js", "bootstrap-icons.css",

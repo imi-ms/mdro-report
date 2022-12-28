@@ -13,9 +13,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.webjars.*
 import io.ktor.util.*
-import kotlinx.html.div
-import kotlinx.html.script
-import kotlinx.html.style
+import kotlinx.html.*
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -29,18 +27,21 @@ import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 
 private val log = KotlinLogging.logger { }
+
 //private val mutex = Mutex()
+val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
+val ApplicationCall.xQueryParams: XQueryParams
+    get() = this.attributes[xqueryparams]
 
 /**
  * @param serverMode do not block non-localhost connections
  */
 fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit {
-    val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
     return {
         val cachingUtility = CachingUtility(baseXClient)
         install(Webjars)
         install(StatusPages) {
-            status(HttpStatusCode.NotFound) { call, status ->
+            status(HttpStatusCode.NotFound) { call, _ ->
                 call.respondHtmlTemplate(
                     status = HttpStatusCode.NotFound,
                     template = LayoutTemplate(call.request.uri, call.parameters["q"])
@@ -56,7 +57,14 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     template = LayoutTemplate(call.request.uri, call.parameters["q"])
                 ) {
                     header { +"500 Internal Server Error" }
-                    content { +"${cause.message}" }
+                    content {
+                        +"${cause.message}"
+                        br
+                        +"Please retry your query with different parameters!"
+                        br
+                        pre { +cause.stackTraceToString() }
+
+                    }
                 }
             }
         }
@@ -88,8 +96,8 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val parameters = call.receiveParameters()
                 val x = XQueryParams(parameters["year"]?.toInt())
                 val q = Json.encodeToString(x)
-                val referer = call.request.headers["Referer"]?.substringBefore("?")
-                call.respondRedirect("$referer?q=$q")
+                val referrer = call.request.headers[HttpHeaders.Referrer]?.substringBefore("?")
+                call.respondRedirect("$referrer?q=$q")
             }
             intercept(ApplicationCallPipeline.Call) {
                 if (call.request.uri.startsWith("/settings/save")) return@intercept
@@ -98,9 +106,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 if (call.request.uri.startsWith("/static")) return@intercept
                 if (call.request.uri.contains("invalidate-cache")) return@intercept
                 if (call.request.uri.startsWith("/statistic")) return@intercept
-                val s = call.parameters["q"]
-                if (s.isNullOrBlank() || s == "null") {
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, s)) {
+                val q = call.parameters["q"]
+                if (q.isNullOrBlank() || q == "null") {
+                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"Anfragekonfiguration fehlt" }
                         content {
                             +"Bitte nutzen Sie die Einstellungsleiste, um die Konfiguration der Anfrage durchzuführen."
@@ -116,14 +124,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("/") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Willkommen" }
-                    content {
-//                        button {
-//                            attributes["onclick"] = "Downloader.downloadFile('test.json');"
-//                            +"Test Download function"
-//                        }
-
-                        drawIndex(baseXClient.getInfo())
-                    }
+                    content { drawIndex(baseXClient.getInfo()) }
                 }
             }
             post("{germ}/invalidate-cache") {
@@ -136,15 +137,16 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     val germ = GermType.valueOf(value)
                     cachingUtility.clearGermInfo(xQueryParams, germ)
                 }
-                call.respondRedirect(call.request.headers["Referer"] ?: ("/$value/overview?q=" + parameters["q"]))
+                call.respondRedirect(
+                    call.request.headers[HttpHeaders.Referrer] ?: ("/$value/overview?q=" + parameters["q"])
+                )
             }
             post("/settings/uploadCache") {
                 uploadCache(call.receiveMultipart(), cachingUtility)
                 call.respondRedirect("/")
             }
             get("/settings/downloadCache") {
-                println("downloadCache")
-                val xQueryParams = call.attributes[xqueryparams]
+                val xQueryParams = call.xQueryParams
 
                 cachingUtility.cacheAllData(xQueryParams)
 
@@ -160,8 +162,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 )
             }
             get("global/overview") {
-                val xQueryParams = call.attributes[xqueryparams]
-                val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(xQueryParams)
+                val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(call.xQueryParams)
                 val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                     header { +"Krankenhauskennzahlen" }
@@ -170,8 +171,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             for (germ in GermType.values()) {
                 get("$germ/overview") {
-                    val xQueryParams = call.attributes[xqueryparams]
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
                     val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: Übersicht" }
@@ -179,8 +179,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     }
                 }
                 get("$germ/list") {
-                    val xQueryParams = call.attributes[xqueryparams]
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
                     val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: Fallliste" }
@@ -189,59 +188,39 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             get("MRGN/statistic") {
-                val xQueryParams = call.attributes[xqueryparams]
-                try {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN)
-                    val departments = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
-                        .eachCount().mapValues { it.value.toString() }
-                    val probenart = germInfo.caseList!!.groupingBy { it["Probenart"]!! }
-                        .eachCount().mapValues { it.value.toString() }
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +"Diagramme" }
-                        content {
-                            script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                            drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", departments)
-                            drawBarChart("Anzahl der Probenarten", probenart)
-                        }
-                    }
-                } catch (e: Exception) {
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +"Fehler" }
-                        content {
-                            +"Für die angegebene Jahreszahl konnten aus den Daten keine Diagramme erstellt werden. Versuchen Sie es mit anderen Einstellungen erneut."
-                        }
+                val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRGN)
+                val departments = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                    .eachCount().mapValues { it.value.toString() }
+                val probenart = germInfo.caseList!!.groupingBy { it["Probenart"]!! }
+                    .eachCount().mapValues { it.value.toString() }
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                    header { +"Diagramme" }
+                    content {
+                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", departments)
+                        drawBarChart("Anzahl der Probenarten", probenart)
                     }
                 }
+
             }
             get("VRE/statistic") {
-                val xQueryParams = call.attributes[xqueryparams]
-                try {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE)
-                    val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
-                        .eachCount().mapValues { it.value.toString() }
-                    val probenart = germInfo.caseList!!.groupingBy { it["Probenart"]!! }
-                        .eachCount().mapValues { it.value.toString() }
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +"Diagramme" }
-                        content {
-                            script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                            drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", department)
-                            drawBarChart("Anzahl der Probenarten", probenart)
-                        }
-                    }
-                } catch (e: Exception) {
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +"Fehler" }
-                        content {
-                            +"Für die angegebene Jahreszahl konnten aus den Daten keine Diagramme erstellt werden. Versuchen Sie es mit anderen Einstellungen erneut."
-                        }
+                val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.VRE)
+                val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                    .eachCount().mapValues { it.value.toString() }
+                val probenart = germInfo.caseList!!.groupingBy { it["Probenart"]!! }
+                    .eachCount().mapValues { it.value.toString() }
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                    header { +"Diagramme" }
+                    content {
+                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", department)
+                        drawBarChart("Anzahl der Probenarten", probenart)
                     }
                 }
             }
             get("MRSA/statistic") {
-                val xQueryParams = call.attributes[xqueryparams]
-                try {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA)
+                val xQueryParams = call.xQueryParams
+                val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA)
                     val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
                         .eachCount().mapValues { it.value.toString() }
                     val probenart = germInfo.caseList!!.groupingBy { it["Probeart"]!! }
@@ -271,14 +250,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                             }
                         }
                     }
-                } catch (e: Exception) {
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +"Fehler" }
-                        content {
-                            +"Für die angegebene Jahreszahl konnten aus den Daten keine Diagramme erstellt werden. Versuchen Sie es mit anderen Einstellungen erneut."
-                        }
-                    }
-                }
             }
             get("/statistic") {
                 val yearsEnabled = call.parameters.getAll("year[]")?.map { it.toInt() } ?: emptyList()
@@ -364,6 +335,7 @@ private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: Ca
             val newCache = String(fileBytes, StandardCharsets.UTF_8)
             cachingUtility.uploadExistingCache(newCache)
         }
+        part.dispose()
     }
 
 }

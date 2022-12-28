@@ -155,29 +155,25 @@ fun FlowContent.drawIndex(basexInfo: BasexInfo) {
 fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String, q: String) {
     drawInvalidateButton(lastUpdate, q)
 
-
     if (data.isEmpty()) {
         +"Fallliste ist leer"
         return
     }
 
-    val keys = data.first().keys
+    val columnNames = data.first().keys
     table(classes = "table") {
         thead {
             tr(classes = "sticky-tr") {
-                for (columnName in keys) {
+                for (columnName in columnNames) {
                     th(scope = ThScope.col) { +columnName }
                 }
             }
         }
         for (datum in data) {
             tr {
-                for (key in keys) {
-                    td {
-                        +(datum[key] ?: "null")
-                    }
+                for (key in columnNames) {
+                    td { +(datum[key] ?: "null") }
                 }
-
             }
         }
     }
@@ -190,10 +186,7 @@ private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
                 title = lastUpdate
                 +"Teilbericht erstellt: ${LocalDateTime.parse(lastUpdate).toDifferenceFromNow()}"
             }
-            hiddenInput {
-                name = "q"
-                value = q
-            }
+            hiddenInput(name = "q") { value = q }
             button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
                 +"Neu erstellen"
             }
@@ -361,5 +354,9 @@ fun LocalDateTime.toDifferenceFromNow(): String {
         return "$minutes minutes ago"
     }
     val seconds = ChronoUnit.SECONDS.between(this, now)
-    return "$seconds second(s) ago"
+    if (seconds == 1L) {
+        return "$seconds second ago"
+    }
+
+    return "$seconds seconds ago"
 }
