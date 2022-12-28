@@ -4,6 +4,7 @@ import de.uni_muenster.imi.oegd.common.parseCsv
 import java.time.LocalDateTime
 
 object DataProvider {
+    //TODO: Create constructor with BaseXClient?
     suspend fun getGermInfo(basexClient: IBaseXClient, germ: GermType, xQueryParams: XQueryParams): GermInfo {
         when (germ) {
             GermType.MRSA -> {
@@ -11,11 +12,13 @@ object DataProvider {
                 val overviewEntry = getMRSAOverview(basexClient, xQueryParams, caseList)
                 return GermInfo(germ.germtype, overviewEntry, caseList, LocalDateTime.now().toString())
             }
+
             GermType.MRGN -> {
                 val caseList = getMRGNCSV(basexClient, xQueryParams)
                 val overviewEntry = getMRGNOverview(basexClient, xQueryParams, caseList)
                 return GermInfo(germ.germtype, overviewEntry, caseList, LocalDateTime.now().toString())
             }
+
             GermType.VRE -> {
                 val caseList = getVRECSV(basexClient, xQueryParams)
                 val overviewEntry = getVREOverview(basexClient, xQueryParams, caseList)
@@ -26,7 +29,7 @@ object DataProvider {
 
 
     suspend fun getMRSACSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
-        val mrsaList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.getMRSA(), xQueryParams))
+        val mrsaList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.MRSA, xQueryParams))
         return parseCsv(
             mrsaList,
             listOf(
@@ -44,7 +47,7 @@ object DataProvider {
     }
 
     suspend fun getMRGNCSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
-        val mrgnList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.getMRGN(), xQueryParams))
+        val mrgnList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.MRGN, xQueryParams))
         return parseCsv(
             mrgnList,
             listOf(
@@ -67,7 +70,7 @@ object DataProvider {
     }
 
     suspend fun getVRECSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
-        val vreList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.getVRE(), xQueryParams))
+        val vreList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.VRE, xQueryParams))
         return parseCsv(
             vreList,
             listOf(
@@ -93,13 +96,13 @@ object DataProvider {
             listOf(
                 createBaseXOverviewEntry(
                     "stationäre Fälle gesamt pro Erfassungszeitraum",
-                    BaseXQueries.getFallzahlen(),
+                    BaseXQueries.Fallzahlen,
                     baseXClient,
                     xQueryParams
                 ),
                 createBaseXOverviewEntry(
                     "stationäre Falltage gesamt pro Erfassungszeitraum",
-                    BaseXQueries.getFalltage(),
+                    BaseXQueries.Falltage,
                     baseXClient,
                     xQueryParams
                 ),
@@ -119,31 +122,31 @@ object DataProvider {
         return listOf(
             createBaseXOverviewEntry(
                 "Anzahl der Nasenabstriche bzw. kombinierte Nasen/Rachenabstiche pro Erfassungszeitraum",
-                BaseXQueries.getNasenRachenAbstriche(),
+                BaseXQueries.NasenRachenAbstriche,
                 baseXClient, xQueryParams
             ),
             createBaseXOverviewEntry(
                 "Anzahl aller S. aureus aus Blutkulturen (MSSA und MRSA)",
-                BaseXQueries.getMSSABK(),
+                BaseXQueries.MSSABK,
                 baseXClient,
                 xQueryParams
             ),
             createBaseXOverviewEntry(
                 "Anzahl MRSA aus Blutkulturen",
-                BaseXQueries.getMRSABK(),
+                BaseXQueries.MRSABK,
                 baseXClient,
                 xQueryParams
             ),
             OverviewEntry(
                 "Gesamtanzahl aller Fälle mit Methicillin Resistenten S. aureus (MRSA)",
-                BaseXQueries.getMRSA(),
+                BaseXQueries.MRSA,
                 "$mrsaTotal"
             ),
-            OverviewEntry("Anzahl der importierten MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaImported"),
-            OverviewEntry("Anzahl nosokomialer MRSA Fälle", BaseXQueries.getMRSA(), "$mrsaNosokomial"),
+            OverviewEntry("Anzahl der importierten MRSA Fälle", BaseXQueries.MRSA, "$mrsaImported"),
+            OverviewEntry("Anzahl nosokomialer MRSA Fälle", BaseXQueries.MRSA, "$mrsaNosokomial"),
             createBaseXOverviewEntry(
                 "stationäre Falltage von MRSA-Fällen",
-                BaseXQueries.getFalltageMRSA(),
+                BaseXQueries.FalltageMRSA,
                 baseXClient,
                 xQueryParams
             )
@@ -159,8 +162,8 @@ object DataProvider {
         val mrgn4Cases = DataProcessor.countMRGN4Cases(caseList)
 
         return listOf(
-            OverviewEntry("Anzahl der 3MRGN Fälle", BaseXQueries.getMRGN(), "$mrgn3Cases"),
-            OverviewEntry("Anzahl der 4MRGN Fälle", BaseXQueries.getMRGN(), "$mrgn4Cases"),
+            OverviewEntry("Anzahl der 3MRGN Fälle", BaseXQueries.MRGN, "$mrgn3Cases"),
+            OverviewEntry("Anzahl der 4MRGN Fälle", BaseXQueries.MRGN, "$mrgn4Cases"),
         )
     }
 
@@ -176,22 +179,22 @@ object DataProvider {
         val numOtherCases = DataProcessor.countOtherCases(caseList)
 
         return listOf(
-            entry("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)", BaseXQueries.getAnzahlEFaecalis()),
-            OverviewEntry("Anzahl der VRE E.faecalis Fälle", BaseXQueries.getVRE(), "$numEfaecalisResistant"),
+            entry("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)", BaseXQueries.AnzahlEFaecalis),
+            OverviewEntry("Anzahl der VRE E.faecalis Fälle", BaseXQueries.VRE, "$numEfaecalisResistant"),
             OverviewEntry(
                 "Anzahl der gesamten E.faecium Fälle (resistente und sensible)",
-                BaseXQueries.getVRE(),
+                BaseXQueries.VRE,
                 "$numEfaeciumTotal"
             ),
-            OverviewEntry("Anzahl der VRE E.faecium Fälle", BaseXQueries.getVRE(), "$numEfaeciumResistant"),
-            OverviewEntry("Anzahl sonstiger VRE Fälle", BaseXQueries.getVRE(), "$numOtherCases"),
+            OverviewEntry("Anzahl der VRE E.faecium Fälle", BaseXQueries.VRE, "$numEfaeciumResistant"),
+            OverviewEntry("Anzahl sonstiger VRE Fälle", BaseXQueries.VRE, "$numOtherCases"),
             entry(
                 "Anzahl E.faecium Fälle (inkl. Vancomycin empfindliche und resistente Isolate) in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)",
-                BaseXQueries.getEfaeciumBK()
+                BaseXQueries.EfaeciumBK
             ),
             entry(
                 "Anzahl der VRE-E.faecium Fälle in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)",
-                BaseXQueries.getVREBK()
+                BaseXQueries.VREBK
             )
         )
     }

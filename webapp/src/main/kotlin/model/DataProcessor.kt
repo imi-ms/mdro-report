@@ -3,17 +3,13 @@ package model
 object DataProcessor {
     fun countMRSATotal(caseList: List<Map<String, String>>) = caseList.size
 
-    fun countMRSANosokomial(caseList: List<Map<String, String>>) =
-        caseList.count { it["nosokomial?"] == "nosokomial" }
+    fun countMRSANosokomial(caseList: List<Map<String, String>>) = caseList.count { it["nosokomial?"] == "nosokomial" }
 
-    fun countMRSAImported(caseList: List<Map<String, String>>) =
-        caseList.count { it["nosokomial?"] != "nosokomial" }
+    fun countMRSAImported(caseList: List<Map<String, String>>) = caseList.count { it["nosokomial?"] != "nosokomial" }
 
-    fun countMRGN3Cases(caseList: List<Map<String, String>>) =
-        caseList.count { it["Klasse"] == "MRGN3" }
+    fun countMRGN3Cases(caseList: List<Map<String, String>>) = caseList.count { it["Klasse"] == "MRGN3" }
 
-    fun countMRGN4Cases(caseList: List<Map<String, String>>) =
-        caseList.count { it["Klasse"] == "MRGN4" }
+    fun countMRGN4Cases(caseList: List<Map<String, String>>) = caseList.count { it["Klasse"] == "MRGN4" }
 
     fun countVREEfaeciumResistant(caseList: List<Map<String, String>>) = caseList.count {
         it["Vancomycin Ergebnis"] == "R" && it["Erreger"] == "Enterococcus faecium"

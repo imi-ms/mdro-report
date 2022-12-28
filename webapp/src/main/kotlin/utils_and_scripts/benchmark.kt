@@ -10,8 +10,8 @@ import kotlin.system.measureTimeMillis
 suspend fun main() {
     val restclient = RestClient("https://basex.ukmuenster.de/rest", "2021", "oehm", "edQu5PyusVt11yg")
 
-    val query1 = BaseXQueries.getFallzahlen()
-    val query2 = BaseXQueries.getFallzahlen2()
+    val query1 = BaseXQueries.Fallzahlen
+    val query2 = BaseXQueries.Fallzahlen2
 
     println("value1 = " + restclient.executeXQuery(query1))
     val time1 = measureTimeMillis {
