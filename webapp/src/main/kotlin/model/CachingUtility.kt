@@ -1,5 +1,7 @@
 package model
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -9,48 +11,53 @@ import java.io.File
 import java.time.LocalDateTime
 
 
+class CachingUtility(val baseXClient: IBaseXClient) {
+    private val log = KotlinLogging.logger { }
+    private val basexInfo: BasexInfo = baseXClient.getInfo()
+    val cacheProvider = CacheProvider(basexInfo)
 
-class CachingUtility(private val basexInfo: BasexInfo) {
-    //TODO: Use ContextReceiver to get BasexInfo
-    object RequestState { //TODO: Make this also depending on XQueryParams
-        private val stateMap: HashMap<String, Boolean> = hashMapOf(
-            Pair("mrsaState", false),
-            Pair("mrgnState", false),
-            Pair("vreState", false),
-            Pair("globalState", false)
-        )
+    private val mutex = Mutex()
 
-        fun isRequestActive(germ: GermType?): Boolean {
-            return when (germ) {
-                GermType.MRSA -> stateMap["mrsaState"]!!
-                GermType.MRGN -> stateMap["mrgnState"]!!
-                GermType.VRE -> stateMap["vreState"]!!
-                else -> stateMap["globalState"]!!
+    //Loading the data is timeconsuming. Use a mutex to triggering duplicate report creation
+    private val mutexMap = mutableMapOf<Pair<XQueryParams, GermType?>, Mutex>().apply {
+        for (year in 2000..2030) {
+            val xQueryParams = XQueryParams(year)
+            for (germ in GermType.values()) {
+                put(xQueryParams to germ, Mutex())
             }
-        }
-
-        fun markRequestActive(germ: GermType?) {
-            when (germ) {
-                GermType.MRSA -> stateMap["mrsaState"] = true
-                GermType.MRGN -> stateMap["mrgnState"] = true
-                GermType.VRE -> stateMap["vreState"] = true
-                else -> stateMap["globalState"] = true
-            }
-        }
-
-        fun markRequestInactive(germ: GermType?) {
-            when (germ) {
-                GermType.MRSA -> stateMap["mrsaState"] = false
-                GermType.MRGN -> stateMap["mrgnState"] = false
-                GermType.VRE -> stateMap["vreState"] = false
-                else -> stateMap["globalState"] = false
-            }
+            put(xQueryParams to null, Mutex())
         }
     }
 
-    private val log = KotlinLogging.logger { }
-    val cacheProvider = CacheProvider(basexInfo)
+    suspend fun getOrLoadGermInfo(
+        xQueryParams: XQueryParams,
+        germ: GermType
+    ): GermInfo = mutexMap[xQueryParams to germ]!!.withLock {
+        if (getGermForGermtype(xQueryParams, germ)?.created == null) {
+            log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
+            val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
+            cache(xQueryParams, germInfo)
+            log.info { "Loading done of ${germInfo.type} for $xQueryParams" }
+        } else {
+            log.info { "Loading $germ-GermInfo for $xQueryParams from Cache" }
+        }
+        return getGermForGermtype(xQueryParams, germ)!!
+    }
 
+
+    suspend fun getOrLoadGlobalInfo(
+        xQueryParams: XQueryParams
+    ): GlobalInfo = mutexMap[xQueryParams to null]!!.withLock {
+        if (getGlobalInfo(xQueryParams)?.created == null) {
+            log.info { "Loading GlobalInfo from server $xQueryParams" }
+            val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
+            cache(xQueryParams, overviewContent)
+            log.info("Done with GlobalInfo request $xQueryParams")
+        } else {
+            log.info { "Loading GlobalInfo from Cache" }
+        }
+        return getGlobalInfo(xQueryParams)!!
+    }
 
     fun cache(xQueryParams: XQueryParams, germ: GermInfo) {
         val cache = getOrCreateCache(xQueryParams)

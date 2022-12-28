@@ -43,15 +43,15 @@ class RestClient(
     override fun close() {
         client.close()
     }
-
     override suspend fun executeXQuery(xquery: String): String {
         try {
-            return this.client.post("$baseURL/$database") {
+//            println(LocalDateTime.now().toString()+" Execute query: ${xquery.filter { it != '\n' && it != '\r' }}")
+            return client.post("$baseURL/$database") {
                 setBody("<query><text><![CDATA[ $xquery ]]></text></query>")
             }.body()
         } catch (e: Exception) {
-            println("Error when executing: $xquery")
-            e.printStackTrace()
+            println("Error when executing XQuery: '$xquery'!")
+            e.printStackTrace(System.out)
             throw e
         }
     }

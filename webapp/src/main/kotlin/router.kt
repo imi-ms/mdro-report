@@ -13,12 +13,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.webjars.*
 import io.ktor.util.*
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-import kotlinx.coroutines.withContext
 import kotlinx.html.button
 import kotlinx.html.div
 import kotlinx.html.script
@@ -26,14 +20,17 @@ import kotlinx.html.style
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import model.*
+import model.CachingUtility
+import model.GermType
+import model.IBaseXClient
+import model.XQueryParams
 import mu.KotlinLogging
 import view.*
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 
 private val log = KotlinLogging.logger { }
-private val mutex = Mutex()
+//private val mutex = Mutex()
 
 /**
  * @param serverMode do not block non-localhost connections
@@ -41,7 +38,7 @@ private val mutex = Mutex()
 fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit {
     val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
     return {
-        val cachingUtility = CachingUtility(baseXClient.getInfo())
+        val cachingUtility = CachingUtility(baseXClient)
         install(Webjars)
         install(StatusPages) {
             status(HttpStatusCode.NotFound) { call, status ->
@@ -64,6 +61,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
         }
+//        install(CallLogging) {
+//            level = Level.INFO
+//            filter { call -> call.request.path().startsWith("/") && !call.request.path().startsWith("/webjars/")}
+//        }
         routing {
             //Protect against non-localhost calls, avoid leaking data to unauthorized persons
             if (!serverMode) {
@@ -143,11 +144,12 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondRedirect("/")
             }
             get("/settings/downloadCache") {
+                println("downloadCache")
                 val xQueryParams = call.attributes[xqueryparams]
 
                 cachingUtility.getGlobalInfo(xQueryParams)
                 for (germType in GermType.values()) {
-                    cachingUtility.getOrLoadGermInfo(xQueryParams, germType, baseXClient)
+                    cachingUtility.getOrLoadGermInfo(xQueryParams, germType)
                 }
                 call.response.header(
                     HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
@@ -162,7 +164,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             get("global/overview") {
                 val xQueryParams = call.attributes[xqueryparams]
-                val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(xQueryParams, baseXClient)
+                val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(xQueryParams)
                 val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                     header { +"Krankenhauskennzahlen" }
@@ -172,7 +174,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             for (germ in GermType.values()) {
                 get("$germ/overview") {
                     val xQueryParams = call.attributes[xqueryparams]
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ, baseXClient)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ)
                     val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: Übersicht" }
@@ -181,7 +183,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
                 get("$germ/list") {
                     val xQueryParams = call.attributes[xqueryparams]
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ, baseXClient)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ)
                     val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: Fallliste" }
@@ -192,7 +194,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("MRGN/statistic") {
                 val xQueryParams = call.attributes[xqueryparams]
                 try {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN)
                     val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
                         .mapValues { it.value.toString() }
                     val data2 =
@@ -218,7 +220,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("VRE/statistic") {
                 val xQueryParams = call.attributes[xqueryparams]
                 try {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE)
                     val data =
                         germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
                             .mapValues { it.value.toString() }
@@ -245,7 +247,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("MRSA/statistic") {
                 val xQueryParams = call.attributes[xqueryparams]
                 try {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA)
                     val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
                         .eachCount().mapValues { it.value.toString() }
                     val data2 = germInfo.caseList!!.groupingBy { it["Probeart"]!! }
@@ -288,21 +290,20 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val yearsEnabled = call.parameters.getAll("year[]")?.map { it.toInt() } ?: emptyList()
                 val years = cachingUtility.cacheProvider.getCachedParameters().map { it.year!! }
                 val xqueryParams = yearsEnabled.map { XQueryParams(it) }
-                val mrgnData =
-                    xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRGN, baseXClient) }
+                val mrgnData = xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRGN) }
                 val mrgn3TotalNumberByYear =
-                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { it.title.contains("3MRGN") }!!.data }
+                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "3MRGN" in it.title }!!.data }
                         .toMap()
                 val mrgn4TotalNumberByYear =
-                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { it.title.contains("4MRGN") }!!.data }
+                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "4MRGN" in it.title }!!.data }
                         .toMap()
                 val mrsaTotalNumberByYear =
-                    xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA, baseXClient) }
-                        .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Gesamtanzahl aller") }!!.data }
+                    xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA) }
+                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "Gesamtanzahl aller" in it.title }!!.data }
                         .toMap()
                 val vreTotalNumberByYear =
-                    xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE, baseXClient) }
-                        .map { (key, value) -> key.year to value.overviewEntries!!.find { it.title.contains("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)") }!!.data }
+                    xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE) }
+                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "Anzahl der gesamten E.faecalis Fälle (resistente und sensible)" in it.title }!!.data }
                         .toMap() //TODO
 
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
@@ -328,10 +329,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             post("/statistic/create") {
                 val params = call.receiveParameters()
                 val xQueryParams = XQueryParams(params["year"]?.toInt())
-                cachingUtility.getOrLoadGlobalInfo(xQueryParams, baseXClient)
-                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN, baseXClient)
-                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA, baseXClient)
-                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE, baseXClient)
+                cachingUtility.getOrLoadGlobalInfo(xQueryParams)
+                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN)
+                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA)
+                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE)
                 call.respondRedirect {
                     path("/statistic")
                     params["q"]?.let { parameters.append("q", it) }
@@ -365,66 +366,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
     }
 }
 
-private suspend fun CachingUtility.getOrLoadGermInfo(
-    xQueryParams: XQueryParams,
-    germ: GermType,
-    baseXClient: IBaseXClient
-): GermInfo {
-    if (getGermForGermtype(xQueryParams, germ)?.created == null) {
-        if (!CachingUtility.RequestState.isRequestActive(germ)) {
-            coroutineScope {
-                withContext(Dispatchers.Default) {
-                    CachingUtility.RequestState.markRequestActive(germ) //Mark as active while queuing coroutine
-                    mutex.withLock {
-                        log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
-                        val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
-                        cache(xQueryParams, germInfo)
-                        log.info { "Loading done of ${germInfo.type} for $xQueryParams" }
-                        CachingUtility.RequestState.markRequestInactive(germ)
-                    }
-                }
-            }
-        } else {
-            coroutineScope {
-                while (CachingUtility.RequestState.isRequestActive(germ)) {
-                    delay(1000)
-                }
-            }
-        }
-    }
-    return this.getGermForGermtype(xQueryParams, germ)!!
-}
 
-
-private suspend fun CachingUtility.getOrLoadGlobalInfo(
-    xQueryParams: XQueryParams,
-    baseXClient: IBaseXClient,
-): GlobalInfo {
-    if (getGlobalInfo(xQueryParams)?.created == null) {
-        if (!CachingUtility.RequestState.isRequestActive(null)) {
-            coroutineScope {
-                withContext(Dispatchers.Default) {
-                    CachingUtility.RequestState.markRequestActive(null) //Mark as active while queuing coroutine
-                    mutex.withLock {
-                        log.info { "Loading GlobalInfo from server $xQueryParams" }
-                        val overviewContent = model.DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
-                        cache(xQueryParams, overviewContent)
-                        log.info("Done with Global Overview request")
-                        CachingUtility.RequestState.markRequestInactive(null)
-                    }
-                }
-            }
-        } else {
-            coroutineScope {
-                while (CachingUtility.RequestState.isRequestActive(null)) {
-                    delay(1000)
-                }
-            }
-        }
-    }
-    return this.getGlobalInfo(xQueryParams)!!
-
-}
 
 
 private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: CachingUtility) {
