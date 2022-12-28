@@ -26,6 +26,7 @@ object BaseXQueries {
 
     fun applyParams(query: String, xQueryParams: XQueryParams): String {
         return applyYearFilter(query, xQueryParams)
+//            .replace("STATIONAER", "S")
     }
 
     private fun applyYearFilter(query: String, xQueryParams: XQueryParams): String {

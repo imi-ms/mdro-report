@@ -13,7 +13,6 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.webjars.*
 import io.ktor.util.*
-import kotlinx.html.button
 import kotlinx.html.div
 import kotlinx.html.script
 import kotlinx.html.style
@@ -118,10 +117,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Willkommen" }
                     content {
-                        button {
-                            attributes["onclick"] = "Downloader.downloadFile('test.json');"
-                            +"Test Download function"
-                        }
+//                        button {
+//                            attributes["onclick"] = "Downloader.downloadFile('test.json');"
+//                            +"Test Download function"
+//                        }
 
                         drawIndex(baseXClient.getInfo())
                     }
@@ -147,10 +146,8 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 println("downloadCache")
                 val xQueryParams = call.attributes[xqueryparams]
 
-                cachingUtility.getGlobalInfo(xQueryParams)
-                for (germType in GermType.values()) {
-                    cachingUtility.getOrLoadGermInfo(xQueryParams, germType)
-                }
+                cachingUtility.cacheAllData(xQueryParams)
+
                 call.response.header(
                     HttpHeaders.ContentDisposition, ContentDisposition.Attachment.withParameter(
                         ContentDisposition.Parameters.FileName,
@@ -165,7 +162,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             get("global/overview") {
                 val xQueryParams = call.attributes[xqueryparams]
                 val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(xQueryParams)
-                val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
+                val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                     header { +"Krankenhauskennzahlen" }
                     content { drawOverviewTable(overviewContent!!, lastUpdate!!, q) }
@@ -175,7 +172,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 get("$germ/overview") {
                     val xQueryParams = call.attributes[xqueryparams]
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ)
-                    val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
+                    val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: Übersicht" }
                         content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!, q) }
@@ -184,7 +181,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 get("$germ/list") {
                     val xQueryParams = call.attributes[xqueryparams]
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, germ)
-                    val q = call.parameters["q"] ?: "Query-Parameter 'q' is missing!"
+                    val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: Fallliste" }
                         content { drawCaseList(germInfo.caseList!!, germInfo.created!!, q) }
@@ -195,17 +192,16 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val xQueryParams = call.attributes[xqueryparams]
                 try {
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN)
-                    val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
-                        .mapValues { it.value.toString() }
-                    val data2 =
-                        germInfo.caseList!!.groupingBy { it["Probenart"]!! }.eachCount()
-                            .mapValues { it.value.toString() }
+                    val departments = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                        .eachCount().mapValues { it.value.toString() }
+                    val probenart = germInfo.caseList!!.groupingBy { it["Probenart"]!! }
+                        .eachCount().mapValues { it.value.toString() }
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                         header { +"Diagramme" }
                         content {
                             script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                            drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", data)
-                            drawBarChart("Anzahl der Probenarten", data2)
+                            drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", departments)
+                            drawBarChart("Anzahl der Probenarten", probenart)
                         }
                     }
                 } catch (e: Exception) {
@@ -221,18 +217,16 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val xQueryParams = call.attributes[xqueryparams]
                 try {
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE)
-                    val data =
-                        germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }.eachCount()
-                            .mapValues { it.value.toString() }
-                    val data2 =
-                        germInfo.caseList!!.groupingBy { it["Probenart"]!! }.eachCount()
-                            .mapValues { it.value.toString() }
+                    val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                        .eachCount().mapValues { it.value.toString() }
+                    val probenart = germInfo.caseList!!.groupingBy { it["Probenart"]!! }
+                        .eachCount().mapValues { it.value.toString() }
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                         header { +"Diagramme" }
                         content {
                             script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                            drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", data)
-                            drawBarChart("Anzahl der Probenarten", data2)
+                            drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", department)
+                            drawBarChart("Anzahl der Probenarten", probenart)
                         }
                     }
                 } catch (e: Exception) {
@@ -248,11 +242,11 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val xQueryParams = call.attributes[xqueryparams]
                 try {
                     val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA)
-                    val data = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                    val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
                         .eachCount().mapValues { it.value.toString() }
-                    val data2 = germInfo.caseList!!.groupingBy { it["Probeart"]!! }
+                    val probenart = germInfo.caseList!!.groupingBy { it["Probeart"]!! }
                         .eachCount().mapValues { it.value.toString() }
-                    val data3 = germInfo.caseList!!.groupingBy { it["nosokomial?"]!! }
+                    val importedOrNosocomial = germInfo.caseList!!.groupingBy { it["nosokomial?"]!! }
                         .eachCount().mapValues { it.value.toString() }
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                         header { +"Diagramme" }
@@ -262,16 +256,16 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                                 div(classes = "row") {
                                     style = "height: 400px;"
                                     div(classes = "col") {
-                                        drawBarChart("MRSA Nachweis in den einzelnen Fachabteilungen", data)
+                                        drawBarChart("MRSA Nachweis in den einzelnen Fachabteilungen", department)
                                     }
                                 }
                                 div(classes = "row") {
                                     style = "height: 400px;"
                                     div(classes = "col-6") {
-                                        drawBarChart("Anzahl der Probenarten", data2)
+                                        drawBarChart("Anzahl der Probenarten", probenart)
                                     }
                                     div(classes = "col-6") {
-                                        drawPieChart("Anzahl Import/Nosokomial", data3)
+                                        drawPieChart("Anzahl Import/Nosokomial", importedOrNosocomial)
                                     }
                                 }
                             }
@@ -292,11 +286,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val xqueryParams = yearsEnabled.map { XQueryParams(it) }
                 val mrgnData = xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRGN) }
                 val mrgn3TotalNumberByYear =
-                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "3MRGN" in it.title }!!.data }
-                        .toMap()
+                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "3MRGN" in it.title }!!.data }.toMap()
                 val mrgn4TotalNumberByYear =
-                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "4MRGN" in it.title }!!.data }
-                        .toMap()
+                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "4MRGN" in it.title }!!.data }.toMap()
                 val mrsaTotalNumberByYear =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA) }
                         .map { (key, value) -> key.year to value.overviewEntries!!.find { "Gesamtanzahl aller" in it.title }!!.data }
@@ -305,19 +297,18 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE) }
                         .map { (key, value) -> key.year to value.overviewEntries!!.find { "Anzahl der gesamten E.faecalis Fälle (resistente und sensible)" in it.title }!!.data }
                         .toMap() //TODO
+                val data = mapOf(
+                    "3MRGN" to mrgn3TotalNumberByYear,
+                    "4MRGN" to mrgn4TotalNumberByYear,
+                    "MRSA" to mrsaTotalNumberByYear,
+                    "VRE" to vreTotalNumberByYear
+                )
 
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +"Diagramme" }
                     content {
                         if (yearsEnabled.isNotEmpty()) {
-                            drawDiagrams(
-                                mapOf(
-                                    "3MRGN" to mrgn3TotalNumberByYear,
-                                    "4MRGN" to mrgn4TotalNumberByYear,
-                                    "MRSA" to mrsaTotalNumberByYear,
-                                    "VRE" to vreTotalNumberByYear
-                                ), years, yearsEnabled, call.parameters["q"]
-                            )
+                            drawDiagrams(data, years, yearsEnabled, call.parameters["q"])
                         } else {
                             val cacheData = cachingUtility.cacheProvider.getCachedParameters()
                                 .map { cachingUtility.cacheProvider.getCache(it)!! }
@@ -329,10 +320,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             post("/statistic/create") {
                 val params = call.receiveParameters()
                 val xQueryParams = XQueryParams(params["year"]?.toInt())
-                cachingUtility.getOrLoadGlobalInfo(xQueryParams)
-                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRGN)
-                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA)
-                cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.VRE)
+                cachingUtility.cacheAllData(xQueryParams)
                 call.respondRedirect {
                     path("/statistic")
                     params["q"]?.let { parameters.append("q", it) }
@@ -370,15 +358,13 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
 
 
 private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: CachingUtility) {
-    var fileBytes: ByteArray? = null
     multipartdata.forEachPart { part ->
         if (part is PartData.FileItem) {
-            fileBytes = part.streamProvider().readBytes()
+            val fileBytes = part.streamProvider().readBytes()
+            val newCache = String(fileBytes, StandardCharsets.UTF_8)
+            cachingUtility.uploadExistingCache(newCache)
         }
     }
-    if (fileBytes != null) {
-        val newCache = String(fileBytes!!, StandardCharsets.UTF_8)
-        cachingUtility.uploadExistingCache(newCache)
-    }
+
 }
 

@@ -11,7 +11,7 @@ import java.io.File
 import java.time.LocalDateTime
 
 
-class CachingUtility(val baseXClient: IBaseXClient) {
+class CachingUtility(private val baseXClient: IBaseXClient) {
     private val log = KotlinLogging.logger { }
     private val basexInfo: BasexInfo = baseXClient.getInfo()
     val cacheProvider = CacheProvider(basexInfo)
@@ -29,34 +29,38 @@ class CachingUtility(val baseXClient: IBaseXClient) {
         }
     }
 
-    suspend fun getOrLoadGermInfo(
-        xQueryParams: XQueryParams,
-        germ: GermType
-    ): GermInfo = mutexMap[xQueryParams to germ]!!.withLock {
-        if (getGermForGermtype(xQueryParams, germ)?.created == null) {
-            log.info { "Loading $germ-GermInfo from server for $xQueryParams" }
-            val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
-            cache(xQueryParams, germInfo)
-            log.info { "Loading done of ${germInfo.type} for $xQueryParams" }
-        } else {
-            log.info { "Loading $germ-GermInfo for $xQueryParams from Cache" }
+    suspend fun getOrLoadGermInfo(xQueryParams: XQueryParams, germ: GermType): GermInfo =
+        mutexMap[xQueryParams to germ]!!.withLock {
+            if (getGermForGermtype(xQueryParams, germ)?.created == null) {
+                log.info { "Loading $germ-GermInfo from BaseX for $xQueryParams" }
+                val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
+                cache(xQueryParams, germInfo)
+                log.info { "Done with ${germInfo.type} for $xQueryParams" }
+            } else {
+                log.info { "Loading $germ-GermInfo for $xQueryParams from Cache" }
+            }
+            return getGermForGermtype(xQueryParams, germ)!!
         }
-        return getGermForGermtype(xQueryParams, germ)!!
-    }
 
 
-    suspend fun getOrLoadGlobalInfo(
-        xQueryParams: XQueryParams
-    ): GlobalInfo = mutexMap[xQueryParams to null]!!.withLock {
-        if (getGlobalInfo(xQueryParams)?.created == null) {
-            log.info { "Loading GlobalInfo from server $xQueryParams" }
-            val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
-            cache(xQueryParams, overviewContent)
-            log.info("Done with GlobalInfo request $xQueryParams")
-        } else {
-            log.info { "Loading GlobalInfo from Cache" }
+    suspend fun getOrLoadGlobalInfo(xQueryParams: XQueryParams): GlobalInfo =
+        mutexMap[xQueryParams to null]!!.withLock {
+            if (getGlobalInfo(xQueryParams)?.created == null) {
+                log.info { "Loading GlobalInfo from BaseX for $xQueryParams" }
+                val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
+                cache(xQueryParams, overviewContent)
+                log.info("Done with GlobalInfo request for $xQueryParams")
+            } else {
+                log.info { "Loading GlobalInfo from Cache" }
+            }
+            return getGlobalInfo(xQueryParams)!!
         }
-        return getGlobalInfo(xQueryParams)!!
+
+    suspend fun cacheAllData(xQueryParams: XQueryParams) {
+        getOrLoadGlobalInfo(xQueryParams)
+        for (germType in GermType.values()) {
+            getOrLoadGermInfo(xQueryParams, germType)
+        }
     }
 
     fun cache(xQueryParams: XQueryParams, germ: GermInfo) {
@@ -107,7 +111,7 @@ class CachingUtility(val baseXClient: IBaseXClient) {
         return cacheProvider.getCache(xQueryParams)?.globalCache
     }
 
-    fun getOrCreateCache(xQueryParams: XQueryParams) =
+    private fun getOrCreateCache(xQueryParams: XQueryParams) =
         cacheProvider.getCache(xQueryParams) ?: createCache(xQueryParams)
 
     private fun createCache(xQueryParams: XQueryParams): CacheData {
@@ -130,6 +134,12 @@ class CachingUtility(val baseXClient: IBaseXClient) {
 class CacheProvider(val basexInfo: BasexInfo) {
 
     private val log = KotlinLogging.logger { }
+    fun getCachedParameters(): List<XQueryParams> {
+        val cached = File(cacheDirectory).listFiles()!!.filter { it.name.startsWith(getBaseXPrefix()) }
+            .map { it.name.substringAfter("--").removeSuffix(".mrereport") }
+        return cached.map { XQueryParams(it.toInt()) }
+    }
+
     fun clearCache(xQueryParams: XQueryParams) {
         try {
             getCacheFile(xQueryParams).delete()
@@ -141,12 +151,7 @@ class CacheProvider(val basexInfo: BasexInfo) {
         return getCacheFile(xQueryParams).exists()
     }
 
-    fun getCacheFileName(xQueryParams: XQueryParams): String {
-        return "${getBaseXPrefix()}--${xQueryParams.year}.mrereport"
-    }
-
-    private fun getCacheFile(xQueryParams: XQueryParams) =
-        File(cacheDirectory, getCacheFileName(xQueryParams))
+    private fun getCacheFile(xQueryParams: XQueryParams) = File(cacheDirectory, getCacheFileName(xQueryParams))
 
     private val cacheDirectory: String by lazy {
         val userCacheDir = AppDirsFactory.getInstance().getUserCacheDir("mrereport", "1.0", "IMI")!!
@@ -155,10 +160,8 @@ class CacheProvider(val basexInfo: BasexInfo) {
         userCacheDir
     }
 
-    fun getCachedParameters(): List<XQueryParams> {
-        val cached = File(cacheDirectory).listFiles().filter { it.name.startsWith(getBaseXPrefix()) }
-            .map { it.name.substringAfter("--").removeSuffix(".mrereport") }
-        return cached.map { XQueryParams(it.toInt()) }
+    fun getCacheFileName(xQueryParams: XQueryParams): String {
+        return "${getBaseXPrefix()}--${xQueryParams.year}.mrereport"
     }
 
     fun writeCache(cache: CacheData) {
