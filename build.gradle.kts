@@ -3,8 +3,8 @@ import org.panteleyev.jpackage.JPackageTask
 System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
-    kotlin("jvm") version "1.7.21"
-    kotlin("plugin.serialization") version "1.7.21"
+    kotlin("jvm") version "1.8.0"
+    kotlin("plugin.serialization") version "1.8.0"
     id("java")
     id("application")
     id("org.openjfx.javafxplugin") version "0.0.13"
@@ -24,6 +24,7 @@ buildscript {
 kotlin {
     group = "de.uni_muenster.imi.oegd"
     version = "1.2.3"
+//    jvmToolchain(17)
 }
 
 java {
