@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 
-class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
+class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTML> {
     val header = Placeholder<FlowContent>()
     val content = Placeholder<FlowContent>()
     private val url = url2.removePrefix("/")
@@ -56,10 +56,9 @@ class LayoutTemplate(url2: String, val q: String? = null) : Template<HTML> {
                                     }
                                     div(classes = "dropdown-menu") {
                                         attributes["aria-labelledby"] = "navbar$germ"
-                                        a(
-                                            classes = "dropdown-item",
-                                            href = "/$germ/overview?q=$q"
-                                        ) { +"Übersicht $germ" }
+                                        a(classes = "dropdown-item", href = "/$germ/overview?q=$q") {
+                                            +"Übersicht $germ"
+                                        }
                                         a(classes = "dropdown-item", href = "/$germ/list?q=$q") { +"Fallliste" }
                                         a(classes = "dropdown-item", href = "/$germ/statistic?q=$q") { +"Diagramme" }
                                     }

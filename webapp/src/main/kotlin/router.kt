@@ -75,7 +75,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
         routing {
             //Protect against non-localhost calls, avoid leaking data to unauthorized persons
             if (!serverMode) {
-                intercept(ApplicationCallPipeline.Features) {
+                intercept(Plugins) {
                     val ip = InetAddress.getByName(call.request.local.remoteHost)
                     if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
                         call.respondText(
@@ -113,7 +113,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                         content {
                             +"Bitte nutzen Sie die Einstellungsleiste, um die Konfiguration der Anfrage durchzuführen."
                             script(type = "text/javascript") {
-                                +"$(function(){ $('#settings-modal').modal({focus:true}) });"
+                                unsafe { +"$(function(){ $('#settings-modal').modal({focus:true}) });" }
                             }
                         }
                     }
@@ -128,17 +128,16 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             post("{germ}/invalidate-cache") {
-                val value = call.parameters["germ"]!!
+                val germ = call.parameters["germ"]!!
                 val parameters = call.receiveParameters()
                 val xQueryParams = XQueryParams.fromJson(parameters["q"])!!
-                if (value == "global") {
+                if (germ == "global") {
                     cachingUtility.clearGlobalInfoCache(xQueryParams)
                 } else {
-                    val germ = GermType.valueOf(value)
-                    cachingUtility.clearGermInfo(xQueryParams, germ)
+                    cachingUtility.clearGermInfo(xQueryParams, GermType.valueOf(germ))
                 }
                 call.respondRedirect(
-                    call.request.headers[HttpHeaders.Referrer] ?: ("/$value/overview?q=" + parameters["q"])
+                    call.request.headers[HttpHeaders.Referrer] ?: ("/$germ/overview?q=" + parameters["q"])
                 )
             }
             post("/settings/uploadCache") {
@@ -219,10 +218,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 }
             }
             get("MRSA/statistic") {
-                val xQueryParams = call.xQueryParams
-                val germInfo = cachingUtility.getOrLoadGermInfo(xQueryParams, GermType.MRSA)
-                    val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
-                        .eachCount().mapValues { it.value.toString() }
+                val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRSA)
+                val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                    .eachCount().mapValues { it.value.toString() }
                     val probenart = germInfo.caseList!!.groupingBy { it["Probeart"]!! }
                         .eachCount().mapValues { it.value.toString() }
                     val importedOrNosocomial = germInfo.caseList!!.groupingBy { it["nosokomial?"]!! }
