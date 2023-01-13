@@ -16,7 +16,7 @@
                   <Insets bottom="40.0" />
                </VBox.margin>
             </ProgressBar>
-            <Label text="Bitte haben Sie einen Moment Geduld. Die Daten werden generiert." />
+            <Label text="%label.generatingData" />
          </children>
       </VBox>
    </children>

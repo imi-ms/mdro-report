@@ -13,6 +13,7 @@ import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.control.Alert.AlertType
 import javafx.scene.image.Image
+import javafx.scene.image.ImageView
 import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
 import java.io.File
@@ -39,9 +40,16 @@ fun <T : javafx.scene.Node> javafx.scene.Node.find(cssSelector: String) = this.l
 
 class JavaFxApplication : Application() {
     private lateinit var directory: File
+    private var language: LANGUAGE = LANGUAGE.values().find { it.locale.language == Locale.getDefault().language } ?: LANGUAGE.ENGLISH
+    private lateinit var i18n: ResourceBundle
+
 
     override fun start(primaryStage: Stage) {
-        val i18n = ResourceBundle.getBundle("internationalization")
+        drawStartDialog(primaryStage)
+    }
+
+    private fun drawStartDialog(primaryStage: Stage) {
+        i18n = ResourceBundle.getBundle("testdataGeneratorMessages", language.locale)
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/testdataGenerator.fxml"), i18n)
         primaryStage.scene = Scene(page)
         primaryStage.title = "MREReport Testdata Generator"
@@ -51,6 +59,26 @@ class JavaFxApplication : Application() {
         page.find<Label>("#label_sliderValue").textProperty().bind(
             Bindings.format("%.0f", page.find<Slider>("#slider_numberOfPatients").valueProperty())
         )
+
+        page.find<ComboBox<Any>>("#language_comboBox").apply {
+
+            items = FXCollections.observableArrayList<Any>().apply {
+                add(createImageLabel(i18n.getString(LANGUAGE.GERMAN.languageCode), LANGUAGE.GERMAN.imgPath))
+                add(createImageLabel(i18n.getString(LANGUAGE.ENGLISH.languageCode), LANGUAGE.ENGLISH.imgPath))
+            }
+
+            value = createImageLabel(i18n.getString(language.languageCode), language.imgPath).apply {
+                style = "-fx-text-fill: black"
+            }
+
+            selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+                run {
+                    language = LANGUAGE.values().find { i18n.getString(it.languageCode) == ((newValue as Label).text) }
+                        ?: LANGUAGE.ENGLISH
+                    drawStartDialog(primaryStage)
+                }
+            }
+        }
 
         page.find<Button>("#button_ok").isDisable = true
         page.find<Button>("#button_selectLocation").onAction = EventHandler {
@@ -92,7 +120,7 @@ class JavaFxApplication : Application() {
         numberOfPatients: Int,
         location: String
     ) {
-        val progressView = FXMLLoader.load<Parent>(javaClass.getResource("/progressView.fxml"))
+        val progressView = FXMLLoader.load<Parent>(javaClass.getResource("/progressView.fxml"), i18n)
         primaryStage.scene = Scene(progressView)
         primaryStage.show()
 
@@ -118,12 +146,9 @@ class JavaFxApplication : Application() {
         }
         task.onSucceeded = EventHandler {
             Alert(AlertType.INFORMATION).apply {
-                title = "Generierung erfolgreich"
-                headerText = "Die Generierung war erfolgreich"
-                contentText = "Die Testdaten wurden erfolgreich unter dem von " +
-                        "Ihnen angegebenen Pfad generiert. Die Applikation wird nun beendet. " +
-                        "Sollten Sie noch weitere Daten generieren wollen, " +
-                        "führen Sie den Testdaten Generator erneut aus."
+                title = i18n.getString("view.successfullyGenerated.title")
+                headerText = i18n.getString("view.successfullyGenerated.header")
+                contentText = i18n.getString("view.successfullyGenerated.content")
             }.showAndWait()
 
             stop()
@@ -146,5 +171,17 @@ class JavaFxApplication : Application() {
 
     private fun getYearsList(): ObservableList<Int> {
         return FXCollections.observableList((1990..2030).toList())
+    }
+
+    private fun createImageLabel(label: String, imgPath: String): Label = Label(label).apply {
+        graphic = ImageView(Image(imgPath)).apply {
+            fitWidth = 21.6
+            fitHeight = 21.6
+        }
+    }
+
+    private enum class LANGUAGE(val languageCode: String, val locale: Locale, val imgPath: String) {
+        GERMAN("language.de", Locale.GERMAN, "de.png"),
+        ENGLISH("language.en", Locale.ENGLISH, "gb.png")
     }
 }
