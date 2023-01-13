@@ -37,30 +37,40 @@ fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>
     script(type = "text/javascript") {
         unsafe {
             +"""
-new Chart(document.getElementById('$randomId').getContext('2d'), {
-    type: '$type',
-    data: {
-        labels: $labels,
-        datasets: [{
-            label: "$label",
-            data: $dataValues,
-            backgroundColor: ${
-                if (type == "pie") Json.encodeToString(backgroundColors) else Json.encodeToString(backgroundColors[0])
-            },
-            borderColor: ${
-                if (type == "pie") Json.encodeToString(borderColors) else Json.encodeToString(backgroundColors[0])
-            },
-            borderWidth: 1
-        }]
-    },
-    options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        scales: {
-            y: { beginAtZero: true }
-        }
-    }
-});"""
+                Chart.plugins.register({
+                    beforeDraw: function(chartInstance) {
+                    var ctx = chartInstance.chart.ctx;
+                    ctx.fillStyle = "white";
+                    ctx.fillRect(0, 0, chartInstance.chart.width, chartInstance.chart.height);
+                  }
+                });
+            """
+            +"""
+                new Chart(document.getElementById('$randomId').getContext('2d'), {
+                    type: '$type',
+                    data: {
+                        labels: $labels,
+                        datasets: [{
+                            label: "$label",
+                            data: $dataValues,
+                            backgroundColor: ${
+                                if (type == "pie") Json.encodeToString(backgroundColors) else Json.encodeToString(backgroundColors[0])
+                            },
+                            borderColor: ${
+                                if (type == "pie") Json.encodeToString(borderColors) else Json.encodeToString(backgroundColors[0])
+                            },
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true }
+                        }
+                    }
+                });
+            """
         }
     }
 
