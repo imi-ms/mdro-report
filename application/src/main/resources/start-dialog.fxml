@@ -1,24 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
-<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="500.0"
-      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="500.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
     <children>
-        <RadioButton id="radio_basex" fx:id="radio_basex" mnemonicParsing="false" selected="true"
-                     text="%label.connectToServer" VBox.vgrow="ALWAYS">
+      <GridPane>
+         <columnConstraints>
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="150.0" minWidth="100.0" prefWidth="100.0" />
+            <ColumnConstraints hgrow="SOMETIMES" maxWidth="444.0" minWidth="10.0" />
+         </columnConstraints>
+         <rowConstraints>
+            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+         </rowConstraints>
+         <children>
+            <Label text="%label.language" />
+            <ComboBox id="language_comboBox" prefHeight="28.0" prefWidth="225.0" GridPane.columnIndex="1" />
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+         <VBox.margin>
+            <Insets left="20.0" right="20.0" />
+         </VBox.margin>
+      </GridPane>
+      <Separator />
+        <RadioButton id="radio_basex" fx:id="radio_basex" mnemonicParsing="false" selected="true" text="%label.connectToServer" VBox.vgrow="ALWAYS">
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
             <toggleGroup>
-                <ToggleGroup fx:id="group1"/>
+                <ToggleGroup fx:id="group1" />
             </toggleGroup>
         </RadioButton>
         <GridPane disable="${! radio_basex.selected}">
             <columnConstraints>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="150.0" minWidth="100.0" prefWidth="100.0"/>
-                <ColumnConstraints hgrow="SOMETIMES" maxWidth="444.0" minWidth="10.0"/>
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="150.0" minWidth="100.0" prefWidth="100.0" />
+                <ColumnConstraints hgrow="SOMETIMES" maxWidth="444.0" minWidth="10.0" />
             </columnConstraints>
             <rowConstraints>
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
@@ -27,13 +58,13 @@
                 <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
             </rowConstraints>
             <children>
-                <Label text="%label.serverUrl"/>
+                <Label text="%label.serverUrl" />
                 <TextField id="server" text="https://basex.ukmuenster.de/rest" GridPane.columnIndex="1" GridPane.vgrow="ALWAYS" />
-                <Label text="%label.username" GridPane.rowIndex="1"/>
-                <TextField id="username" text="oehm" GridPane.columnIndex="1" GridPane.rowIndex="1"/>
-                <Label text="%label.password" GridPane.rowIndex="2"/>
+                <Label text="%label.username" GridPane.rowIndex="1" />
+                <TextField id="username" text="oehm" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                <Label text="%label.password" GridPane.rowIndex="2" />
                 <PasswordField id="password" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                <Label text="%label.database" GridPane.rowIndex="3"/>
+                <Label text="%label.database" GridPane.rowIndex="3" />
                 <TextField id="database" text="2021" GridPane.columnIndex="1" GridPane.rowIndex="3" />
             </children>
             <padding>
@@ -43,40 +74,38 @@
                 <Insets left="20.0" right="20.0" />
             </VBox.margin>
         </GridPane>
-        <Separator/>
-        <RadioButton id="radio_file" fx:id="radio_file" mnemonicParsing="false" text="%label.createLocalServer"
-                     toggleGroup="$group1" VBox.vgrow="ALWAYS">
+        <Separator />
+        <RadioButton id="radio_file" fx:id="radio_file" mnemonicParsing="false" text="%label.createLocalServer" toggleGroup="$group1" VBox.vgrow="ALWAYS">
             <VBox.margin>
-                <Insets/>
+                <Insets />
             </VBox.margin>
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
         </RadioButton>
         <HBox disable="${! radio_file.selected}" spacing="5.0">
             <children>
-                <Button id="button_file" mnemonicParsing="false" prefHeight="28.0" prefWidth="136.0"
-                        text="Durchsuchen..."/>
+                <Button id="button_file" mnemonicParsing="false" prefHeight="28.0" prefWidth="136.0" text="%button.select" />
                 <Label id="label_file" prefHeight="27.0" text="%noDirectorySelected">
                     <HBox.margin>
-                        <Insets left="10.0"/>
+                        <Insets left="10.0" />
                     </HBox.margin>
                 </Label>
             </children>
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
             </padding>
             <VBox.margin>
-                <Insets left="10.0" right="10.0"/>
+                <Insets left="10.0" right="10.0" />
             </VBox.margin>
         </HBox>
         <ButtonBar id="button_bar" prefHeight="53.0">
             <buttons>
-                <Button id="button_cancel" mnemonicParsing="false" text="%button.abort"/>
-                <Button id="button_confirm" mnemonicParsing="false" text="%button.start" defaultButton="true"/>
+                <Button id="button_cancel" mnemonicParsing="false" text="%button.abort" />
+                <Button id="button_confirm" defaultButton="true" mnemonicParsing="false" text="%button.start" />
             </buttons>
             <VBox.margin>
-                <Insets left="20.0" right="20.0"/>
+                <Insets left="20.0" right="20.0" />
             </VBox.margin>
         </ButtonBar>
     </children>

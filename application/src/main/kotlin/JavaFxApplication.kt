@@ -6,6 +6,8 @@ import de.uni_muenster.imi.oegd.webapp.createServer
 import io.ktor.server.netty.*
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.beans.value.ChangeListener
+import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.concurrent.Worker
 import javafx.event.EventHandler
@@ -16,6 +18,7 @@ import javafx.scene.Parent
 import javafx.scene.Scene
 import javafx.scene.control.*
 import javafx.scene.image.Image
+import javafx.scene.image.ImageView
 import javafx.scene.layout.*
 import javafx.scene.paint.Color
 import javafx.scene.web.WebView
@@ -52,15 +55,40 @@ class JavaFxApplication : Application() {
     private val webappPort = findOpenPortInRange(1024..49151) ?: error("Cannot find free port for internal webserver!")
     private var server: NettyApplicationEngine? = null
     private var directory: File? = null
+    private var language: LANGUAGE = LANGUAGE.values().find { it.locale.language == Locale.getDefault().language } ?: LANGUAGE.ENGLISH
+    private lateinit var i18n: ResourceBundle
 
     override fun start(primaryStage: Stage) {
-        val i18n = ResourceBundle.getBundle("internationalization")
+        drawStartDialog(primaryStage)
+    }
+
+    private fun drawStartDialog(primaryStage: Stage) {
+        i18n = ResourceBundle.getBundle("internationalization", language.locale)
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"), i18n)
         primaryStage.scene = Scene(page)
         primaryStage.title = "MREReport"
         primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 
+        page.find<ComboBox<Any>>("#language_comboBox").apply {
+
+            items = FXCollections.observableArrayList<Any>().apply {
+                add(createImageLabel(i18n.getString(LANGUAGE.GERMAN.languageCode), LANGUAGE.GERMAN.imgPath))
+                add(createImageLabel(i18n.getString(LANGUAGE.ENGLISH.languageCode), LANGUAGE.ENGLISH.imgPath))
+            }
+
+            value = createImageLabel(i18n.getString(language.languageCode), language.imgPath).apply {
+                style = "-fx-text-fill: black"
+            }
+
+            selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+                run {
+                    language = LANGUAGE.values().find { i18n.getString(it.languageCode) == ((newValue as Label).text) }
+                        ?: LANGUAGE.ENGLISH
+                    drawStartDialog(primaryStage)
+                }
+            }
+        }
 
         page.find<Button>("#button_file").onAction = EventHandler {
             val directoryChooser = DirectoryChooser()
@@ -97,7 +125,7 @@ class JavaFxApplication : Application() {
                     stop()
                 }
             }
-            server = createServer(basex, webappPort)
+            server = createServer(basex, webappPort, language.locale)
             server!!.start()
 
             startWebView(primaryStage)
@@ -106,7 +134,6 @@ class JavaFxApplication : Application() {
         page.find<Button>("#button_cancel").onAction = EventHandler {
             stop()
         }
-
     }
 
     private fun checkBaseXConnection(basex: IBaseXClient, i18n: ResourceBundle): Boolean {
@@ -191,6 +218,17 @@ class JavaFxApplication : Application() {
         primaryStage.centerOnScreen()
     }
 
+    private fun createImageLabel(label: String, imgPath: String): Label = Label(label).apply {
+        graphic = ImageView(Image(imgPath)).apply {
+            fitWidth = 21.6
+            fitHeight = 21.6
+        }
+    }
+
+    private enum class LANGUAGE(val languageCode: String, val locale: Locale, val imgPath: String) {
+        GERMAN("language.de", Locale.GERMAN, "de.png"),
+        ENGLISH("language.en", Locale.ENGLISH, "gb.png")
+    }
 
 }
 
