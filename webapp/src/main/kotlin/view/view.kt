@@ -1,8 +1,10 @@
 package view
 
+import de.uni_muenster.imi.oegd.webapp.i18n
 import io.ktor.server.html.*
 import kotlinx.html.*
 import model.*
+import java.text.MessageFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -40,7 +42,7 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                     div(classes = "collapse navbar-collapse") {
                         id = "navbarNav"
                         ul(classes = "navbar-nav") {
-                            navItem("global/overview?q=$q", "Krankenhauskennzahlen")
+                            navItem("global/overview?q=$q", i18n.getString("navigation.hospitalMetrics"))
                             for (germ in GermType.values().map { it.germtype }) {
                                 li(classes = "nav-item dropdown") {
                                     if (url.startsWith(germ)) {
@@ -57,15 +59,15 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                                     div(classes = "dropdown-menu") {
                                         attributes["aria-labelledby"] = "navbar$germ"
                                         a(classes = "dropdown-item", href = "/$germ/overview?q=$q") {
-                                            +"Übersicht $germ"
+                                            +"${i18n.getString("navigation.overview")} $germ"
                                         }
-                                        a(classes = "dropdown-item", href = "/$germ/list?q=$q") { +"Fallliste" }
-                                        a(classes = "dropdown-item", href = "/$germ/statistic?q=$q") { +"Diagramme" }
+                                        a(classes = "dropdown-item", href = "/$germ/list?q=$q") { +i18n.getString("navigation.list") }
+                                        a(classes = "dropdown-item", href = "/$germ/statistic?q=$q") { +i18n.getString("navigation.diagrams") }
                                     }
                                 }
                             }
-                            navItem("statistic?q=$q", "Diagramme")
-                            navItem("about?q=$q", "Über")
+                            navItem("statistic?q=$q", i18n.getString("navigation.diagrams"))
+                            navItem("about?q=$q", i18n.getString("navigation.about"))
                         }
                     }
                     div(classes = "navbar float-left") {
@@ -92,11 +94,11 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                             +"© 2022 Copyright "
                         }
                         a(href = "https://imi.uni-muenster.de", target = "_blank") {
-                            +"Institut für Medizinische Informatik"
+                            +i18n.getString("footer.imi")
                         }
                         +" & "
                         a(href = "https://www.ukm.de/institute/hygiene", target = "_blank") {
-                            +"Institut für Hygiene"
+                            +i18n.getString("footer.ukmHygiene")
                         }
                         +" Münster"
                     }
@@ -119,7 +121,7 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
 
 fun FlowContent.drawIndex(basexInfo: BasexInfo) {
     div(classes = "mb-5") {
-        +"Bitte nutzen Sie die Navigationsleiste oben, um zwischen den verschiedenen Funktionen zu navigieren!"
+        +i18n.getString("page.welcome.description")
     }
 
     div {
@@ -127,21 +129,21 @@ fun FlowContent.drawIndex(basexInfo: BasexInfo) {
             tr {
                 td {
                     attributes["colspan"] = "2"
-                    +"Aktuelle Einstellungen"
+                    +i18n.getString("page.welcome.currentSettings")
                 }
             }
             if (basexInfo is RestConnectionInfo) {
                 tr {
-                    td { +"URL: " }
+                    td { +"${i18n.getString("page.welcome.URL")}: " }
                     td { +basexInfo.serverUrl }
                 }
                 tr {
-                    td { +"Datenbank: " }
+                    td { +"${i18n.getString("page.welcome.database")}: " }
                     td { +basexInfo.databaseId }
                 }
             } else if (basexInfo is LocalBasexInfo) {
                 tr {
-                    td { +"Verzeichnis: " }
+                    td { +"${i18n.getString("page.welcome.directory")}: " }
                     td { +basexInfo.directory }
                 }
             }
@@ -155,7 +157,7 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
     drawInvalidateButton(lastUpdate, q)
 
     if (data.isEmpty()) {
-        +"Fallliste ist leer"
+        +i18n.getString("page.caselist.isEmpty")
         return
     }
 
@@ -164,7 +166,7 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
         thead {
             tr(classes = "sticky-tr") {
                 for (columnName in columnNames) {
-                    th(scope = ThScope.col) { +columnName }
+                    th(scope = ThScope.col) { +i18n.getString(columnName) }
                 }
             }
         }
@@ -183,11 +185,11 @@ private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
         form(classes = "form-inline", action = "invalidate-cache", method = FormMethod.post) {
             label {
                 title = lastUpdate
-                +"Teilbericht erstellt: ${LocalDateTime.parse(lastUpdate).toDifferenceFromNow()}"
+                +"${i18n.getString("page.other.reportAge")}: ${LocalDateTime.parse(lastUpdate).toDifferenceFromNow()}"
             }
             hiddenInput(name = "q") { value = q }
             button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
-                +"Neu erstellen"
+                +i18n.getString("page.other.createNewReport")
             }
         }
     }
@@ -201,7 +203,7 @@ fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String,
         for ((index, entry) in data.withIndex()) {
             tr {
                 th {
-                    span { +entry.title }
+                    span { +i18n.getString(entry.title) }
                 }
                 td {
                     span { +entry.data }
@@ -244,7 +246,7 @@ fun FlowContent.drawDiagrams(
             for ((germ, data) in data) {
                 div(classes = "col-3") {
                     style = "height: 400px;"
-                    drawBarChart("Anzahl $germ", data.mapKeys { it.key.toString() })
+                    drawBarChart("${i18n.getString("page.diagrams.numberOf")} $germ", data.mapKeys { it.key.toString() })
                 }
             }
 
@@ -269,7 +271,7 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
         input(classes = "form-control b-2 mr-sm-2", name = "year", type = InputType.number) {
             min = "2000"
             max = LocalDate.now().year.toString()
-            placeholder = "Jahr"
+            placeholder = i18n.getString("settingspanel.year")
             required = true
         }
         if (q != null) {
@@ -277,7 +279,7 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
         }
 
         button(type = ButtonType.submit, classes = "btn btn-light btn-mb-2") {
-            +"Bericht erstellen"
+            +i18n.getString("page.diagrams.createReport")
         }
     }
     form(action = "/statistic") {
@@ -298,23 +300,23 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
                     val teilberichteZuErstellen = GermType.values().map { it.germtype } -
                             cache.germCache.filter { it.created != null }.map { it.type }
                     span(classes = "text-muted") {
-                        +"Bericht erstellt: "
+                        +"${i18n.getString("page.diagrams.reportsCreated")}: "
                         +LocalDateTime.parse(cache.metadata.timeUpdated).toDifferenceFromNow()
                         if (teilberichteZuErstellen.isNotEmpty()) {
-                            +", Teilbericht(e) für ${teilberichteZuErstellen.joinToString()} müssen noch erzeugt werden."
+                            +", ${MessageFormat.format(i18n.getString("page.diagrams.openReports"), teilberichteZuErstellen.joinToString())}"
                         }
 
                     }
                 }
                 button(type = ButtonType.submit, classes = "btn btn-outline-danger btn-small") {
                     onClick = "window.deleteReport(this,'${xQueryParams.toJson()}')"
-                    +"delete"
+                    +i18n.getString("page.diagrams.delete")
                 }
             }
         }
 
         button(type = ButtonType.submit, classes = "btn btn-secondary mb-2") {
-            +"Diagramme erstellen"
+            +i18n.getString("page.diagrams.createDiagrams")
         }
     }
 }
@@ -324,38 +326,39 @@ fun LocalDateTime.toDifferenceFromNow(): String {
     val now = LocalDateTime.now()
     val years = ChronoUnit.YEARS.between(this, now)
     if (years == 1L) {
-        return "$years year ago"
+        MessageFormat.format(i18n.getString("timeDifference.yearAgo"), years)
+        return MessageFormat.format(i18n.getString("timeDifference.yearAgo"), years)
     } else if (years > 1) {
-        return "$years years ago"
+        return MessageFormat.format(i18n.getString("timeDifference.yearsAgo"), years)
     }
     val month = ChronoUnit.MONTHS.between(this, now)
     if (month == 1L) {
-        return "$month month ago"
+        return MessageFormat.format(i18n.getString("timeDifference.monthAgo"), month)
     } else if (month > 1) {
-        return "$month months ago"
+        return MessageFormat.format(i18n.getString("timeDifference.monthsAgo"), month)
     }
     val days = ChronoUnit.DAYS.between(this, now)
     if (days == 1L) {
-        return "$days day ago"
+        return MessageFormat.format(i18n.getString("timeDifference.dayAgo"), days)
     } else if (days > 1) {
-        return "$days days ago"
+        return MessageFormat.format(i18n.getString("timeDifference.daysAgo"), days)
     }
     val hours = ChronoUnit.HOURS.between(this, now)
     if (hours == 1L) {
-        return "$hours hour ago"
+        return MessageFormat.format(i18n.getString("timeDifference.hourAgo"), hours)
     } else if (hours > 1) {
-        return "$hours hours ago"
+        return MessageFormat.format(i18n.getString("timeDifference.hoursAgo"), hours)
     }
     val minutes = ChronoUnit.MINUTES.between(this, now)
     if (minutes == 1L) {
-        return "$minutes minute ago"
+        return MessageFormat.format(i18n.getString("timeDifference.minuteAgo"), minutes)
     } else if (minutes > 1) {
-        return "$minutes minutes ago"
+        return MessageFormat.format(i18n.getString("timeDifference.minutesAgo"), minutes)
     }
     val seconds = ChronoUnit.SECONDS.between(this, now)
     if (seconds == 1L) {
-        return "$seconds second ago"
+        return MessageFormat.format(i18n.getString("timeDifference.secondAgo"), seconds)
     }
 
-    return "$seconds seconds ago"
+    return MessageFormat.format(i18n.getString("timeDifference.secondsAgo"), seconds)
 }

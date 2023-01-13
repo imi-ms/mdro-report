@@ -23,20 +23,24 @@ import model.IBaseXClient
 import model.XQueryParams
 import mu.KotlinLogging
 import view.*
+import java.io.InputStream
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
+import java.util.*
 
 private val log = KotlinLogging.logger { }
 
 //private val mutex = Mutex()
 val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
+lateinit var i18n: ResourceBundle
 val ApplicationCall.xQueryParams: XQueryParams
     get() = this.attributes[xqueryparams]
 
 /**
  * @param serverMode do not block non-localhost connections
  */
-fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Application.() -> Unit {
+fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language: Locale): Application.() -> Unit {
+    i18n = ResourceBundle.getBundle("webappMessages", language)
     return {
         val cachingUtility = CachingUtility(baseXClient)
         install(Webjars)
@@ -123,7 +127,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
 
             get("/") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Willkommen" }
+                    header { +i18n.getString("page.welcome.heading") }
                     content { drawIndex(baseXClient.getInfo()) }
                 }
             }
@@ -164,7 +168,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                 val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(call.xQueryParams)
                 val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                    header { +"Krankenhauskennzahlen" }
+                    header { +i18n.getString("navigation.hospitalMetrics") }
                     content { drawOverviewTable(overviewContent!!, lastUpdate!!, q) }
                 }
             }
@@ -173,7 +177,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
                     val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                        header { +"$germ: Übersicht" }
+                        header { +"$germ: ${i18n.getString("navigation.overview")}" }
                         content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!, q) }
                     }
                 }
@@ -181,68 +185,68 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
                     val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
                     val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                        header { +"$germ: Fallliste" }
+                        header { +"$germ: ${i18n.getString("navigation.list")}" }
                         content { drawCaseList(germInfo.caseList!!, germInfo.created!!, q) }
                     }
                 }
             }
             get("MRGN/statistic") {
                 val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRGN)
-                val departments = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                val departments = germInfo.caseList!!.groupingBy { it["page.MRGN.caselist.department"]!! }
                     .eachCount().mapValues { it.value.toString() }
-                val probenart = germInfo.caseList!!.groupingBy { it["Probenart"]!! }
+                val probenart = germInfo.caseList!!.groupingBy { it["page.MRGN.caselist.sampleType"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Diagramme" }
+                    header { +i18n.getString("page.other.diagrams") }
                     content {
                         script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                        drawBarChart("MRGN Nachweis in den einzelnen Fachabteilungen", departments)
-                        drawBarChart("Anzahl der Probenarten", probenart)
+                        drawBarChart(i18n.getString("page.MRGN.diagrams.MRGNinDepartments"), departments)
+                        drawBarChart(i18n.getString("page.MRGN.diagrams.numberOfSampletypes"), probenart)
                     }
                 }
 
             }
             get("VRE/statistic") {
                 val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.VRE)
-                val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                val department = germInfo.caseList!!.groupingBy { it["page.VRE.caselist.department"]!! }
                     .eachCount().mapValues { it.value.toString() }
-                val probenart = germInfo.caseList!!.groupingBy { it["Probenart"]!! }
+                val probenart = germInfo.caseList!!.groupingBy { it["page.VRE.caselist.sampleType"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Diagramme" }
+                    header { +i18n.getString("page.other.diagrams") }
                     content {
                         script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
-                        drawBarChart("VRE Nachweis in den einzelnen Fachabteilungen", department)
-                        drawBarChart("Anzahl der Probenarten", probenart)
+                        drawBarChart(i18n.getString("page.VRE.diagrams.VREinDepartments"), department)
+                        drawBarChart(i18n.getString("page.VRE.diagrams.numberOfSampletypes"), probenart)
                     }
                 }
             }
             get("MRSA/statistic") {
                 val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRSA)
-                val department = germInfo.caseList!!.groupingBy { it["Fachabteilung zum Abnahmezeitpunkt"]!! }
+                val department = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.department"]!! }
                     .eachCount().mapValues { it.value.toString() }
-                    val probenart = germInfo.caseList!!.groupingBy { it["Probeart"]!! }
+                    val probenart = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.sampleType"]!! }
                         .eachCount().mapValues { it.value.toString() }
-                    val importedOrNosocomial = germInfo.caseList!!.groupingBy { it["nosokomial?"]!! }
+                    val importedOrNosocomial = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.nosocomial"]!! }
                         .eachCount().mapValues { it.value.toString() }
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +"Diagramme" }
+                        header { +i18n.getString("page.other.diagrams") }
                         content {
                             script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
                             div(classes = "container") {
                                 div(classes = "row") {
                                     style = "height: 400px;"
                                     div(classes = "col") {
-                                        drawBarChart("MRSA Nachweis in den einzelnen Fachabteilungen", department)
+                                        drawBarChart(i18n.getString("page.MRSA.diagrams.MRSAinDepartments"), department)
                                     }
                                 }
                                 div(classes = "row") {
                                     style = "height: 400px;"
                                     div(classes = "col-6") {
-                                        drawBarChart("Anzahl der Probenarten", probenart)
+                                        drawBarChart(i18n.getString("page.MRSA.diagrams.numberOfSamples"), probenart)
                                     }
                                     div(classes = "col-6") {
-                                        drawPieChart("Anzahl Import/Nosokomial", importedOrNosocomial)
+                                        drawPieChart(i18n.getString("page.MRSA.diagrams.numberNosocomialAndImported"), importedOrNosocomial)
                                     }
                                 }
                             }
@@ -306,9 +310,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false): Applica
             }
             get("/about") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Über" }
+                    header { +i18n.getString("navigation.about") }
                     content {
-                        +"Dies ist ein Proof-of-Concept zur automatischen Erstellung des ÖGD-Reports anhand der Integration von ORBIS, OPUS-L und SeqSphere in der internen BaseX-Zwischenschicht des Medics."
+                        +i18n.getString("page.about.info")
                     }
                 }
             }

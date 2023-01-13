@@ -1,5 +1,6 @@
 package view
 
+import de.uni_muenster.imi.oegd.webapp.i18n
 import kotlinx.html.*
 import model.OverviewEntry
 import model.XQueryParams
@@ -52,7 +53,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
         attributes["data-toggle"] = "modal"
         attributes["data-target"] = "#settings-modal"
         if (q_ != null) {
-            span(classes = "text-muted") { +"Jahr: " }
+            span(classes = "text-muted") { +"${i18n.getString("settingspanel.year")}: " }
             span(classes = "font-weight-bold") { +q_.year.toString() }
         }
     }
@@ -75,7 +76,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
                 div(classes = "modal-header") {
                     h5(classes = "modal-title") {
                         id = "settings-title"
-                        +"Einstellungen"
+                        +i18n.getString("settingspanel.heading")
                     }
                     button(classes = "close", type = ButtonType.button) {
                         attributes["data-dismiss"] = "modal"
@@ -91,7 +92,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
                         div(classes = "form-group") {
                             label {
                                 attributes["for"] = "inputYear"
-                                +"Jahr"
+                                +i18n.getString("settingspanel.year")
                             }
                             numberInput(name = "year", classes = "form-control") {
                                 id = "inputYear"
@@ -103,10 +104,10 @@ fun FlowContent.drawSettingsModal(q: String?) {
                         div(classes = "form-group") {
                             button(classes = "btn btn-light") {
                                 attributes["data-dismiss"] = "modal"
-                                +"Abbrechen"
+                                +i18n.getString("settingspanel.buttons.abort")
                             }
                             button(type = ButtonType.submit, classes = "btn btn-secondary ml-2") {
-                                +"Änderungen übernehmen"
+                                +i18n.getString("settingspanel.buttons.saveChanges")
                             }
                         }
                     }
@@ -119,7 +120,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
                         div(classes = "form-group") {
                             label {
                                 htmlFor = "inputCache"
-                                +"Report-Datei hochladen"
+                                +i18n.getString("settingspanel.uploadReport")
                             }
                             fileInput(classes = "form-control-file", name = "uploadedCache") {
                                 id = "inputCache"
@@ -127,10 +128,10 @@ fun FlowContent.drawSettingsModal(q: String?) {
                         }
                         div(classes = "form-group") {
                             button(type = ButtonType.submit, classes = "btn btn-secondary mt-2") {
-                                +"Report hochladen"
+                                +i18n.getString("settingspanel.buttons.uploadReport")
                             }
                             a(href = "/settings/downloadCache?q=$q", classes = "btn btn-secondary mt-2 ml-2") {
-                                +"Report herunterladen"
+                                +i18n.getString("settingspanel.buttons.downloadReport")
                             }
                         }
                     }

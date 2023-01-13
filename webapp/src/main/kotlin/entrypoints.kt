@@ -7,6 +7,7 @@ import io.ktor.server.netty.*
 import model.IBaseXClient
 import model.RestClient
 import mu.KotlinLogging
+import java.util.Locale
 
 
 private val log = KotlinLogging.logger { }
@@ -38,8 +39,8 @@ fun main(args: Array<String>) {
 /**
  * Create internal Netty server instance (standalone .jar deployment or inside JavaFX GUI)
  */
-fun createServer(baseXClient: IBaseXClient, port: Int = 8080) =
-    embeddedServer(Netty, host = "127.0.0.1", port = port, module = application(baseXClient))
+fun createServer(baseXClient: IBaseXClient, port: Int = 8080, locale: Locale = Locale.getDefault()) =
+    embeddedServer(Netty, host = "127.0.0.1", port = port, module = application(baseXClient, language = locale))
 
 /**
  * Entrypoint for deployment as .war file (Tomcat, ...)
@@ -54,7 +55,7 @@ fun Application.warEntrypoint() {
             database = property("database").getString()
         )
     }
-    application(baseXClient, serverMode = true)()
+    application(baseXClient, serverMode = true, language = Locale.getDefault())()
 }
 
 
