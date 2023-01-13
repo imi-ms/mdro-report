@@ -26,6 +26,7 @@ import view.*
 import java.io.InputStream
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
+import java.text.MessageFormat
 import java.util.*
 
 private val log = KotlinLogging.logger { }
@@ -51,7 +52,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     template = LayoutTemplate(call.request.uri, call.parameters["q"])
                 ) {
                     header { +"404 Not Found" }
-                    content { +"No route defined for URL: ${call.request.uri}" }
+                    content { +"${i18n.getString("page.error.notFound")} ${call.request.uri}" }
                 }
             }
             exception<Throwable> { call, cause ->
@@ -64,7 +65,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     content {
                         +"${cause.message}"
                         br
-                        +"Please retry your query with different parameters!"
+                        +i18n.getString("page.error.serverError")
                         br
                         pre { +cause.stackTraceToString() }
 
@@ -83,7 +84,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     val ip = InetAddress.getByName(call.request.local.remoteHost)
                     if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
                         call.respondText(
-                            "The request origin '$ip' is not a localhost address.",
+                            MessageFormat.format(
+                                i18n.getString("page.error.noLocalhost"),
+                                ip
+                            ),
                             status = HttpStatusCode.Unauthorized
                         )
                         this.finish()
@@ -113,9 +117,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val q = call.parameters["q"]
                 if (q.isNullOrBlank() || q == "null") {
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                        header { +"Anfragekonfiguration fehlt" }
+                        header { +i18n.getString("page.missingConfig.heading") }
                         content {
-                            +"Bitte nutzen Sie die Einstellungsleiste, um die Konfiguration der Anfrage durchzuführen."
+                            +i18n.getString("page.missingConfig.text")
                             script(type = "text/javascript") {
                                 unsafe { +"$(function(){ $('#settings-modal').modal({focus:true}) });" }
                             }
@@ -166,7 +170,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             }
             get("global/overview") {
                 val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(call.xQueryParams)
-                val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
+                val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                     header { +i18n.getString("navigation.hospitalMetrics") }
                     content { drawOverviewTable(overviewContent!!, lastUpdate!!, q) }
@@ -175,7 +179,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             for (germ in GermType.values()) {
                 get("$germ/overview") {
                     val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
-                    val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
+                    val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: ${i18n.getString("navigation.overview")}" }
                         content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!, q) }
@@ -183,7 +187,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 }
                 get("$germ/list") {
                     val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
-                    val q = call.parameters["q"] ?: error("Query-Parameter 'q' is missing!")
+                    val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: ${i18n.getString("navigation.list")}" }
                         content { drawCaseList(germInfo.caseList!!, germInfo.created!!, q) }
@@ -264,11 +268,11 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "4MRGN" in it.title }!!.data }.toMap()
                 val mrsaTotalNumberByYear =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA) }
-                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "Gesamtanzahl aller" in it.title }!!.data }
+                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "page.MRSA.overview.numberOfCases" in it.title }!!.data }
                         .toMap()
                 val vreTotalNumberByYear =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE) }
-                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "Anzahl der gesamten E.faecalis Fälle (resistente und sensible)" in it.title }!!.data }
+                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "page.VRE.overview.numberOfEFaecalisOverall" in it.title }!!.data }
                         .toMap() //TODO
                 val data = mapOf(
                     "3MRGN" to mrgn3TotalNumberByYear,
@@ -278,7 +282,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 )
 
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +"Diagramme" }
+                    header { +i18n.getString("page.other.diagrams") }
                     content {
                         if (yearsEnabled.isNotEmpty()) {
                             drawDiagrams(data, years, yearsEnabled, call.parameters["q"])
