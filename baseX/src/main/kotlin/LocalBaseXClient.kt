@@ -12,9 +12,14 @@ import java.nio.file.Files
  */
 class LocalBaseXClient(val directory: File) : IBaseXClient {
 
-    private val context: Context = Context()
+    private var context: Context
 
     init {
+        val tmpdir = Files.createTempDirectory("basextempdir").toFile().absolutePath
+
+        System.setProperty("org.basex.DBPATH", tmpdir)
+
+        context = Context(false)
         CreateDB("LocalDB").execute(context)
         processDirectory(directory, context)
         Optimize().execute(context)
