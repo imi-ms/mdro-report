@@ -33,15 +33,15 @@ object DataProvider {
         return parseCsv(
             mrsaList,
             listOf(
-                "FallID",
-                "Abnahmezeitpunkt",
-                "Probeart",
-                "Infektion",
-                "nosokomial?",
-                "Einsender",
-                "Fachabteilung zum Abnahmezeitpunkt",
-                "Spa",
-                "ClusterType"
+                "page.MRSA.caselist.caseID",
+                "page.MRSA.caselist.samplingDate",
+                "page.MRSA.caselist.sampleType",
+                "page.MRSA.caselist.infection",
+                "page.MRSA.caselist.nosocomial",
+                "page.MRSA.caselist.sender",
+                "page.MRSA.caselist.department",
+                "page.MRSA.caselist.spa",
+                "page.MRSA.caselist.clustertype"
             )
         )
     }
@@ -51,20 +51,20 @@ object DataProvider {
         return parseCsv(
             mrgnList,
             listOf(
-                "FallID",
-                "Abnahmezeitpunkt",
-                "Probenart",
-                "Einsender",
-                "Fachabteilung zum Abnahmezeitpunkt",
-                "Erreger",
-                "Klasse",
-                "Piperacillin und Tazobactam Ergebnis",
-                "Cefotaxime Ergebnis",
-                "cefTAZidime Ergebnis",
-                "Cefepime Ergebnis",
-                "Meropenem Ergebnis",
-                "Imipenem Ergebnis",
-                "Ciprofloxacin Ergebnis"
+                "page.MRGN.caselist.caseID",
+                "page.MRGN.caselist.samplingDate",
+                "page.MRGN.caselist.sampleType",
+                "page.MRGN.caselist.sender",
+                "page.MRGN.caselist.department",
+                "page.MRGN.caselist.pathogen",
+                "page.MRGN.caselist.class",
+                "page.MRGN.caselist.piperacillinAndTazobactam",
+                "page.MRGN.caselist.cefotaxime",
+                "page.MRGN.caselist.cefTAZidime",
+                "page.MRGN.caselist.cefepime",
+                "page.MRGN.caselist.meropenem",
+                "page.MRGN.caselist.imipenem",
+                "page.MRGN.caselist.ciprofloxacin"
             )
         )
     }
@@ -74,17 +74,17 @@ object DataProvider {
         return parseCsv(
             vreList,
             listOf(
-                "FallID",
-                "Abnahmezeitpunkt",
-                "Probenart",
-                "Einsender",
-                "Fachabteilung zum Abnahmezeitpunkt",
-                "Erreger",
-                "Linezolid Ergebnis",
-                "Tigecylin Ergebnis",
-                "Vancomycin Ergebnis",
-                "Teicoplanin Ergebnis",
-                "Quinupristin und Dalfopristin Ergebnis"
+                "page.VRE.caselist.caseID",
+                "page.VRE.caselist.samplingDate",
+                "page.VRE.caselist.sampleType",
+                "page.VRE.caselist.sender",
+                "page.VRE.caselist.department",
+                "page.VRE.caselist.pathogen",
+                "page.VRE.caselist.linezolid",
+                "page.VRE.caselist.tigecylin",
+                "page.VRE.caselist.vancomycin",
+                "page.VRE.caselist.teicoplanin",
+                "page.VRE.caselist.quinupristinAndDalfopristin"
             )
         )
     }
@@ -95,13 +95,13 @@ object DataProvider {
         return GlobalInfo(
             listOf(
                 createBaseXOverviewEntry(
-                    "stationäre Fälle gesamt pro Erfassungszeitraum",
+                    "page.hospitalMetrics.cases",
                     BaseXQueries.Fallzahlen,
                     baseXClient,
                     xQueryParams
                 ),
                 createBaseXOverviewEntry(
-                    "stationäre Falltage gesamt pro Erfassungszeitraum",
+                    "page.hospitalMetrics.days",
                     BaseXQueries.Falltage,
                     baseXClient,
                     xQueryParams
@@ -121,31 +121,31 @@ object DataProvider {
 
         return listOf(
             createBaseXOverviewEntry(
-                "Anzahl der Nasenabstriche bzw. kombinierte Nasen/Rachenabstiche pro Erfassungszeitraum",
+                "page.MRSA.overview.nasalSwabs",
                 BaseXQueries.NasenRachenAbstriche,
                 baseXClient, xQueryParams
             ),
             createBaseXOverviewEntry(
-                "Anzahl aller S. aureus aus Blutkulturen (MSSA und MRSA)",
+                "page.MRSA.overview.bloodSAureus",
                 BaseXQueries.MSSABK,
                 baseXClient,
                 xQueryParams
             ),
             createBaseXOverviewEntry(
-                "Anzahl MRSA aus Blutkulturen",
+                "page.MRSA.overview.bloodMRSA",
                 BaseXQueries.MRSABK,
                 baseXClient,
                 xQueryParams
             ),
             OverviewEntry(
-                "Gesamtanzahl aller Fälle mit Methicillin Resistenten S. aureus (MRSA)",
+                "page.MRSA.overview.numberOfCases",
                 BaseXQueries.MRSA,
                 "$mrsaTotal"
             ),
-            OverviewEntry("Anzahl der importierten MRSA Fälle", BaseXQueries.MRSA, "$mrsaImported"),
-            OverviewEntry("Anzahl nosokomialer MRSA Fälle", BaseXQueries.MRSA, "$mrsaNosokomial"),
+            OverviewEntry("page.MRSA.overview.importedMRSA", BaseXQueries.MRSA, "$mrsaImported"),
+            OverviewEntry("page.MRSA.overview.nosocomialMRSA", BaseXQueries.MRSA, "$mrsaNosokomial"),
             createBaseXOverviewEntry(
-                "stationäre Falltage von MRSA-Fällen",
+                "page.MRSA.overview.inpatientDays",
                 BaseXQueries.FalltageMRSA,
                 baseXClient,
                 xQueryParams
@@ -162,8 +162,8 @@ object DataProvider {
         val mrgn4Cases = DataProcessor.countMRGN4Cases(caseList)
 
         return listOf(
-            OverviewEntry("Anzahl der 3MRGN Fälle", BaseXQueries.MRGN, "$mrgn3Cases"),
-            OverviewEntry("Anzahl der 4MRGN Fälle", BaseXQueries.MRGN, "$mrgn4Cases"),
+            OverviewEntry("page.MRGN.overview.numberOf3MRGN", BaseXQueries.MRGN, "$mrgn3Cases"),
+            OverviewEntry("page.MRGN.overview.numberOf4MRGN", BaseXQueries.MRGN, "$mrgn4Cases"),
         )
     }
 
@@ -179,21 +179,21 @@ object DataProvider {
         val numOtherCases = DataProcessor.countOtherCases(caseList)
 
         return listOf(
-            entry("Anzahl der gesamten E.faecalis Fälle (resistente und sensible)", BaseXQueries.AnzahlEFaecalis),
-            OverviewEntry("Anzahl der VRE E.faecalis Fälle", BaseXQueries.VRE, "$numEfaecalisResistant"),
+            entry("page.VRE.overview.numberOfEFaecalisOverall", BaseXQueries.AnzahlEFaecalis),
+            OverviewEntry("page.VRE.overview.numberOfVREEFaecalis", BaseXQueries.VRE, "$numEfaecalisResistant"),
             OverviewEntry(
-                "Anzahl der gesamten E.faecium Fälle (resistente und sensible)",
+                "page.VRE.overview.numberOfEFaeciumOverall",
                 BaseXQueries.VRE,
                 "$numEfaeciumTotal"
             ),
-            OverviewEntry("Anzahl der VRE E.faecium Fälle", BaseXQueries.VRE, "$numEfaeciumResistant"),
-            OverviewEntry("Anzahl sonstiger VRE Fälle", BaseXQueries.VRE, "$numOtherCases"),
+            OverviewEntry("page.VRE.overview.numberOfVREEFaecium", BaseXQueries.VRE, "$numEfaeciumResistant"),
+            OverviewEntry("page.VRE.overview.otherVRE", BaseXQueries.VRE, "$numOtherCases"),
             entry(
-                "Anzahl E.faecium Fälle (inkl. Vancomycin empfindliche und resistente Isolate) in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)",
+                "page.VRE.overview.numberEFaeciumComplete",
                 BaseXQueries.EfaeciumBK
             ),
             entry(
-                "Anzahl der VRE-E.faecium Fälle in Blutkulturen (Angabe nur einer 1 Kultur pro Patient)",
+                "page.VRE.overview.numberOfVREEFaeciumBlood",
                 BaseXQueries.VREBK
             )
         )
