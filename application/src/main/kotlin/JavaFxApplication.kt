@@ -6,7 +6,6 @@ import de.uni_muenster.imi.oegd.webapp.createServer
 import io.ktor.server.netty.*
 import javafx.application.Application
 import javafx.application.Platform
-import javafx.beans.value.ChangeListener
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.concurrent.Worker
@@ -99,6 +98,8 @@ class JavaFxApplication : Application() {
         }
 
         (page.lookup("#button_confirm") as Button).onAction = EventHandler {
+            triggerLoading(page)
+
             val basex: IBaseXClient
             if (page.find<RadioButton>("#radio_basex").isSelected) {
                 basex = RestClient(
@@ -107,7 +108,29 @@ class JavaFxApplication : Application() {
                     page.find<TextField>("#username").text,
                     page.find<PasswordField>("#password").text
                 )
-                if (!checkBaseXConnection(basex, i18n)) return@EventHandler
+
+                val task: Task<String> = object: Task<String>() {
+                    override fun call(): String {
+                        return runBlocking { basex.executeXQuery("\"Test\"") }
+                    }
+
+                    override fun succeeded() {
+                        triggerLoading(page)
+                        val queryResult = this.value
+                        if (queryResult != "Test") {
+                            Alert(Alert.AlertType.ERROR).apply {
+                                headerText = i18n.getString("errorBaseXConnection")
+                                contentText = queryResult
+                            }.showAndWait()
+                        } else {
+                            startServer(basex, primaryStage)
+                        }
+                    }
+
+                }
+
+                Thread(task).start()
+
             } else {
                 if (directory == null) {
                     Alert(Alert.AlertType.ERROR, i18n.getString("errorNoFolderSelected")).showAndWait()
@@ -116,6 +139,7 @@ class JavaFxApplication : Application() {
 
                 try {
                     basex = LocalBaseXClient(directory!!)
+                    startServer(basex, primaryStage)
                 } catch (e: Exception) {
                     e.printStackTrace()
                     Alert(Alert.AlertType.ERROR).apply {
@@ -125,10 +149,7 @@ class JavaFxApplication : Application() {
                     stop()
                 }
             }
-            server = createServer(basex, webappPort, language.locale)
-            server!!.start()
 
-            startWebView(primaryStage)
         }
 
         page.find<Button>("#button_cancel").onAction = EventHandler {
@@ -136,17 +157,33 @@ class JavaFxApplication : Application() {
         }
     }
 
-    private fun checkBaseXConnection(basex: IBaseXClient, i18n: ResourceBundle): Boolean {
-        try {
-            assert("Test" == runBlocking { basex.executeXQuery("\"Test\"") })
-        } catch (e: Exception) {
-            Alert(Alert.AlertType.ERROR).apply {
-                headerText = i18n.getString("errorBaseXConnection")
-                contentText = "$e"
-            }.showAndWait()
-            return false
+    private fun startServer(basex: IBaseXClient, primaryStage: Stage) {
+        server = createServer(basex, webappPort, language.locale)
+        server!!.start()
+
+        startWebView(primaryStage)
+    }
+
+    private fun triggerLoading(page: Parent) {
+        page.find<ProgressIndicator>("#loading_spinner").apply {
+            isVisible = !isVisible
         }
-        return true
+
+        page.find<Button>("#button_confirm").apply {
+            isDisable = !isDisable
+        }
+
+        page.find<Button>("#button_cancel").apply {
+            isDisable = !isDisable
+        }
+
+        page.find<ComboBox<Any>>("#language_comboBox").apply {
+            isDisable = !isDisable
+        }
+
+        page.find<RadioButton>("#radio_file").apply {
+            isDisable = !isDisable
+        }
     }
 
 
