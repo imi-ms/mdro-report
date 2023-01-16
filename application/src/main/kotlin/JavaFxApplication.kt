@@ -98,10 +98,10 @@ class JavaFxApplication : Application() {
         }
 
         (page.lookup("#button_confirm") as Button).onAction = EventHandler {
-            triggerLoading(page)
-
             val basex: IBaseXClient
             if (page.find<RadioButton>("#radio_basex").isSelected) {
+                triggerLoading(page)
+
                 basex = RestClient(
                     page.find<TextField>("#server").text,
                     page.find<TextField>("#database").text,
