@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ButtonBar?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.PasswordField?>
-<?import javafx.scene.control.ProgressIndicator?>
-<?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.Separator?>
-<?import javafx.scene.control.TextField?>
-<?import javafx.scene.control.ToggleGroup?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
-<?import javafx.scene.layout.VBox?>
-
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <VBox id="scene" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1">
     <children>
       <GridPane>
@@ -29,7 +15,8 @@
          </rowConstraints>
          <children>
             <Label text="%label.language" />
-            <ComboBox id="language_comboBox" prefHeight="28.0" prefWidth="225.0" GridPane.columnIndex="1" />
+            <ComboBox id="language_comboBox" prefHeight="28.0" prefWidth="225.0" GridPane.columnIndex="1"
+                      styleClass="disabled_while_loading"/>
          </children>
          <padding>
             <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -39,12 +26,13 @@
          </VBox.margin>
       </GridPane>
       <Separator />
-        <RadioButton id="radio_basex" fx:id="radio_basex" mnemonicParsing="false" selected="true" text="%label.connectToServer" VBox.vgrow="ALWAYS">
+        <RadioButton id="radio_basex" fx:id="radio_basex" mnemonicParsing="false" selected="true"
+                     text="%label.connectToServer" VBox.vgrow="ALWAYS" styleClass="disabled_while_loading">
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
             </padding>
             <toggleGroup>
-                <ToggleGroup fx:id="group1" />
+                <ToggleGroup fx:id="group1"/>
             </toggleGroup>
         </RadioButton>
       <HBox alignment="CENTER_LEFT" prefHeight="150.0" prefWidth="250.0">
@@ -62,13 +50,17 @@
                   </rowConstraints>
                   <children>
                       <Label text="%label.serverUrl" />
-                      <TextField id="server" text="https://basex.ukmuenster.de/rest" GridPane.columnIndex="1" GridPane.vgrow="ALWAYS" />
+                      <TextField id="server" text="https://basex.ukmuenster.de/rest" GridPane.columnIndex="1"
+                                 GridPane.vgrow="ALWAYS" styleClass="disabled_while_loading"/>
                       <Label text="%label.username" GridPane.rowIndex="1" />
-                      <TextField id="username" text="oehm" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                      <TextField id="username" text="oehm" GridPane.columnIndex="1" GridPane.rowIndex="1"
+                                 styleClass="disabled_while_loading"/>
                       <Label text="%label.password" GridPane.rowIndex="2" />
-                      <PasswordField id="password" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                      <PasswordField id="password" GridPane.columnIndex="1" GridPane.rowIndex="2"
+                                     styleClass="disabled_while_loading"/>
                       <Label text="%label.database" GridPane.rowIndex="3" />
-                      <TextField id="database" text="2021" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                      <TextField id="database" text="2021" GridPane.columnIndex="1" GridPane.rowIndex="3"
+                                 styleClass="disabled_while_loading"/>
                   </children>
                   <padding>
                       <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
@@ -82,12 +74,13 @@
          </children>
       </HBox>
         <Separator />
-        <RadioButton id="radio_file" fx:id="radio_file" mnemonicParsing="false" text="%label.createLocalServer" toggleGroup="$group1" VBox.vgrow="ALWAYS">
+        <RadioButton id="radio_file" fx:id="radio_file" mnemonicParsing="false" text="%label.createLocalServer"
+                     toggleGroup="$group1" VBox.vgrow="ALWAYS" styleClass="disabled_while_loading">
             <VBox.margin>
-                <Insets />
+                <Insets/>
             </VBox.margin>
             <padding>
-                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
             </padding>
         </RadioButton>
         <HBox disable="${! radio_file.selected}" spacing="5.0">
@@ -108,8 +101,10 @@
         </HBox>
         <ButtonBar id="button_bar" prefHeight="53.0">
             <buttons>
-                <Button id="button_cancel" mnemonicParsing="false" text="%button.abort" />
-                <Button id="button_confirm" defaultButton="true" mnemonicParsing="false" text="%button.start" />
+                <Button id="button_cancel" mnemonicParsing="false" text="%button.abort"
+                        styleClass="disabled_while_loading"/>
+                <Button id="button_confirm" defaultButton="true" mnemonicParsing="false" text="%button.start"
+                        styleClass="disabled_while_loading"/>
             </buttons>
             <VBox.margin>
                 <Insets left="20.0" right="20.0" />

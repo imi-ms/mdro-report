@@ -6,6 +6,7 @@ import de.uni_muenster.imi.oegd.webapp.createServer
 import io.ktor.server.netty.*
 import javafx.application.Application
 import javafx.application.Platform
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.collections.FXCollections
 import javafx.concurrent.Task
 import javafx.concurrent.Worker
@@ -50,11 +51,13 @@ class Main {
 @Suppress("UNCHECKED_CAST")
 fun <T : javafx.scene.Node> javafx.scene.Node.find(cssSelector: String) = this.lookup(cssSelector) as T
 
+
 class JavaFxApplication : Application() {
     private val webappPort = findOpenPortInRange(1024..49151) ?: error("Cannot find free port for internal webserver!")
     private var server: NettyApplicationEngine? = null
     private var directory: File? = null
-    private var language: LANGUAGE = LANGUAGE.values().find { it.locale.language == Locale.getDefault().language } ?: LANGUAGE.ENGLISH
+    private var language: LANGUAGE =
+        LANGUAGE.values().find { it.locale.language == Locale.getDefault().language } ?: LANGUAGE.ENGLISH
     private lateinit var i18n: ResourceBundle
 
     override fun start(primaryStage: Stage) {
@@ -69,25 +72,32 @@ class JavaFxApplication : Application() {
         primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 
-        page.find<ComboBox<Any>>("#language_comboBox").apply {
+        val loadingProperty = SimpleBooleanProperty(false)
+        page.lookupAll(".disabled_while_loading").forEach { it.disableProperty().bind(loadingProperty) }
+        page.find<ProgressIndicator>("#loading_spinner").visibleProperty().bind(loadingProperty)
 
-            items = FXCollections.observableArrayList<Any>().apply {
-                add(createImageLabel(i18n.getString(LANGUAGE.GERMAN.languageCode), LANGUAGE.GERMAN.imgPath))
-                add(createImageLabel(i18n.getString(LANGUAGE.ENGLISH.languageCode), LANGUAGE.ENGLISH.imgPath))
-            }
-
-            value = createImageLabel(i18n.getString(language.languageCode), language.imgPath).apply {
-                style = "-fx-text-fill: black"
-            }
-
-            selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                run {
-                    language = LANGUAGE.values().find { i18n.getString(it.languageCode) == ((newValue as Label).text) }
-                        ?: LANGUAGE.ENGLISH
-                    drawStartDialog(primaryStage)
+        page.find<ComboBox<LANGUAGE>>("#language_comboBox").apply {
+            items = FXCollections.observableArrayList(*LANGUAGE.values())
+            setCellFactory { _ ->
+                object : ListCell<LANGUAGE>() {
+                    override fun updateItem(item: LANGUAGE?, empty: Boolean) {
+                        super.updateItem(item, empty)
+                        graphic = if (item != null && !empty) {
+                            createImageLabel(i18n.getString(item.languageCode), item.imgPath)
+                        } else {
+                            null
+                        }
+                    }
                 }
             }
+            value = language
+            buttonCell = cellFactory.call(null)
+            selectionModel.selectedItemProperty().addListener { _, _, newValue ->
+                language = newValue ?: LANGUAGE.ENGLISH
+                drawStartDialog(primaryStage)
+            }
         }
+
 
         page.find<Button>("#button_file").onAction = EventHandler {
             val directoryChooser = DirectoryChooser()
@@ -96,11 +106,10 @@ class JavaFxApplication : Application() {
 
             page.find<Label>("#label_file").text = directory?.absolutePath ?: i18n.getString("noDirectorySelected")
         }
-
-        (page.lookup("#button_confirm") as Button).onAction = EventHandler {
+        page.find<Button>("#button_confirm").onAction = EventHandler {
             val basex: IBaseXClient
             if (page.find<RadioButton>("#radio_basex").isSelected) {
-                triggerLoading(page)
+                loadingProperty.set(true)
 
                 basex = RestClient(
                     page.find<TextField>("#server").text,
@@ -109,13 +118,12 @@ class JavaFxApplication : Application() {
                     page.find<PasswordField>("#password").text
                 )
 
-                val task: Task<String> = object: Task<String>() {
+                val task: Task<String> = object : Task<String>() {
                     override fun call(): String {
                         return runBlocking { basex.executeXQuery("\"Test\"") }
                     }
 
                     override fun succeeded() {
-                        triggerLoading(page)
                         val queryResult = this.value
                         if (queryResult != "Test") {
                             Alert(Alert.AlertType.ERROR).apply {
@@ -127,6 +135,9 @@ class JavaFxApplication : Application() {
                         }
                     }
 
+                    override fun done() {
+                        loadingProperty.set(false)
+                    }
                 }
 
                 Thread(task).start()
@@ -163,29 +174,6 @@ class JavaFxApplication : Application() {
 
         startWebView(primaryStage)
     }
-
-    private fun triggerLoading(page: Parent) {
-        page.find<ProgressIndicator>("#loading_spinner").apply {
-            isVisible = !isVisible
-        }
-
-        page.find<Button>("#button_confirm").apply {
-            isDisable = !isDisable
-        }
-
-        page.find<Button>("#button_cancel").apply {
-            isDisable = !isDisable
-        }
-
-        page.find<ComboBox<Any>>("#language_comboBox").apply {
-            isDisable = !isDisable
-        }
-
-        page.find<RadioButton>("#radio_file").apply {
-            isDisable = !isDisable
-        }
-    }
-
 
     override fun stop(): Nothing {
         super.stop()
@@ -256,6 +244,7 @@ class JavaFxApplication : Application() {
     }
 
     private fun createImageLabel(label: String, imgPath: String): Label = Label(label).apply {
+        style = "-fx-text-fill: black"
         graphic = ImageView(Image(imgPath)).apply {
             fitWidth = 21.6
             fitHeight = 21.6
