@@ -18,13 +18,13 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.redundent:kotlin-xml-builder:1.7.4")
+    implementation("org.redundent:kotlin-xml-builder:1.8.0")
 }
 
 tasks {
     shadowJar {
         manifest {
-            attributes(Pair("Main-Class", "de.uni_muenster.imi.oegd.testdataGenerator.Main"))
+            attributes("Main-Class" to "de.uni_muenster.imi.oegd.testdataGenerator.Main")
         }
         archiveFileName.set("MDTestdataGenerator.jar")
     }
