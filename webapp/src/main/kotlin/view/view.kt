@@ -255,18 +255,6 @@ fun FlowContent.drawDiagrams(
 }
 
 fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
-    script(type = "text/javascript") {
-        unsafe {
-            +"window.deleteReport = function(button,xQueryParams) {"
-            +"  button.disabled=true;"
-            +"  var formData=new FormData();"
-            +"  formData.append('toDelete', xQueryParams);"
-            +"  fetch('statistic/deleteReport', {method: 'POST', body: formData})"
-            +"      .then(res => window.location.reload());"
-            +"  return false;"
-            +"}"
-        }
-    }
     form(classes = "form-inline", method = FormMethod.post, action = "/statistic/create") {
         input(classes = "form-control mb-2 mr-sm-2", name = "year", type = InputType.number) {
             min = "2000"
@@ -308,8 +296,8 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
 
                     }
                 }
-                button(classes = "btn btn-outline-danger btn-sm ms-2") {
-                    onClick = "window.deleteReport(this,'${xQueryParams.toJson()}')"
+                button(classes = "btn btn-outline-danger btn-sm ms-2", type = ButtonType.submit) {
+                    form = "deleteReportForm_${xQueryParams.year}"
                     +i18n.getString("page.diagrams.delete")
                 }
             }
@@ -319,6 +307,19 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
             +i18n.getString("page.diagrams.createDiagrams")
         }
     }
+
+    for (cache in cacheData) {
+        form (action = "/statistic/deleteReport") {
+            id = "deleteReportForm_${cache.metadata.xQueryParams.year}"
+            method = FormMethod.post
+            input (type = InputType.hidden) {
+                name = "year"
+                value = cache.metadata.xQueryParams.year.toString()
+            }
+        }
+    }
+
+
 }
 
 

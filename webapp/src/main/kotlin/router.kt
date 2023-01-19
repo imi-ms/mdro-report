@@ -305,7 +305,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             }
             post("/statistic/deleteReport") {
                 val params = call.receiveParameters()
-                val xQueryParams = Json.decodeFromString<XQueryParams>(params["toDelete"]!!)
+                val xQueryParams = XQueryParams(params["year"]!!.toInt())
                 cachingUtility.cacheProvider.clearCache(xQueryParams)
                 call.respondRedirect {
                     path("/statistic")
