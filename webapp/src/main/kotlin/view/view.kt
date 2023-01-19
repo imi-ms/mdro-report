@@ -23,17 +23,17 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
             link(rel = "stylesheet", href = "/webjars/bootstrap-icons/font/bootstrap-icons.css")
             link(rel = "stylesheet", href = "/static/custom-styles.css")
             script(src = "/webjars/jquery/dist/jquery.min.js") {}
-            script(src = "/webjars/bootstrap/dist/js/bootstrap.min.js") {}
+            script(src = "/webjars/bootstrap/dist/js/bootstrap.bundle.min.js") {}
         }
         body {
             div(classes = "wrapper") {
-                nav(classes = "navbar navbar-expand-md navbar-light bg-light") {
+                nav(classes = "navbar navbar-expand-md navbar-light bg-light px-2") {
                     a(classes = "navbar-brand", href = "/?q=$q") {
                         +"MRE-Report"
                     }
                     button(classes = "navbar-toggler") {
-                        attributes["data-toggle"] = "collapse"
-                        attributes["data-target"] = "#navbarNav"
+                        attributes["data-bs-toggle"] = "collapse"
+                        attributes["data-bs-target"] = "#navbarNav"
                         attributes["aria-controls"] = "navbarNav"
                         attributes["aria-expanded"] = "false"
                         attributes["aria-label"] = "Toggle navigation"
@@ -52,7 +52,7 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                                     a(classes = "nav-link dropdown-toggle", href = "#") {
                                         id = "navbar$germ"
                                         role = "button"
-                                        attributes["data-toggle"] = "dropdown"
+                                        attributes["data-bs-toggle"] = "dropdown"
                                         attributes["aria-expanded"] = "false"
                                         +germ
                                     }
@@ -268,7 +268,7 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
         }
     }
     form(classes = "form-inline", method = FormMethod.post, action = "/statistic/create") {
-        input(classes = "form-control b-2 mr-sm-2", name = "year", type = InputType.number) {
+        input(classes = "form-control mb-2 mr-sm-2", name = "year", type = InputType.number) {
             min = "2000"
             max = LocalDate.now().year.toString()
             placeholder = i18n.getString("settingspanel.year")
@@ -278,7 +278,7 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
             hiddenInput(name = "q") { value = q }
         }
 
-        button(type = ButtonType.submit, classes = "btn btn-light btn-mb-2") {
+        button(type = ButtonType.submit, classes = "btn btn-light mb-2") {
             +i18n.getString("page.diagrams.createReport")
         }
     }
@@ -288,7 +288,7 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
         }
         for (cache in cacheData) {
             val xQueryParams = cache.metadata.xQueryParams
-            div(classes = "form-check") {
+            div(classes = "form-check mb-2") {
                 checkBoxInput(classes = "form-check-input", name = "year[]") {
                     id = "q${xQueryParams.year}"
                     value = "${xQueryParams.year}"
@@ -299,7 +299,7 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
                     +xQueryParams.year.toString()
                     val teilberichteZuErstellen = GermType.values().map { it.germtype } -
                             cache.germCache.filter { it.created != null }.map { it.type }
-                    span(classes = "text-muted") {
+                    span(classes = "text-muted ms-1") {
                         +"${i18n.getString("page.diagrams.reportsCreated")}: "
                         +LocalDateTime.parse(cache.metadata.timeUpdated).toDifferenceFromNow()
                         if (teilberichteZuErstellen.isNotEmpty()) {
@@ -308,7 +308,7 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
 
                     }
                 }
-                button(type = ButtonType.submit, classes = "btn btn-outline-danger btn-small") {
+                button(classes = "btn btn-outline-danger btn-sm ms-2") {
                     onClick = "window.deleteReport(this,'${xQueryParams.toJson()}')"
                     +i18n.getString("page.diagrams.delete")
                 }

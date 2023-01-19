@@ -8,8 +8,8 @@ import java.time.LocalDate
 
 fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
     button(classes = "btn btn-link text-muted") {
-        attributes["data-toggle"] = "modal"
-        attributes["data-target"] = "#query-modal-$index"
+        attributes["data-bs-toggle"] = "modal"
+        attributes["data-bs-target"] = "#query-modal-$index"
         i {
             attributes["class"] = "bi bi-info-circle"
         }
@@ -26,15 +26,11 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
                 div(classes = "modal-header") {
                     h5(classes = "modal-title") {
                         id = "query-modal-$index-title"
-                        +"${entry.title} - Query"
+                        +"${i18n.getString(entry.title)} - Query"
                     }
-                    button(classes = "close", type = ButtonType.button) {
-                        attributes["data-dismiss"] = "modal"
+                    button(classes = "btn-close", type = ButtonType.button) {
+                        attributes["data-bs-dismiss"] = "modal"
                         attributes["aria-label"] = "close"
-                        span {
-                            attributes["aria-hidden"] = "true"
-                            +"×"
-                        }
                     }
                 }
                 div(classes = "modal-body modal-query") {
@@ -50,8 +46,8 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
 fun FlowContent.drawSettingsModal(q: String?) {
     val q_ = XQueryParams.fromJson(q)
     a(classes = "navbar-text") {
-        attributes["data-toggle"] = "modal"
-        attributes["data-target"] = "#settings-modal"
+        attributes["data-bs-toggle"] = "modal"
+        attributes["data-bs-target"] = "#settings-modal"
         if (q_ != null) {
             span(classes = "text-muted") { +"${i18n.getString("settingspanel.year")}: " }
             span(classes = "font-weight-bold") { +q_.year.toString() }
@@ -59,8 +55,8 @@ fun FlowContent.drawSettingsModal(q: String?) {
     }
 
     button(classes = "btn") {
-        attributes["data-toggle"] = "modal"
-        attributes["data-target"] = "#settings-modal"
+        attributes["data-bs-toggle"] = "modal"
+        attributes["data-bs-target"] = "#settings-modal"
         i(classes = "bi bi-gear-fill") { }
     }
 
@@ -73,23 +69,19 @@ fun FlowContent.drawSettingsModal(q: String?) {
         div(classes = "modal-dialog modal-dialog-slideout modal-md") {
             attributes["role"] = "document"
             div(classes = "modal-content") {
-                div(classes = "modal-header") {
+                div(classes = "modal-header d-flex") {
                     h5(classes = "modal-title") {
                         id = "settings-title"
                         +i18n.getString("settingspanel.heading")
                     }
-                    button(classes = "close", type = ButtonType.button) {
-                        attributes["data-dismiss"] = "modal"
+                    button(classes = "ms-auto btn-close") {
+                        attributes["data-bs-dismiss"] = "modal"
                         attributes["aria-label"] = "close"
-                        span {
-                            attributes["aria-hidden"] = "true"
-                            +"×"
-                        }
                     }
                 }
                 div(classes = "modal-body") {
                     form(action = "/settings/save", method = FormMethod.post) {
-                        div(classes = "form-group") {
+                        div(classes = "form-group mb-3") {
                             label {
                                 attributes["for"] = "inputYear"
                                 +i18n.getString("settingspanel.year")
@@ -101,12 +93,12 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                 value = q_?.year?.toString() ?: ""
                             }
                         }
-                        div(classes = "form-group") {
-                            button(classes = "btn btn-light") {
-                                attributes["data-dismiss"] = "modal"
+                        div(classes = "form-group mb-3") {
+                            button(classes = "btn btn-light", type = ButtonType.button) {
+                                attributes["data-bs-dismiss"] = "modal"
                                 +i18n.getString("settingspanel.buttons.abort")
                             }
-                            button(type = ButtonType.submit, classes = "btn btn-secondary ml-2") {
+                            button(type = ButtonType.submit, classes = "btn btn-secondary ms-2") {
                                 +i18n.getString("settingspanel.buttons.saveChanges")
                             }
                         }
@@ -117,20 +109,20 @@ fun FlowContent.drawSettingsModal(q: String?) {
                         method = FormMethod.post,
                         encType = FormEncType.multipartFormData
                     ) {
-                        div(classes = "form-group") {
+                        div(classes = "form-group mb-3") {
                             label {
                                 htmlFor = "inputCache"
                                 +i18n.getString("settingspanel.uploadReport")
                             }
-                            fileInput(classes = "form-control-file", name = "uploadedCache") {
+                            fileInput(classes = "form-control mt-2", name = "uploadedCache") {
                                 id = "inputCache"
                             }
                         }
-                        div(classes = "form-group") {
+                        div(classes = "form-group mb-3") {
                             button(type = ButtonType.submit, classes = "btn btn-secondary mt-2") {
                                 +i18n.getString("settingspanel.buttons.uploadReport")
                             }
-                            a(href = "/settings/downloadCache?q=$q", classes = "btn btn-secondary mt-2 ml-2") {
+                            a(href = "/settings/downloadCache?q=$q", classes = "btn btn-secondary mt-2 ms-2") {
                                 +i18n.getString("settingspanel.buttons.downloadReport")
                             }
                         }

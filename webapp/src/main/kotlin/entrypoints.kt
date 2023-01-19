@@ -40,7 +40,8 @@ fun main(args: Array<String>) {
  * Create internal Netty server instance (standalone .jar deployment or inside JavaFX GUI)
  */
 fun createServer(baseXClient: IBaseXClient, port: Int = 8080, locale: Locale = Locale.getDefault()) =
-    embeddedServer(Netty, host = "127.0.0.1", port = port, module = application(baseXClient, language = locale))
+    embeddedServer(Netty, host = "127.0.0.1", port = port,
+                    module = application(baseXClient, language = locale), watchPaths = listOf("classes", "view"))
 
 /**
  * Entrypoint for deployment as .war file (Tomcat, ...)
