@@ -104,11 +104,10 @@ tasks {
             //Only include minified versions of webjar library into the distributed bundle
             it.path.contains("META-INF/resources/webjars")
                     && it.name !in setOf(
-                "jquery.min.js", "Chart.min.js", "bootstrap.min.js", "bootstrap-icons.css",
+                "jquery.min.js", "Chart.min.js", "bootstrap.bundle.min.js", "bootstrap-icons.css",
                 "bootstrap-icons.woff2", "bootstrap-icons.woff", "bootstrap.min.css"
             )
         }
         exclude { it.path.startsWith("META-INF/maven") }
     }
 }
-
