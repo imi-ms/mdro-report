@@ -121,7 +121,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                         content {
                             +i18n.getString("page.missingConfig.text")
                             script(type = "text/javascript") {
-                                unsafe { +"$(function(){ $('#settings-modal').modal({focus:true}) });" }
+                                unsafe { +"new bootstrap.Modal($('#settings-modal'), { keyboard: false }).show();" }
                             }
                         }
                     }
