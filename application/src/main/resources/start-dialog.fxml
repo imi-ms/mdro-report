@@ -59,7 +59,7 @@
                       <PasswordField id="password" GridPane.columnIndex="1" GridPane.rowIndex="2"
                                      styleClass="disabled_while_loading"/>
                       <Label text="%label.database" GridPane.rowIndex="3" />
-                      <TextField id="database" text="2021" GridPane.columnIndex="1" GridPane.rowIndex="3"
+                      <TextField id="database" text="2022" GridPane.columnIndex="1" GridPane.rowIndex="3"
                                  styleClass="disabled_while_loading"/>
                   </children>
                   <padding>
