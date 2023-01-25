@@ -19,11 +19,11 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
             meta(charset = "UTF-8")
             meta(name = "viewport", content = "width=device-width, initial-scale=1, shrink-to-fit=no")
             title { +url }
-            link(rel = "stylesheet", href = "/webjars/bootstrap/dist/css/bootstrap.min.css")
-            link(rel = "stylesheet", href = "/webjars/bootstrap-icons/font/bootstrap-icons.css")
+            link(rel = "stylesheet", href = "/static/bootstrap/dist/css/bootstrap.min.css")
+            link(rel = "stylesheet", href = "/static/bootstrap-icons/font/bootstrap-icons.css")
             link(rel = "stylesheet", href = "/static/custom-styles.css")
-            script(src = "/webjars/jquery/dist/jquery.min.js") {}
-            script(src = "/webjars/bootstrap/dist/js/bootstrap.bundle.min.js") {}
+            script(src = "/static/jquery/dist/jquery.min.js") {}
+            script(src = "/static/bootstrap/dist/js/bootstrap.bundle.min.js") {}
         }
         body {
             div(classes = "wrapper") {
@@ -240,7 +240,7 @@ fun FlowContent.drawDiagrams(
         button(type = ButtonType.submit, classes = "btn btn-primary mb-2") { +"OK" }
     }
 
-    script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+    script("text/javascript", "/static/github-com-chartjs-Chart-js/Chart.min.js") {}
     div(classes = "container") {
         div(classes = "row") {
             for ((germ, data) in data) {

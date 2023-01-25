@@ -11,10 +11,8 @@ import io.ktor.server.plugins.statuspages.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import io.ktor.server.webjars.*
 import io.ktor.util.*
 import kotlinx.html.*
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import model.CachingUtility
@@ -23,7 +21,6 @@ import model.IBaseXClient
 import model.XQueryParams
 import mu.KotlinLogging
 import view.*
-import java.io.InputStream
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.text.MessageFormat
@@ -44,7 +41,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
     i18n = ResourceBundle.getBundle("webappMessages", language)
     return {
         val cachingUtility = CachingUtility(baseXClient)
-        install(Webjars)
         install(StatusPages) {
             status(HttpStatusCode.NotFound) { call, _ ->
                 call.respondHtmlTemplate(
@@ -203,7 +199,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +i18n.getString("page.other.diagrams") }
                     content {
-                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        script("text/javascript", "/static/github-com-chartjs-Chart-js/Chart.min.js") {}
                         drawBarChart(i18n.getString("page.MRGN.diagrams.MRGNinDepartments"), departments)
                         drawBarChart(i18n.getString("page.MRGN.diagrams.numberOfSampletypes"), probenart)
                     }
@@ -219,7 +215,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +i18n.getString("page.other.diagrams") }
                     content {
-                        script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        script("text/javascript", "/static/github-com-chartjs-Chart-js/Chart.min.js") {}
                         drawBarChart(i18n.getString("page.VRE.diagrams.VREinDepartments"), department)
                         drawBarChart(i18n.getString("page.VRE.diagrams.numberOfSampletypes"), probenart)
                     }
@@ -236,7 +232,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                         header { +i18n.getString("page.other.diagrams") }
                         content {
-                            script("text/javascript", "/webjars/github-com-chartjs-Chart-js/Chart.min.js") {}
+                            script("text/javascript", "/static/github-com-chartjs-Chart-js/Chart.min.js") {}
                             div(classes = "container") {
                                 div(classes = "row") {
                                     style = "height: 400px;"

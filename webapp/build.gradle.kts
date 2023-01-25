@@ -29,21 +29,12 @@ dependencies {
 
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-html-builder-jvm:$ktor_version")
-    implementation("io.ktor:ktor-server-webjars-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-servlet-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-status-pages:$ktor_version")
     implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-auth-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging-jvm:$ktor_version")
-
-    //webjars
-    implementation("org.webjars.npm:jquery:3.6.3")
-    implementation("org.webjars.npm:bootstrap:5.2.3")
-    implementation("org.webjars.npm:bootstrap-icons:1.10.3")
-    implementation("org.webjars.npm:popper.js:1.16.1")
-    implementation("org.webjars.npm:github-com-chartjs-Chart-js:2.8.0")
-
 }
 
 tasks {
