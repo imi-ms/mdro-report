@@ -1,4 +1,4 @@
-image: gradle:7.4.2-jdk11-alpine
+image: gradle:7.6.0-jdk11-alpine
 
 stages:
   - build
@@ -23,7 +23,7 @@ build:
       - build/libs/MREReport-Full.jar
       - webapp/build/libs/MREReport-Light.jar
       - webapp/build/libs/webapp.war
-      - testdataGenearator/build/libs/MDTestdataGenerator.jar
+      - testdataGenerator/build/libs/MDTestdataGenerator.jar
   only:
     - master
 
