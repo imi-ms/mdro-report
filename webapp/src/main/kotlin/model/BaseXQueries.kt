@@ -14,6 +14,7 @@ object BaseXQueries {
     val NasenRachenAbstriche2: String = readFile("nasenrachenabstrich2.xq")
     val AnzahlEFaecalis: String = readFile("anzahlEfaecalis.xq")
     val AnzahlEFaecalis2: String = readFile("anzahlEfaecalis2.xq")
+    val AnzahlEFaecium: String = readFile("anzahlEfaecium.xq")
     val EfaeciumBK: String = readFile("efaecium_bk.xq")
     val EfaeciumBK2: String = readFile("efaecium_bk2.xq")
     val VREBK: String = readFile("vre_bk.xq")
