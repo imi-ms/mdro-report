@@ -154,7 +154,9 @@ class CacheProvider(val basexInfo: BasexInfo) {
     private fun getCacheFile(xQueryParams: XQueryParams) = File(cacheDirectory, getCacheFileName(xQueryParams))
 
     private val cacheDirectory: String by lazy {
-        val userCacheDir = AppDirsFactory.getInstance().getUserCacheDir("mrereport", "1.0", "IMI")!!
+        val userCacheDir = System.getenv("mrereport.cachedir") ?: AppDirsFactory.getInstance()
+            .getUserCacheDir("mrereport", "1.0", "IMI")!!
+
         log.info { "Using '$userCacheDir' as cache directory!" }
         //TODO: Add caching path as property
         userCacheDir

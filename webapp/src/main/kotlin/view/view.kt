@@ -61,8 +61,14 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                                         a(classes = "dropdown-item", href = "/$germ/overview?q=$q") {
                                             +"${i18n.getString("navigation.overview")} $germ"
                                         }
-                                        a(classes = "dropdown-item", href = "/$germ/list?q=$q") { +i18n.getString("navigation.list") }
-                                        a(classes = "dropdown-item", href = "/$germ/statistic?q=$q") { +i18n.getString("navigation.diagrams") }
+                                        a(
+                                            classes = "dropdown-item",
+                                            href = "/$germ/list?q=$q"
+                                        ) { +i18n.getString("navigation.list") }
+                                        a(
+                                            classes = "dropdown-item",
+                                            href = "/$germ/statistic?q=$q"
+                                        ) { +i18n.getString("navigation.diagrams") }
                                     }
                                 }
                             }
@@ -246,7 +252,9 @@ fun FlowContent.drawDiagrams(
             for ((germ, data) in data) {
                 div(classes = "col-3") {
                     style = "height: 400px;"
-                    drawBarChart("${i18n.getString("page.diagrams.numberOf")} $germ", data.mapKeys { it.key.toString() })
+                    drawBarChart(
+                        "${i18n.getString("page.diagrams.numberOf")} $germ",
+                        data.mapKeys { it.key.toString() })
                 }
             }
 
@@ -291,7 +299,12 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
                         +"${i18n.getString("page.diagrams.reportsCreated")}: "
                         +LocalDateTime.parse(cache.metadata.timeUpdated).toDifferenceFromNow()
                         if (teilberichteZuErstellen.isNotEmpty()) {
-                            +", ${MessageFormat.format(i18n.getString("page.diagrams.openReports"), teilberichteZuErstellen.joinToString())}"
+                            +", ${
+                                MessageFormat.format(
+                                    i18n.getString("page.diagrams.openReports"),
+                                    teilberichteZuErstellen.joinToString()
+                                )
+                            }"
                         }
 
                     }
@@ -309,11 +322,9 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
     }
 
     for (cache in cacheData) {
-        form (action = "/statistic/deleteReport") {
+        form(action = "/statistic/deleteReport", method = FormMethod.post) {
             id = "deleteReportForm_${cache.metadata.xQueryParams.year}"
-            method = FormMethod.post
-            input (type = InputType.hidden) {
-                name = "year"
+            input(type = InputType.hidden, name = "year") {
                 value = cache.metadata.xQueryParams.year.toString()
             }
         }

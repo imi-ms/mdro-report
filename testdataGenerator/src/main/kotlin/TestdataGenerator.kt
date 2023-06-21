@@ -117,13 +117,13 @@ class TestdataGenerator {
                         }
 
 
-                        for (antibioticAnalysis in generateAntibioticsAnalysis(caseInfo)) {
+                        for ((antibiotic, result) in generateAntibioticsAnalysis(caseInfo)) {
                             "antibiotic" {
-                                attribute("LOINC", antibioticAnalysis.antibiotic.LOINC)
-                                attribute("display", antibioticAnalysis.antibiotic.display)
+                                attribute("LOINC", antibiotic.LOINC)
+                                attribute("display", antibiotic.display)
                                 "result" {
-                                    attribute("string", antibioticAnalysis.antibioticsResult.result)
-                                    attribute("LOINC", antibioticAnalysis.antibioticsResult.LOINC)
+                                    attribute("LOINC", result.LOINC)
+                                    attribute("string", result.result)
                                 }
                             }
                         }
