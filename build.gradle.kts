@@ -37,8 +37,8 @@ dependencies {
 subprojects {
     plugins.withType(JavaPlugin::class) {
         dependencies {
-            implementation("ch.qos.logback:logback-classic:1.2.3")
-            implementation("io.github.microutils:kotlin-logging:2.1.21")
+            implementation("ch.qos.logback:logback-classic:1.4.11")
+            implementation("io.github.microutils:kotlin-logging:3.0.5")
         }
     }
 }
@@ -46,9 +46,7 @@ subprojects {
 //CREATES EXECUTABLE JAR
 application {
     mainClass.set("de.uni_muenster.imi.oegd.application.Main")
-    applicationDefaultJvmArgs = listOf(
-        "-Dio.netty.tryReflectionSetAccessible=true"
-    )
+    applicationDefaultJvmArgs = listOf("-Dio.netty.tryReflectionSetAccessible=true")
 }
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
