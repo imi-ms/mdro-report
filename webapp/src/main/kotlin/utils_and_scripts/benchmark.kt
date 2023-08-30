@@ -1,5 +1,3 @@
-package de.uni_muenster.imi.oegd.webapp
-
 import model.BaseXQueries
 import model.RestClient
 import kotlin.system.measureTimeMillis

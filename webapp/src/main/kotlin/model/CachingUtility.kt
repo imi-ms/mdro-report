@@ -16,8 +16,6 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
     private val basexInfo: BasexInfo = baseXClient.getInfo()
     val cacheProvider = CacheProvider(basexInfo)
 
-    private val mutex = Mutex()
-
     //Loading the data is timeconsuming. Use a mutex to triggering duplicate report creation
     private val mutexMap = mutableMapOf<Pair<XQueryParams, GermType?>, Mutex>().apply {
         for (year in 2000..2030) {

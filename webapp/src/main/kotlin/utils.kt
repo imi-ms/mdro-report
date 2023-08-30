@@ -1,5 +1,3 @@
-package de.uni_muenster.imi.oegd.common
-
 import java.net.ServerSocket
 
 fun parseCsv(text: String, headers: List<String>, separator: String = "||"): List<Map<String, String>> {

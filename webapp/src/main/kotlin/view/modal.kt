@@ -1,6 +1,6 @@
 package view
 
-import de.uni_muenster.imi.oegd.webapp.i18n
+import i18n
 import kotlinx.html.*
 import model.OverviewEntry
 import model.XQueryParams

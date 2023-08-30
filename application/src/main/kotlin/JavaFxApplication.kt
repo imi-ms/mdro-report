@@ -1,8 +1,8 @@
 package de.uni_muenster.imi.oegd.application
 
+import createServer
 import de.uni_muenster.imi.oegd.baseX.LocalBaseXClient
-import de.uni_muenster.imi.oegd.common.findOpenPortInRange
-import de.uni_muenster.imi.oegd.webapp.createServer
+import findOpenPortInRange
 import io.ktor.server.netty.*
 import javafx.application.Application
 import javafx.application.Platform
@@ -56,8 +56,7 @@ class JavaFxApplication : Application() {
     private val webappPort = findOpenPortInRange(1024..49151) ?: error("Cannot find free port for internal webserver!")
     private var server: NettyApplicationEngine? = null
     private var directory: File? = null
-    private var language: LANGUAGE =
-        LANGUAGE.values().find { it.locale.language == Locale.getDefault().language } ?: LANGUAGE.ENGLISH
+    private var language = Language.findByLocale(Locale.getDefault()) ?: Language.ENGLISH
     private lateinit var i18n: ResourceBundle
 
     override fun start(primaryStage: Stage) {
@@ -76,11 +75,11 @@ class JavaFxApplication : Application() {
         page.lookupAll(".disabled_while_loading").forEach { it.disableProperty().bind(loadingProperty) }
         page.find<ProgressIndicator>("#loading_spinner").visibleProperty().bind(loadingProperty)
 
-        page.find<ComboBox<LANGUAGE>>("#language_comboBox").apply {
-            items = FXCollections.observableArrayList(*LANGUAGE.values())
+        page.find<ComboBox<Language>>("#language_comboBox").apply {
+            items = FXCollections.observableArrayList(*Language.entries.toTypedArray())
             setCellFactory { _ ->
-                object : ListCell<LANGUAGE>() {
-                    override fun updateItem(item: LANGUAGE?, empty: Boolean) {
+                object : ListCell<Language>() {
+                    override fun updateItem(item: Language?, empty: Boolean) {
                         super.updateItem(item, empty)
                         graphic = if (item != null && !empty) {
                             createImageLabel(i18n.getString(item.languageCode), item.imgPath)
@@ -93,7 +92,7 @@ class JavaFxApplication : Application() {
             value = language
             buttonCell = cellFactory.call(null)
             selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                language = newValue ?: LANGUAGE.ENGLISH
+                language = newValue ?: Language.ENGLISH
                 drawStartDialog(primaryStage)
             }
         }
@@ -251,9 +250,14 @@ class JavaFxApplication : Application() {
         }
     }
 
-    private enum class LANGUAGE(val languageCode: String, val locale: Locale, val imgPath: String) {
+    private enum class Language(val languageCode: String, val locale: Locale, val imgPath: String) {
         GERMAN("language.de", Locale.GERMAN, "de.png"),
-        ENGLISH("language.en", Locale.ENGLISH, "gb.png")
+        ENGLISH("language.en", Locale.ENGLISH, "gb.png");
+
+
+        companion object {
+            fun findByLocale(locale: Locale) = entries.find { it.locale.language == locale.language }
+        }
     }
 
 }

@@ -1,6 +1,3 @@
-package de.uni_muenster.imi.oegd.webapp
-
-
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*

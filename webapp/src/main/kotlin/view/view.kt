@@ -1,6 +1,6 @@
 package view
 
-import de.uni_muenster.imi.oegd.webapp.i18n
+import i18n
 import io.ktor.server.html.*
 import kotlinx.html.*
 import model.*
@@ -43,7 +43,7 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                         id = "navbarNav"
                         ul(classes = "navbar-nav") {
                             navItem("global/overview?q=$q", i18n.getString("navigation.hospitalMetrics"))
-                            for (germ in GermType.values().map { it.germtype }) {
+                            for (germ in GermType.entries.map { it.germtype }) {
                                 li(classes = "nav-item dropdown") {
                                     if (url.startsWith(germ)) {
                                         classes = classes + "active"
@@ -172,7 +172,13 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
         thead {
             tr(classes = "sticky-tr") {
                 for (columnName in columnNames) {
-                    th(scope = ThScope.col) { +i18n.getString(columnName) }
+                    th(scope = ThScope.col) {
+                        +try {
+                            i18n.getString(columnName)
+                        } catch (e: Exception) {
+                            columnName
+                        }
+                    }
                 }
             }
         }
