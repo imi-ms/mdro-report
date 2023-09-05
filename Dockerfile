@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM gradle:7.6.0-jdk11-alpine AS TEMP_BUILD_IMAGE
+FROM gradle:7.6.2-jdk17-alpine AS TEMP_BUILD_IMAGE
 
 COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src
@@ -7,7 +7,7 @@ WORKDIR /home/gradle/src
 RUN gradle clean :webapp:shadowJar --no-daemon
 
 # actual container
-FROM adoptopenjdk/openjdk11:alpine-jre
+FROM adoptopenjdk/openjdk17:alpine-jre
 ENV ARTIFACT_NAME=MREReport-Light.jar
 ENV APP_HOME=/home/gradle/src
 
