@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd.testdataGenerator"
-    version = "1.2.1"
+    jvmToolchain(17)
 }
 
 repositories {
@@ -17,8 +17,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.redundent:kotlin-xml-builder:1.8.0")
+    implementation(kotlin("stdlib"))
+    implementation("org.redundent:kotlin-xml-builder:1.9.0")
 }
 
 tasks {
@@ -26,7 +26,7 @@ tasks {
         manifest {
             attributes("Main-Class" to "de.uni_muenster.imi.oegd.testdataGenerator.Main")
         }
-        archiveFileName.set("MDTestdataGenerator.jar")
+        archiveFileName.set("MRETestdataGenerator.jar")
     }
 }
 

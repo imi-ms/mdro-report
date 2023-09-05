@@ -1,9 +1,9 @@
-package view
+package de.uni_muenster.imi.oegd.webapp.view
 
-import i18n
+import de.uni_muenster.imi.oegd.webapp.i18n
+import de.uni_muenster.imi.oegd.webapp.model.OverviewEntry
+import de.uni_muenster.imi.oegd.webapp.model.XQueryParams
 import kotlinx.html.*
-import model.OverviewEntry
-import model.XQueryParams
 import java.time.LocalDate
 
 fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {

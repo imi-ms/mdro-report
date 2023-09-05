@@ -1,3 +1,10 @@
+package de.uni_muenster.imi.oegd.webapp
+
+import de.uni_muenster.imi.oegd.webapp.model.CachingUtility
+import de.uni_muenster.imi.oegd.webapp.model.GermType
+import de.uni_muenster.imi.oegd.webapp.model.IBaseXClient
+import de.uni_muenster.imi.oegd.webapp.model.XQueryParams
+import de.uni_muenster.imi.oegd.webapp.view.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -12,12 +19,7 @@ import io.ktor.util.*
 import kotlinx.html.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import model.CachingUtility
-import model.GermType
-import model.IBaseXClient
-import model.XQueryParams
 import mu.KotlinLogging
-import view.*
 import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.text.MessageFormat
@@ -169,7 +171,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     content { drawOverviewTable(overviewContent!!, lastUpdate!!, q) }
                 }
             }
-            for (germ in GermType.values()) {
+            for (germ in GermType.entries) {
                 get("$germ/overview") {
                     val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
                     val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
@@ -222,33 +224,33 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRSA)
                 val department = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.department"]!! }
                     .eachCount().mapValues { it.value.toString() }
-                    val probenart = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.sampleType"]!! }
-                        .eachCount().mapValues { it.value.toString() }
-                    val importedOrNosocomial = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.nosocomial"]!! }
-                        .eachCount().mapValues { it.value.toString() }
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                        header { +i18n.getString("page.other.diagrams") }
-                        content {
-                            script("text/javascript", "/static/github-com-chartjs-Chart-js/Chart.min.js") {}
-                            div(classes = "container") {
-                                div(classes = "row") {
-                                    style = "height: 400px;"
-                                    div(classes = "col") {
-                                        drawBarChart(i18n.getString("page.MRSA.diagrams.MRSAinDepartments"), department)
-                                    }
+                val probenart = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.sampleType"]!! }
+                    .eachCount().mapValues { it.value.toString() }
+                val importedOrNosocomial = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.nosocomial"]!! }
+                    .eachCount().mapValues { it.value.toString() }
+                call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
+                    header { +i18n.getString("page.other.diagrams") }
+                    content {
+                        script("text/javascript", "/static/github-com-chartjs-Chart-js/Chart.min.js") {}
+                        div(classes = "container") {
+                            div(classes = "row") {
+                                style = "height: 400px;"
+                                div(classes = "col") {
+                                    drawBarChart(i18n.getString("page.MRSA.diagrams.MRSAinDepartments"), department)
                                 }
-                                div(classes = "row") {
-                                    style = "height: 400px;"
-                                    div(classes = "col-6") {
-                                        drawBarChart(i18n.getString("page.MRSA.diagrams.numberOfSamples"), probenart)
-                                    }
-                                    div(classes = "col-6") {
-                                        drawPieChart(i18n.getString("page.MRSA.diagrams.numberNosocomialAndImported"), importedOrNosocomial)
-                                    }
+                            }
+                            div(classes = "row") {
+                                style = "height: 400px;"
+                                div(classes = "col-6") {
+                                    drawBarChart(i18n.getString("page.MRSA.diagrams.numberOfSamples"), probenart)
+                                }
+                                div(classes = "col-6") {
+                                    drawPieChart(i18n.getString("page.MRSA.diagrams.numberNosocomialAndImported"), importedOrNosocomial)
                                 }
                             }
                         }
                     }
+                }
             }
             get("/statistic") {
                 val yearsEnabled = call.parameters.getAll("year[]")?.map { it.toInt() } ?: emptyList()
@@ -314,17 +316,13 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 }
             }
 
-            static("/static") {
-                resources("static")
-            }
+            staticResources("/static", "static")
         }
         environment.monitor.subscribe(ApplicationStopping) {
             baseXClient.close()
         }
     }
 }
-
-
 
 
 private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: CachingUtility) {

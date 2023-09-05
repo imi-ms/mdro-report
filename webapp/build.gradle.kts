@@ -11,6 +11,7 @@ war {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd.webapp"
+    jvmToolchain(17)
 }
 
 repositories {
@@ -24,7 +25,7 @@ val kotlinx_html_version = "0.8.0"
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation("net.harawata:appdirs:1.2.1")
 
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")

@@ -1,6 +1,6 @@
-package model
+package de.uni_muenster.imi.oegd.webapp.model
 
-import parseCsv
+import de.uni_muenster.imi.oegd.webapp.parseCsv
 import java.time.LocalDateTime
 
 object DataProvider {

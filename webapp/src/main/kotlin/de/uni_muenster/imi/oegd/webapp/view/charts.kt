@@ -1,4 +1,4 @@
-package view
+package de.uni_muenster.imi.oegd.webapp.view
 
 import kotlinx.html.*
 import kotlinx.serialization.encodeToString

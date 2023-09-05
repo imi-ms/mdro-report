@@ -1,8 +1,10 @@
 package de.uni_muenster.imi.oegd.application
 
-import createServer
 import de.uni_muenster.imi.oegd.baseX.LocalBaseXClient
-import findOpenPortInRange
+import de.uni_muenster.imi.oegd.webapp.createServer
+import de.uni_muenster.imi.oegd.webapp.findOpenPortInRange
+import de.uni_muenster.imi.oegd.webapp.model.IBaseXClient
+import de.uni_muenster.imi.oegd.webapp.model.RestClient
 import io.ktor.server.netty.*
 import javafx.application.Application
 import javafx.application.Platform
@@ -26,8 +28,6 @@ import javafx.stage.DirectoryChooser
 import javafx.stage.FileChooser
 import javafx.stage.Stage
 import kotlinx.coroutines.runBlocking
-import model.IBaseXClient
-import model.RestClient
 import netscape.javascript.JSObject
 import java.io.File
 import java.net.URL

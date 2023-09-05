@@ -1,4 +1,4 @@
-package model
+package de.uni_muenster.imi.oegd.webapp.model
 
 object BaseXQueries {
     val MRSA: String = readFile("mrsa_excelv3.xq")

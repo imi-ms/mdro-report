@@ -1,9 +1,9 @@
-package view
+package de.uni_muenster.imi.oegd.webapp.view
 
-import i18n
+import de.uni_muenster.imi.oegd.webapp.i18n
+import de.uni_muenster.imi.oegd.webapp.model.*
 import io.ktor.server.html.*
 import kotlinx.html.*
-import model.*
 import java.text.MessageFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -97,7 +97,7 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                 footer(classes = "footer") {
                     div(classes = "container") {
                         span(classes = "text-muted") {
-                            +"© 2022 Copyright "
+                            +"© 2023 Copyright "
                         }
                         a(href = "https://imi.uni-muenster.de", target = "_blank") {
                             +i18n.getString("footer.imi")

@@ -1,5 +1,5 @@
-import model.BaseXQueries
-import model.RestClient
+import de.uni_muenster.imi.oegd.webapp.model.BaseXQueries
+import de.uni_muenster.imi.oegd.webapp.model.RestClient
 import kotlin.system.measureTimeMillis
 
 /**

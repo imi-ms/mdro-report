@@ -1,4 +1,4 @@
-package model
+package de.uni_muenster.imi.oegd.webapp.model
 
 import io.ktor.client.*
 import io.ktor.client.call.*

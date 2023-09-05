@@ -3,25 +3,25 @@ import org.panteleyev.jpackage.JPackageTask
 System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
-    kotlin("jvm") version "1.9.0"
-    kotlin("plugin.serialization") version "1.9.0"
+    kotlin("jvm") version "1.9.10"
+    kotlin("plugin.serialization") version "1.9.10"
     id("java")
     id("application")
-    id("org.openjfx.javafxplugin") version "0.0.13"
+    id("org.openjfx.javafxplugin") version "0.1.0"
     id("com.github.johnrengelman.shadow") version "7.1.2"
-    id("org.panteleyev.jpackageplugin") version "1.3.1"
+    id("org.panteleyev.jpackageplugin") version "1.5.2"
 }
 
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.3.5"
-//    jvmToolchain(17)
+    version = "1.3.6"
+    jvmToolchain(17)
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+//    sourceCompatibility = JavaVersion.VERSION_17
+//    targetCompatibility = JavaVersion.VERSION_17
 }
 
 repositories {
