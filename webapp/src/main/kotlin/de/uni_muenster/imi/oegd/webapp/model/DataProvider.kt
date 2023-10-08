@@ -48,7 +48,7 @@ object DataProvider {
 
     suspend fun getMRGNCSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
         val mrgnList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.MRGN, xQueryParams))
-        return parseCsv(
+        val parsed = parseCsv(
             mrgnList,
             listOf(
                 "page.MRGN.caselist.caseID",
@@ -67,6 +67,22 @@ object DataProvider {
                 "page.MRGN.caselist.ciprofloxacin"
             )
         )
+        //E-Mail von Zentralstelle IfSG: "Doppelte Fälle sind nur zulässig, wenn es sich um unterschiedliche Erreger und MRGN-Klassifikationen handelt"
+        val result = parsed.distinctBy {
+            val case = it["page.MRGN.caselist.caseID"]
+            val pathogen = it["page.MRGN.caselist.pathogen"]
+            val classification = with(it["page.MRGN.caselist.class"]) {
+                when {
+                    isNullOrBlank() -> null
+                    contains("MRGN3") -> 3
+                    contains("MRGN4") -> 4
+                    else -> null
+                }
+            }
+            Triple(case, pathogen, classification)
+        }
+        //TODO: Erreger und MRGN-Klassifikation doppelt, selber Keim als MRGN3 und MRGN4 dann auch nur einmal? Wie ist das "und" zu verstehen?
+        return result
     }
 
     suspend fun getVRECSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
