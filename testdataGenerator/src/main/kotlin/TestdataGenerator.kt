@@ -46,7 +46,7 @@ class TestdataGenerator {
     fun createTestdataFile(location: String) {
         val caseScope = CaseScope.values().random()
         val patient = createPatient(caseScope)
-        val id = patient.get<String>("id")
+        val id = patient.get<Int>("id").toString()
         File("$location/$id.xml").writeText(patient.toString())
     }
 
