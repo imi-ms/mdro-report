@@ -13,6 +13,6 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib")
-    implementation("org.basex:basex:9.2.4")
+    implementation("org.basex:basex:10.7")
     implementation(project(":webapp"))
 }

@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.redundent:kotlin-xml-builder:1.9.0")
+    implementation("org.redundent:kotlin-xml-builder:1.9.1")
 }
 
 tasks {

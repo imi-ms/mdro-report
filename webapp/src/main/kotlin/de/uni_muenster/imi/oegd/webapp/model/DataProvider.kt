@@ -81,7 +81,6 @@ object DataProvider {
             }
             Triple(case, pathogen, classification)
         }
-        //TODO: Erreger und MRGN-Klassifikation doppelt, selber Keim als MRGN3 und MRGN4 dann auch nur einmal? Wie ist das "und" zu verstehen?
         return result
     }
 

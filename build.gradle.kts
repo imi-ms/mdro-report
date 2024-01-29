@@ -3,8 +3,8 @@ import org.panteleyev.jpackage.JPackageTask
 System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
-    kotlin("jvm") version "1.9.10"
-    kotlin("plugin.serialization") version "1.9.10"
+    kotlin("jvm") version "1.9.22"
+    kotlin("plugin.serialization") version "1.9.22"
     id("java")
     id("application")
     id("org.openjfx.javafxplugin") version "0.1.0"
@@ -29,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation(kotlin("stdlib"))
     implementation(project(":application"))
 }
 
@@ -37,7 +37,7 @@ dependencies {
 subprojects {
     plugins.withType(JavaPlugin::class) {
         dependencies {
-            implementation("ch.qos.logback:logback-classic:1.4.11")
+            implementation("ch.qos.logback:logback-classic:1.4.14")
             implementation("io.github.microutils:kotlin-logging:3.0.5")
         }
     }

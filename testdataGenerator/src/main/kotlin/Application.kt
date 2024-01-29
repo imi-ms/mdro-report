@@ -17,6 +17,7 @@ import javafx.scene.image.ImageView
 import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
 import java.io.File
+import java.time.LocalDate
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -40,7 +41,8 @@ fun <T : javafx.scene.Node> javafx.scene.Node.find(cssSelector: String) = this.l
 
 class JavaFxApplication : Application() {
     private lateinit var directory: File
-    private var language: LANGUAGE = LANGUAGE.values().find { it.locale.language == Locale.getDefault().language } ?: LANGUAGE.ENGLISH
+    private var language =
+        LANGUAGE.entries.find { it.locale.language == Locale.getDefault().language } ?: LANGUAGE.ENGLISH
     private lateinit var i18n: ResourceBundle
 
 
@@ -92,12 +94,12 @@ class JavaFxApplication : Application() {
         }
         page.find<ChoiceBox<Int>>("#selectBox_yearStart").apply {
             items = getYearsList()
-            value = 2021
+            value = 2020
         }
 
         page.find<ChoiceBox<Int>>("#selectBox_yearEnd").apply {
             items = getYearsList()
-            value = 2022
+            value = LocalDate.now().year
         }
 
         page.find<Button>("#button_cancel").onAction = EventHandler {
@@ -173,7 +175,7 @@ class JavaFxApplication : Application() {
         return FXCollections.observableList((1990..2030).toList())
     }
 
-    private fun createImageLabel(label: String, imgPath: String): Label = Label(label).apply {
+    private fun createImageLabel(label: String, imgPath: String) = Label(label).apply {
         graphic = ImageView(Image(imgPath)).apply {
             fitWidth = 21.6
             fitHeight = 21.6
