@@ -215,7 +215,7 @@ fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String,
         for ((index, entry) in data.withIndex()) {
             tr {
                 th {
-                    span { +i18n.getString(entry.title) }
+                    span { unsafe { +i18n.getString(entry.title) } }
                 }
                 td {
                     span { +entry.data }

@@ -59,14 +59,14 @@ fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>
                             borderColor: ${
                                 if (type == "pie") Json.encodeToString(borderColors) else Json.encodeToString(backgroundColors[0])
                             },
-                            borderWidth: 1
+                            borderWidth: 1,
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: {
-                            y: { beginAtZero: true }
+                            yAxes: [{ ticks:{beginAtZero: true, min: 0} }]
                         }
                     }
                 });

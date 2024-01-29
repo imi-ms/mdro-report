@@ -66,7 +66,14 @@ object DataProvider {
                 "page.MRGN.caselist.imipenem",
                 "page.MRGN.caselist.ciprofloxacin"
             )
-        )
+        ).map {
+            //Replace MRGN3 -> 3MRGN, MRGN4 -> 4MRGN
+            it.mapValues { (k, v) ->
+                if (k == "page.MRGN.caselist.class")
+                    v.replace("MRGN3", "3MRGN").replace("MRGN4", "4MRGN")
+                else v
+            }
+        }
         //E-Mail von Zentralstelle IfSG: "Doppelte Fälle sind nur zulässig, wenn es sich um unterschiedliche Erreger und MRGN-Klassifikationen handelt"
         val result = parsed.distinctBy {
             val case = it["page.MRGN.caselist.caseID"]
@@ -74,8 +81,8 @@ object DataProvider {
             val classification = with(it["page.MRGN.caselist.class"]) {
                 when {
                     isNullOrBlank() -> null
-                    contains("MRGN3") -> 3
-                    contains("MRGN4") -> 4
+                    contains("MRGN3") || contains("3MRGN") -> 3
+                    contains("MRGN4") || contains("4MRGN") -> 4
                     else -> null
                 }
             }
@@ -132,6 +139,7 @@ object DataProvider {
     ): List<OverviewEntry> {
         suspend fun entry(name: String, query: String) =
             createBaseXOverviewEntry(name, query, baseXClient, xQueryParams)
+
         val mrsaTotal = DataProcessor.countMRSATotal(caseList)
         val mrsaNosokomial = DataProcessor.countMRSANosokomial(caseList)
         val mrsaImported = DataProcessor.countMRSAImported(caseList)
