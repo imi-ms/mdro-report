@@ -99,8 +99,13 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val x = XQueryParams(parameters["year"]?.toInt())
                 val q = Json.encodeToString(x)
                 val referrer = call.request.headers[HttpHeaders.Referrer]?.substringBefore("?")
-                changeLanguage(parameters["language"] ?: "en")
                 call.respondRedirect("$referrer?q=$q")
+            }
+            post("/changeLanguage") {
+                val parameters = call.receiveParameters()
+                val referrer = call.request.headers[HttpHeaders.Referrer]?.substringBefore("?")
+                changeLanguage(parameters["language"] ?: "en")
+                call.respondRedirect("$referrer?q=${parameters["q"]}")
             }
             intercept(ApplicationCallPipeline.Call) {
                 if (call.request.uri.startsWith("/settings/save")) return@intercept
@@ -109,6 +114,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 if (call.request.uri.startsWith("/static")) return@intercept
                 if (call.request.uri.contains("invalidate-cache")) return@intercept
                 if (call.request.uri.startsWith("/statistic")) return@intercept
+                if (call.request.uri.startsWith("/changeLanguage")) return@intercept
                 val q = call.parameters["q"]
                 if (q.isNullOrBlank() || q == "null") {
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
@@ -331,7 +337,6 @@ private fun changeLanguage(languageSelectValue: String) {
     i18n = when(languageSelectValue) {
         "de" -> ResourceBundle.getBundle("webappMessages", Locale.GERMAN)
         "en" -> ResourceBundle.getBundle("webappMessages", Locale.ENGLISH)
-        "noChange" -> i18n //No change for no different selection
         else -> ResourceBundle.getBundle("webappMessages", Locale.ENGLISH)
     }
 }

@@ -5,6 +5,7 @@ import de.uni_muenster.imi.oegd.webapp.i18n
 import de.uni_muenster.imi.oegd.webapp.model.OverviewEntry
 import de.uni_muenster.imi.oegd.webapp.model.XQueryParams
 import kotlinx.html.*
+import kotlinx.serialization.json.Json
 import java.time.LocalDate
 import java.util.*
 
@@ -43,6 +44,29 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
 
 fun FlowContent.drawSettingsModal(q: String?) {
     val q_ = XQueryParams.fromJson(q)
+    form(method = FormMethod.post, action = "/changeLanguage") {
+        select(classes = "form-select languageSelect navbar-text") {
+            id = "languageSelect"
+            onChange = "this.form.submit();"
+            name = "language"
+
+            option {
+                selected = i18n.locale == Locale.GERMAN
+                value = "de"
+                +i18n.getString("settingspanel.language.german")
+            }
+            option {
+                selected = i18n.locale == Locale.ENGLISH
+                value = "en"
+                +i18n.getString("settingspanel.language.english")
+            }
+        }
+        input(type = InputType.hidden) {
+            name = "q"
+            value = q ?: "null"
+        }
+    }
+
     a(classes = "navbar-text") {
         style = "text-decoration: none"
         attributes["data-bs-toggle"] = "modal"
@@ -90,30 +114,6 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                 min = "2000"
                                 max = LocalDate.now().year.toString()
                                 value = q_?.year?.toString() ?: ""
-                            }
-                        }
-                        div(classes = "form-group mb-3") {
-                            label {
-                                attributes["for"] = "languageSelect"
-                                +i18n.getString("settingspanel.language")
-                            }
-                            select(classes = "form-control") {
-                                id = "languageSelect"
-                                name = "language"
-                                option {
-                                    disabled = true
-                                    selected = true
-                                    value="noChange"
-                                    +i18n.getString("settingspanel.language.defaultText")
-                                }
-                                option {
-                                    value = "de"
-                                    +i18n.getString("settingspanel.language.german")
-                                }
-                                option {
-                                    value = "en"
-                                    +i18n.getString("settingspanel.language.english")
-                                }
                             }
                         }
                         div(classes = "form-group mb-3") {

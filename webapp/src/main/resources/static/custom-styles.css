@@ -46,6 +46,11 @@ html, body {
     font-size: .8em;
 }
 
+.languageSelect {
+    border: none;
+    background-color: transparent;
+}
+
 /* settings panel CSS
 -------------------------------------------------- */
 
