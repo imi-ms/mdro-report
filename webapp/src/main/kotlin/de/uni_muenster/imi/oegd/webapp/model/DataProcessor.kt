@@ -7,9 +7,11 @@ object DataProcessor {
 
     fun countMRSAImported(caseList: List<Map<String, String>>) = caseList.count { it["page.MRSA.caselist.nosocomial"] != "nosokomial" }
 
-    fun countMRGN3Cases(caseList: List<Map<String, String>>) = caseList.count { it["page.MRGN.caselist.class"] == "MRGN3" }
+    fun countMRGN3Cases(caseList: List<Map<String, String>>) =
+        caseList.count { it["page.MRGN.caselist.class"] == "3MRGN" }
 
-    fun countMRGN4Cases(caseList: List<Map<String, String>>) = caseList.count { it["page.MRGN.caselist.class"] == "MRGN4" }
+    fun countMRGN4Cases(caseList: List<Map<String, String>>) =
+        caseList.count { it["page.MRGN.caselist.class"] == "4MRGN" }
 
     fun countVREEfaeciumResistant(caseList: List<Map<String, String>>) = caseList.count {
         it["page.VRE.caselist.vancomycin"] == "R" && it["page.VRE.caselist.pathogen"] == "Enterococcus faecium"

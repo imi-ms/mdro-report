@@ -1,5 +1,6 @@
 package de.uni_muenster.imi.oegd.webapp.view
 
+import de.uni_muenster.imi.oegd.webapp.get
 import de.uni_muenster.imi.oegd.webapp.i18n
 import de.uni_muenster.imi.oegd.webapp.model.*
 import io.ktor.server.html.*
@@ -104,7 +105,7 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                             href = "https://imi.uni-muenster.de",
                             target = "_blank"
                         ) {
-                            +i18n.getString("footer.imi")
+                            +i18n["footer.imi"]
                         }
                         +" & "
                         a(
@@ -112,7 +113,7 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                             href = "https://www.ukm.de/institute/hygiene",
                             target = "_blank"
                         ) {
-                            +i18n.getString("footer.ukmHygiene")
+                            +i18n["footer.ukmHygiene"]
                         }
                         +" Münster"
                     }
@@ -171,7 +172,7 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
     drawInvalidateButton(lastUpdate, q)
 
     if (data.isEmpty()) {
-        +i18n.getString("page.caselist.isEmpty")
+        +i18n["page.caselist.isEmpty"]
         return
     }
 
@@ -205,11 +206,11 @@ private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
         form(classes = "form-inline", action = "invalidate-cache", method = FormMethod.post) {
             label {
                 title = lastUpdate
-                +"${i18n.getString("page.other.reportAge")}: ${LocalDateTime.parse(lastUpdate).toDifferenceFromNow()}"
+                +"${i18n["page.other.reportAge"]}: ${LocalDateTime.parse(lastUpdate).toDifferenceFromNow()}"
             }
             hiddenInput(name = "q") { value = q }
             button(type = ButtonType.submit, classes = "btn btn-light btn-sm") {
-                +i18n.getString("page.other.createNewReport")
+                +i18n["page.other.createNewReport"]
             }
         }
     }
@@ -267,7 +268,7 @@ fun FlowContent.drawDiagrams(
                 div(classes = "col-3") {
                     style = "height: 400px;"
                     drawBarChart(
-                        "${i18n.getString("page.diagrams.numberOf")} $germ",
+                        "${i18n["page.diagrams.numberOf"]} $germ",
                         data.mapKeys { it.key.toString() })
                 }
             }
@@ -281,19 +282,6 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
         id = "statistics-create"
         if (q != null) {
             hiddenInput(name = "q") { value = q }
-        }
-    }
-    div(classes = "form-inline") {
-        input(classes = "form-control mb-2 mr-sm-2", name = "year", type = InputType.number) {
-            min = "2000"
-            max = LocalDate.now().year.toString()
-            placeholder = i18n.getString("settingspanel.year")
-            required = true
-            form = "statistics-create"
-        }
-        button(type = ButtonType.submit, classes = "btn btn-light mb-2") {
-            form = "statistics-create"
-            +i18n.getString("page.diagrams.createReport")
         }
     }
     form(action = "/statistic") {
@@ -314,12 +302,12 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
                     val teilberichteZuErstellen = GermType.entries.map { it.germtype } -
                             cache.germCache.filter { it.created != null }.map { it.type }
                     span(classes = "text-muted ms-1") {
-                        +"${i18n.getString("page.diagrams.reportsCreated")}: "
+                        +"${i18n["page.diagrams.reportsCreated"]}: "
                         +LocalDateTime.parse(cache.metadata.timeUpdated).toDifferenceFromNow()
                         if (teilberichteZuErstellen.isNotEmpty()) {
                             +", ${
                                 MessageFormat.format(
-                                    i18n.getString("page.diagrams.openReports"),
+                                    i18n["page.diagrams.openReports"],
                                     teilberichteZuErstellen.joinToString()
                                 )
                             }"
@@ -333,16 +321,33 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
                 }
             }
         }
-
+        div(classes = "row pl-5") {
+            div(classes = "col-3") {
+                numberInput(classes = "form-control form-control-sm mb-2 mr-sm-2", name = "year") {
+//                style = "max-width: 200px;"
+                    min = "2000"
+                    max = LocalDate.now().year.toString()
+                    placeholder = i18n["settingspanel.year"]
+                    required = true
+                    form = "statistics-create"
+                }
+            }
+            div(classes = "col-2") {
+                button(type = ButtonType.submit, classes = "btn btn-light btn-sm mb-2") {
+                    form = "statistics-create"
+                    +i18n["page.diagrams.createReport"]
+                }
+            }
+        }
         button(type = ButtonType.submit, classes = "btn btn-secondary mb-2") {
-            +i18n.getString("page.diagrams.createDiagrams")
+            +i18n["page.diagrams.createDiagrams"]
         }
     }
 
     for (cache in cacheData) {
         form(action = "/statistic/deleteReport", method = FormMethod.post) {
             id = "deleteReportForm_${cache.metadata.xQueryParams.year}"
-            input(type = InputType.hidden, name = "year") {
+            hiddenInput(name = "year") {
                 value = cache.metadata.xQueryParams.year.toString()
             }
         }
