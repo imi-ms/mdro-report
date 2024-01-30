@@ -99,11 +99,19 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                         span(classes = "text-muted") {
                             +"© 2023 Copyright "
                         }
-                        a(href = "https://imi.uni-muenster.de", target = "_blank") {
+                        a(
+                            classes = "text-muted link-underline link-underline-opacity-50 link-underline-opacity-100-hover",
+                            href = "https://imi.uni-muenster.de",
+                            target = "_blank"
+                        ) {
                             +i18n.getString("footer.imi")
                         }
                         +" & "
-                        a(href = "https://www.ukm.de/institute/hygiene", target = "_blank") {
+                        a(
+                            classes = "text-muted link-underline link-underline-opacity-50 link-underline-opacity-100-hover",
+                            href = "https://www.ukm.de/institute/hygiene",
+                            target = "_blank"
+                        ) {
                             +i18n.getString("footer.ukmHygiene")
                         }
                         +" Münster"
@@ -269,18 +277,22 @@ fun FlowContent.drawDiagrams(
 }
 
 fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
-    form(classes = "form-inline", method = FormMethod.post, action = "/statistic/create") {
+    form(method = FormMethod.post, action = "/statistic/create") {
+        id = "statistics-create"
+        if (q != null) {
+            hiddenInput(name = "q") { value = q }
+        }
+    }
+    div(classes = "form-inline") {
         input(classes = "form-control mb-2 mr-sm-2", name = "year", type = InputType.number) {
             min = "2000"
             max = LocalDate.now().year.toString()
             placeholder = i18n.getString("settingspanel.year")
             required = true
+            form = "statistics-create"
         }
-        if (q != null) {
-            hiddenInput(name = "q") { value = q }
-        }
-
         button(type = ButtonType.submit, classes = "btn btn-light mb-2") {
+            form = "statistics-create"
             +i18n.getString("page.diagrams.createReport")
         }
     }
@@ -299,7 +311,7 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
                 label(classes = "form-check-label") {
                     htmlFor = "q${xQueryParams.year}"
                     +xQueryParams.year.toString()
-                    val teilberichteZuErstellen = GermType.values().map { it.germtype } -
+                    val teilberichteZuErstellen = GermType.entries.map { it.germtype } -
                             cache.germCache.filter { it.created != null }.map { it.type }
                     span(classes = "text-muted ms-1") {
                         +"${i18n.getString("page.diagrams.reportsCreated")}: "

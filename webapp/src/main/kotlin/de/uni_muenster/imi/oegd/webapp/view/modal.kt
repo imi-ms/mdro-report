@@ -10,9 +10,7 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
     button(classes = "btn btn-link text-muted") {
         attributes["data-bs-toggle"] = "modal"
         attributes["data-bs-target"] = "#query-modal-$index"
-        i {
-            attributes["class"] = "bi bi-info-circle"
-        }
+        i(classes = "bi bi-info-circle") {}
     }
     div(classes = "modal fade") {
         id = "query-modal-$index"
@@ -34,9 +32,7 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
                     }
                 }
                 div(classes = "modal-body modal-query") {
-                    pre {
-                        +(entry.query + "\n\n")
-                    }
+                    pre { +(entry.query + "\n\n") }
                 }
             }
         }
@@ -46,6 +42,7 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
 fun FlowContent.drawSettingsModal(q: String?) {
     val q_ = XQueryParams.fromJson(q)
     a(classes = "navbar-text") {
+        style = "text-decoration: none"
         attributes["data-bs-toggle"] = "modal"
         attributes["data-bs-target"] = "#settings-modal"
         if (q_ != null) {

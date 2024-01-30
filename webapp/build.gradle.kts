@@ -21,9 +21,9 @@ repositories {
 
 
 val ktor_version: String by project
-val kotlinx_html_version = "0.8.0"
+val kotlinx_html_version = "0.11.0"
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-stdlib")
+    implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
     implementation("net.harawata:appdirs:1.2.1")

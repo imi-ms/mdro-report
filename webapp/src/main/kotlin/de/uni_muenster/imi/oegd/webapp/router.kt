@@ -47,7 +47,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     template = LayoutTemplate(call.request.uri, call.parameters["q"])
                 ) {
                     header { +"404 Not Found" }
-                    content { +"${i18n.getString("page.error.notFound")} ${call.request.uri}" }
+                    content { +"${i18n["page.error.notFound"]} ${call.request.uri}" }
                 }
             }
             exception<Throwable> { call, cause ->
@@ -60,7 +60,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     content {
                         +"${cause.message}"
                         br
-                        +i18n.getString("page.error.serverError")
+                        +i18n["page.error.serverError"]
                         br
                         pre { +cause.stackTraceToString() }
 
@@ -79,10 +79,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     val ip = InetAddress.getByName(call.request.local.remoteHost)
                     if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
                         call.respondText(
-                            MessageFormat.format(
-                                i18n.getString("page.error.noLocalhost"),
-                                ip
-                            ),
+                            text = MessageFormat.format(i18n["page.error.noLocalhost"], ip),
                             status = HttpStatusCode.Unauthorized
                         )
                         this.finish()
@@ -245,7 +242,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                                     drawBarChart(i18n.getString("page.MRSA.diagrams.numberOfSamples"), probenart)
                                 }
                                 div(classes = "col-6") {
-                                    drawPieChart(i18n.getString("page.MRSA.diagrams.numberNosocomialAndImported"), importedOrNosocomial)
+                                    drawPieChart(
+                                        i18n.getString("page.MRSA.diagrams.numberNosocomialAndImported"),
+                                        importedOrNosocomial
+                                    )
                                 }
                             }
                         }
