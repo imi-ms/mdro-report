@@ -24,12 +24,14 @@ import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.text.MessageFormat
 import java.util.*
+import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 private val log = KotlinLogging.logger { }
 
 //private val mutex = Mutex()
 val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
 lateinit var i18n: ResourceBundle
+lateinit var currentLanguage: Locale
 val ApplicationCall.xQueryParams: XQueryParams
     get() = this.attributes[xqueryparams]
 
@@ -97,6 +99,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val x = XQueryParams(parameters["year"]?.toInt())
                 val q = Json.encodeToString(x)
                 val referrer = call.request.headers[HttpHeaders.Referrer]?.substringBefore("?")
+                changeLanguage(parameters["language"] ?: "en")
                 call.respondRedirect("$referrer?q=$q")
             }
             intercept(ApplicationCallPipeline.Call) {
@@ -321,6 +324,15 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
         environment.monitor.subscribe(ApplicationStopping) {
             baseXClient.close()
         }
+    }
+}
+
+private fun changeLanguage(languageSelectValue: String) {
+    i18n = when(languageSelectValue) {
+        "de" -> ResourceBundle.getBundle("webappMessages", Locale.GERMAN)
+        "en" -> ResourceBundle.getBundle("webappMessages", Locale.ENGLISH)
+        "noChange" -> i18n //No change for no different selection
+        else -> ResourceBundle.getBundle("webappMessages", Locale.ENGLISH)
     }
 }
 

@@ -1,10 +1,12 @@
 package de.uni_muenster.imi.oegd.webapp.view
 
+import de.uni_muenster.imi.oegd.webapp.currentLanguage
 import de.uni_muenster.imi.oegd.webapp.i18n
 import de.uni_muenster.imi.oegd.webapp.model.OverviewEntry
 import de.uni_muenster.imi.oegd.webapp.model.XQueryParams
 import kotlinx.html.*
 import java.time.LocalDate
+import java.util.*
 
 fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
     button(classes = "btn btn-link text-muted") {
@@ -88,6 +90,30 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                 min = "2000"
                                 max = LocalDate.now().year.toString()
                                 value = q_?.year?.toString() ?: ""
+                            }
+                        }
+                        div(classes = "form-group mb-3") {
+                            label {
+                                attributes["for"] = "languageSelect"
+                                +i18n.getString("settingspanel.language")
+                            }
+                            select(classes = "form-control") {
+                                id = "languageSelect"
+                                name = "language"
+                                option {
+                                    disabled = true
+                                    selected = true
+                                    value="noChange"
+                                    +i18n.getString("settingspanel.language.defaultText")
+                                }
+                                option {
+                                    value = "de"
+                                    +i18n.getString("settingspanel.language.german")
+                                }
+                                option {
+                                    value = "en"
+                                    +i18n.getString("settingspanel.language.english")
+                                }
                             }
                         }
                         div(classes = "form-group mb-3") {
