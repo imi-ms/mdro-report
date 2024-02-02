@@ -66,7 +66,13 @@ fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>
                         responsive: true,
                         maintainAspectRatio: false,
                         scales: {
-                            yAxes: [{ ticks:{beginAtZero: true, min: 0} }]
+                            yAxes: [{ 
+                                ticks:{
+                                    beginAtZero: true, 
+                                    min: 0, 
+                                    //disable non-integer ticks
+                                    callback:function(val, idx){if (Number.isInteger(val)) { return val; }}
+                            } }]
                         }
                     }
                 });
