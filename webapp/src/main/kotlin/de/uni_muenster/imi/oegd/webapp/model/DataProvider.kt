@@ -1,6 +1,8 @@
 package de.uni_muenster.imi.oegd.webapp.model
 
 import de.uni_muenster.imi.oegd.webapp.parseCsv
+import de.uni_muenster.imi.oegd.webapp.toGermanDate
+import de.uni_muenster.imi.oegd.webapp.transformEntry
 import java.time.LocalDateTime
 
 object DataProvider {
@@ -43,7 +45,7 @@ object DataProvider {
                 "page.MRSA.caselist.spa",
                 "page.MRSA.caselist.clustertype"
             )
-        )
+        ).map { it.transformEntry("page.MRSA.caselist.samplingDate", ::toGermanDate) }
     }
 
     suspend fun getMRGNCSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
@@ -68,12 +70,10 @@ object DataProvider {
             )
         ).map {
             //Replace MRGN3 -> 3MRGN, MRGN4 -> 4MRGN
-            it.mapValues { (k, v) ->
-                if (k == "page.MRGN.caselist.class")
-                    v.replace("MRGN3", "3MRGN").replace("MRGN4", "4MRGN")
-                else v
+            it.transformEntry("page.MRGN.caselist.class") { v ->
+                v.replace("MRGN3", "3MRGN").replace("MRGN4", "4MRGN")
             }
-        }
+        }.map { it.transformEntry("page.MRGN.caselist.samplingDate", ::toGermanDate) }
         //E-Mail von Zentralstelle IfSG: "Doppelte Fälle sind nur zulässig, wenn es sich um unterschiedliche Erreger und MRGN-Klassifikationen handelt"
         val result = parsed.distinctBy {
             val case = it["page.MRGN.caselist.caseID"]
@@ -108,8 +108,12 @@ object DataProvider {
                 "page.VRE.caselist.teicoplanin",
                 "page.VRE.caselist.quinupristinAndDalfopristin"
             )
-        )
+        ).map {
+            it.transformEntry("page.VRE.caselist.samplingDate", ::toGermanDate)
+        }
     }
+
+
 
     //TODO: Übersicht auf Plausibilität checken / checken lassen
 

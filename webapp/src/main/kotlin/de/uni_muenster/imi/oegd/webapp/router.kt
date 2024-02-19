@@ -24,7 +24,6 @@ import java.net.InetAddress
 import java.nio.charset.StandardCharsets
 import java.text.MessageFormat
 import java.util.*
-import kotlin.reflect.jvm.internal.impl.descriptors.Visibilities.Local
 
 private val log = KotlinLogging.logger { }
 
@@ -194,6 +193,10 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                         content { drawCaseList(germInfo.caseList!!, germInfo.created!!, q) }
                     }
                 }
+                get("$germ/list/csv") {
+                    val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
+                    call.respond(germInfo.caseList!!.toCsv())
+                }
             }
             get("MRGN/statistic") {
                 val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRGN)
@@ -332,6 +335,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
         }
     }
 }
+
 
 private fun changeLanguage(languageSelectValue: String) {
     i18n = when(languageSelectValue) {

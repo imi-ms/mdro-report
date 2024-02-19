@@ -211,7 +211,13 @@ class JavaFxApplication : Application() {
             }
 
             val file = FileChooser().apply {
-                initialFileName = "report.mrereport"
+                initialFileName = when {
+                    url.contains("downloadCache") -> "report.mrereport"
+                    url.contains("MRGN") -> "mrgn.csv"
+                    url.contains("MRSA") -> "mrsa.csv"
+                    url.contains("VRE") -> "vre.csv"
+                    else -> "file.txt"
+                }
             }.showSaveDialog(primaryStage) ?: return
             indicator2.visibleProperty().bind(data.runningProperty())
             webView.disableProperty().bind(data.runningProperty())
@@ -230,8 +236,9 @@ class JavaFxApplication : Application() {
 
         webView.engine.locationProperty().addListener { _, oldLocation, newLocation ->
             //TODO: Dadurch wird die Datei zweimal heruntergeladen - einmal durch den Browser und einmal unten durch den Code
-            if (newLocation.contains("downloadCache")) {
+            if ("downloadCache" in newLocation || "list/csv" in newLocation) {
                 downloadFile(newLocation)
+                webView.engine.load(oldLocation)
             }
             if (newLocation.contains("imi.uni-muenster.de") || newLocation.contains("ukm.de")) {
                 hostServices.showDocument(newLocation)

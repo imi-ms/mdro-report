@@ -33,7 +33,7 @@ fun FlowContent.drawChart(type: String, label: String, data: Map<String, String>
         height = "100%"
     }
     val labels = Json.encodeToString(data.keys)
-    val dataValues = Json.encodeToString(data.values.map { it.toInt() }.toList())
+    val dataValues = Json.encodeToString(data.values.map { it.toInt() })
     script(type = "text/javascript") {
         unsafe {
             +"""

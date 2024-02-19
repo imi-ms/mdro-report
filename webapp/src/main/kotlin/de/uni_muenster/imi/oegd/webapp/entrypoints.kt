@@ -18,7 +18,7 @@ private val log = KotlinLogging.logger { }
 fun main(args: Array<String>) {
     fun askUser(message: String): String {
         println(message)
-        return readLine()!!
+        return readln()
     }
 
     val webappPort = findOpenPortInRange(8080..8888) ?: error("No free port available!")

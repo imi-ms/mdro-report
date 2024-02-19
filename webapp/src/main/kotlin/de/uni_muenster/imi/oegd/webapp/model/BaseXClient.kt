@@ -58,5 +58,4 @@ class RestClient(
 
     override fun getInfo() = RestConnectionInfo(baseURL, database)
 
-
 }

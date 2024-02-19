@@ -98,7 +98,7 @@ class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTM
                 footer(classes = "footer") {
                     div(classes = "container") {
                         span(classes = "text-muted") {
-                            +"© 2023 Copyright "
+                            +"© 2024 Copyright "
                         }
                         a(
                             classes = "text-muted link-underline link-underline-opacity-50 link-underline-opacity-100-hover",
@@ -176,6 +176,11 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
         return
     }
 
+    a(href = "list/csv?q=${q}", classes = "btn btn-secondary btn-sm mt-2 ms-2") {
+        attributes["download"] = "mrereport-export.csv"
+        +"Download CSV"
+    }
+
     val columnNames = data.first().keys
     table(classes = "table") {
         thead {
@@ -183,8 +188,8 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
                 for (columnName in columnNames) {
                     th(scope = ThScope.col) {
                         +try {
-                            i18n.getString(columnName)
-                        } catch (e: Exception) {
+                            i18n[columnName]
+                        } catch (_: Exception) {
                             columnName
                         }
                     }
@@ -224,7 +229,7 @@ fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String,
         for ((index, entry) in data.withIndex()) {
             tr {
                 th {
-                    span { unsafe { +i18n.getString(entry.title) } }
+                    span { unsafe { +i18n[entry.title] } }
                 }
                 td {
                     span { +entry.data }
@@ -267,9 +272,7 @@ fun FlowContent.drawDiagrams(
             for ((germ, data) in data) {
                 div(classes = "col-3") {
                     style = "height: 400px;"
-                    drawBarChart(
-                        "${i18n["page.diagrams.numberOf"]} $germ",
-                        data.mapKeys { it.key.toString() })
+                    drawBarChart("${i18n["page.diagrams.numberOf"]} $germ", data.mapKeys { it.key.toString() })
                 }
             }
 
@@ -299,25 +302,20 @@ fun FlowContent.drawYearSelector(cacheData: List<CacheData>, q: String?) {
                 label(classes = "form-check-label") {
                     htmlFor = "q${xQueryParams.year}"
                     +xQueryParams.year.toString()
-                    val teilberichteZuErstellen = GermType.entries.map { it.germtype } -
+                    val missingGerms = GermType.entries.map { it.germtype } -
                             cache.germCache.filter { it.created != null }.map { it.type }
                     span(classes = "text-muted ms-1") {
                         +"${i18n["page.diagrams.reportsCreated"]}: "
                         +LocalDateTime.parse(cache.metadata.timeUpdated).toDifferenceFromNow()
-                        if (teilberichteZuErstellen.isNotEmpty()) {
-                            +", ${
-                                MessageFormat.format(
-                                    i18n["page.diagrams.openReports"],
-                                    teilberichteZuErstellen.joinToString()
-                                )
-                            }"
+                        if (missingGerms.isNotEmpty()) {
+                            +", ${MessageFormat.format(i18n["page.diagrams.openReports"], missingGerms.joinToString())}"
                         }
 
                     }
                 }
                 button(classes = "btn btn-outline-danger btn-sm ms-2", type = ButtonType.submit) {
                     form = "deleteReportForm_${xQueryParams.year}"
-                    +i18n.getString("page.diagrams.delete")
+                    +i18n["page.diagrams.delete"]
                 }
             }
         }
