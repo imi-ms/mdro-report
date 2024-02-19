@@ -159,8 +159,8 @@ data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) 
     val sampleId: Int = idGenerator.getUniqueId()
     val germId: Int = idGenerator.getUniqueId()
 
-    val clinic: Department = Department.values().random()
-    val bodySite: SmearType = SmearType.values().random()
+    val clinic = Department.entries.random()
+    val bodySite = SmearType.entries.random()
 
     private val startAndEndDateTime = generator.getStartAndEndYear()
     val startDateTime: LocalDateTime = startAndEndDateTime.first
@@ -177,8 +177,8 @@ data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) 
         when (caseScope) {
             CaseScope.MRSA -> {
                 germType = GermType.S_AUREUS
-                spaType = getRandomTypeWithProbability(SpaType.values().toList())
-                clusterType = getRandomTypeWithProbability(ClusterType.values().toList())
+                spaType = getRandomTypeWithProbability(SpaType.entries)
+                clusterType = getRandomTypeWithProbability(ClusterType.entries)
                 nosocomial = Random.nextBoolean()
                 infection = Random.nextBoolean()
             }

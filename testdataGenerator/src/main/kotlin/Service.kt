@@ -32,7 +32,7 @@ fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {
         CaseScope.MRSA -> generateRandomAntibioticsAnalysis(MRSAAntibiotics) //TODO: Add Logic
         CaseScope.MRGN3 -> generateMRGNAntibioticsAnalysis(3, MRGNAntibiotics, caseInfo.germType)
         CaseScope.MRGN4 -> generateMRGNAntibioticsAnalysis(4, MRGNAntibiotics, caseInfo.germType)
-        CaseScope.VRE -> generateVREAntibioticsAnalysis(VREAntibiotics)
+        CaseScope.VRE -> generateVREAntibioticsAnalysis(caseInfo, VREAntibiotics)
     }
 }
 
@@ -80,12 +80,15 @@ fun generatePseudomonasAntibioticsAnalysis(antibiotics: MutableList<AntibioticTy
     return result
 }
 
-fun generateVREAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
+fun generateVREAntibioticsAnalysis(caseInfo: CaseInfo, antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
     return antibiotics.map {
         when (it) {
             LINEZOLID -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.LINEZOLID)
             TIGECYCLIN -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.TIGECYCLIN)
-            VANCOMYCIN -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.VANCOMYCIN)
+            VANCOMYCIN -> if (caseInfo.germType == GermType.E_FAECALIS) {
+                AntibioticsAnalysis(VANCOMYCIN, AntibioticsResult.SENSIBLE) // falls E.faecalis immer sensibel
+            } else getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.VANCOMYCIN)
+
             TEICOPLANIN -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.TEICOPLANIN)
             QUINUPRISTIN_DALFOPRISTIN -> getRandomAntibioticsAnalysisWithProbability(VREAntibioticsProbability.QUINUPRISTIN)
             else -> AntibioticsAnalysis(it, AntibioticsResult.UNKNOWN)
