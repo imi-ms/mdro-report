@@ -8,7 +8,7 @@ plugins {
     id("java")
     id("application")
     id("org.openjfx.javafxplugin") version "0.1.0"
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+    id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.panteleyev.jpackageplugin") version "1.5.2"
 }
 
@@ -16,7 +16,7 @@ plugins {
 kotlin {
     group = "de.uni_muenster.imi.oegd"
     version = "1.3.6"
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 java {

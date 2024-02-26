@@ -30,4 +30,4 @@ fun <K, V> Map<K, V>.transformEntry(key: K, transformer: (V) -> V): Map<K, V> {
 }
 
 private val pattern = DateTimeFormatter.ofPattern("dd.MM.yyyy")
-fun toGermanDate(v: String) = LocalDateTime.parse(v).toLocalDate().format(pattern)
+fun toGermanDate(v: String): String = LocalDateTime.parse(v).toLocalDate().format(pattern)

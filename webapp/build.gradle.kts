@@ -11,7 +11,6 @@ war {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd.webapp"
-    jvmToolchain(17)
 }
 
 repositories {

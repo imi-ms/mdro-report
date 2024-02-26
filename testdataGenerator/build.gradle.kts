@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd.testdataGenerator"
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 repositories {

@@ -44,7 +44,7 @@ clicking on the gear on the top right.
 
 ## Building
 
-**Requires: Java 17**
+**Requires: Java 21**
 
 Run
 
