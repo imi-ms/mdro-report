@@ -32,18 +32,18 @@ tasks {
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
 task("copyDependencies", Copy::class) {
-    from(configurations.runtimeClasspath).into("$buildDir/jars")
+    from(configurations.runtimeClasspath).into("${layout.buildDirectory}/jars")
 }
 
 task("copyJar", Copy::class) {
-    from(tasks.jar).into("$buildDir/jars")
+    from(tasks.jar).into("${layout.buildDirectory}/jars")
 }
 
 tasks.register<JPackageTask>("CreateAppImage") {
     dependsOn("build", "copyDependencies", "copyJar")
 
-    input = "$buildDir/jars"
-    destination = "$buildDir/dist"
+    input = "${layout.buildDirectory}/jars"
+    destination = "${layout.buildDirectory}/dist"
 
     appName = "MREReport-Testdata-Generator"
     vendor = "Institut für Medizinische Informatik Münster"

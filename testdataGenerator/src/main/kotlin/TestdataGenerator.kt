@@ -13,7 +13,7 @@ private val log = KotlinLogging.logger { }
 fun main(args: Array<String>) {
     fun askUser(message: String): String {
         println(message)
-        return readLine()!!
+        return readln()
     }
 
     if (!File("testdata").exists()) {
@@ -44,7 +44,7 @@ class TestdataGenerator {
     }
 
     fun createTestdataFile(location: String) {
-        val caseScope = CaseScope.values().random()
+        val caseScope = CaseScope.entries.random()
         val patient = createPatient(caseScope)
         val id = patient.get<Int>("id").toString()
         File("$location/$id.xml").writeText(patient.toString())
@@ -53,7 +53,7 @@ class TestdataGenerator {
     fun createTestdata(numberOfTestdata: Int): List<String> {
         val result = mutableListOf<String>()
         for (i in 1..numberOfTestdata) {
-            val caseScope = CaseScope.values().random()
+            val caseScope = CaseScope.entries.random()
             result.add(createPatient(caseScope).toString())
             log.info("Created new Patient with $caseScope case. Patient no. $i")
         }
@@ -72,7 +72,7 @@ class TestdataGenerator {
     }
 
     fun Node.addCase(caseInfo: CaseInfo) {
-        addNode(xml("case") {
+        addElement(xml("case") {
             attribute("id", caseInfo.caseId)
             attribute("from", caseInfo.startDateTime)
             attribute("till", caseInfo.endDateTime)

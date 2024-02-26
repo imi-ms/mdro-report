@@ -36,7 +36,9 @@ fun main(args: Array<String>) {
 
     log.info { "Starting local webserver on port $webappPort" }
 
-    createServer(baseXClient, webappPort).start(wait = true)
+    val createServer = createServer(baseXClient, webappPort)
+//    createServer.pipeline.execute(NettyApplicationCall())
+    createServer.start(wait = true)
 }
 
 /**
