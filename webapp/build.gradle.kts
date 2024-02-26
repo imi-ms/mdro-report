@@ -23,7 +23,7 @@ val kotlinx_html_version = "0.11.0"
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
     implementation("net.harawata:appdirs:1.2.1")
 
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")

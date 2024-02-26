@@ -5,8 +5,8 @@ System.setProperty("user.dir", project.projectDir.toString())
 plugins {
     kotlin("jvm") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22"
-    id("java")
-    id("application")
+    java
+    application
     id("org.openjfx.javafxplugin") version "0.1.0"
     id("com.github.johnrengelman.shadow") version "8.1.1"
     id("org.panteleyev.jpackageplugin") version "1.5.2"
@@ -51,20 +51,20 @@ application {
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
 task("copyDependencies", Copy::class) {
-    from(configurations.runtimeClasspath).into("$buildDir/jars")
+    from(configurations.runtimeClasspath).into("${layout.buildDirectory}/jars")
 }
 
 task("copyJar", Copy::class) {
     dependsOn(tasks.shadowJar)
-    from(tasks.shadowJar).into("$buildDir/jars")
+    from(tasks.shadowJar).into("${layout.buildDirectory}/jars")
 }
 
 
 tasks.register<JPackageTask>("CreateAppImage") {
     dependsOn("build", "copyJar")
 
-    input = "$buildDir/jars"
-    destination = "$buildDir/dist"
+    input = "${layout.buildDirectory}/jars"
+    destination = "${layout.buildDirectory}/dist"
 
     appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"

@@ -7,7 +7,6 @@ import de.uni_muenster.imi.oegd.webapp.model.XQueryParams
 import kotlinx.html.*
 import kotlinx.html.ButtonType.button
 import kotlinx.html.ButtonType.submit
-import kotlinx.html.FormEncType.multipartFormData
 import kotlinx.html.FormMethod.post
 import java.time.LocalDate
 import java.util.*
@@ -49,7 +48,7 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
 fun FlowContent.drawSettingsModal(q: String?) {
     val q_ = XQueryParams.fromJson(q)
     form(method = post, action = "/changeLanguage") {
-        select(classes = "form-select languageSelect navbar-text") {
+        select(classes = "form-select languageSelect navbar-text text-muted") {
             id = "languageSelect"
             onChange = "this.form.submit();"
             name = "language"
@@ -73,8 +72,11 @@ fun FlowContent.drawSettingsModal(q: String?) {
         attributes["data-bs-toggle"] = "modal"
         attributes["data-bs-target"] = "#settings-modal"
         if (q_ != null) {
-            span(classes = "text-muted") { +"${i18n["settingspanel.year"]}: " }
-            span(classes = "font-weight-bold") { +q_.year.toString() }
+            span(classes = "") { +"${i18n["settingspanel.year"]}: " }
+            span {
+                style = "color:black;font-weight:bold;"
+                +q_.year.toString()
+            }
         }
     }
 
@@ -90,7 +92,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
         attributes["role"] = "dialog"
         attributes["aria-labelledby"] = "#settings-title"
         attributes["aria-hidden"] = "true"
-        div(classes = "modal-dialog modal-dialog-slideout modal-md") {
+        div(classes = "modal-dialog modal-dialog-centered modal-md") {
             attributes["role"] = "document"
             div(classes = "modal-content") {
                 div(classes = "modal-header d-flex") {
@@ -127,7 +129,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
                             }
                         }
                     }
-                    hr {}
+                    /*hr {}
                     form(action = "/settings/uploadCache", method = post, encType = multipartFormData) {
                         div(classes = "form-group mb-3") {
                             label {
@@ -146,7 +148,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                 +i18n["settingspanel.buttons.downloadReport"]
                             }
                         }
-                    }
+                    }*/
                 }
             }
         }
