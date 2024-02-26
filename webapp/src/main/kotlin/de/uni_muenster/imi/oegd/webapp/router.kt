@@ -95,7 +95,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             }
             post("/settings/save") {
                 val parameters = call.receiveParameters()
-                val x = XQueryParams(parameters["year"]?.toInt())
+                val x = parameters["year"]?.ifBlank { null }?.let { XQueryParams(year = it.toInt()) }
                 val q = Json.encodeToString(x)
                 val referrer = call.request.headers[HttpHeaders.Referrer]?.substringBefore("?")
                 call.respondRedirect("$referrer?q=$q")
@@ -338,7 +338,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
 
 
 private fun changeLanguage(languageSelectValue: String) {
-    i18n = when(languageSelectValue) {
+    i18n = when (languageSelectValue) {
         "de" -> ResourceBundle.getBundle("webappMessages", Locale.GERMAN)
         "en" -> ResourceBundle.getBundle("webappMessages", Locale.ENGLISH)
         else -> ResourceBundle.getBundle("webappMessages", Locale.ENGLISH)
