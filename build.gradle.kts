@@ -51,20 +51,23 @@ application {
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
 task("copyDependencies", Copy::class) {
-    from(configurations.runtimeClasspath).into("${layout.buildDirectory}/jars")
+    from(configurations.runtimeClasspath)
+        .into(layout.buildDirectory.get().dir("jars"))
 }
 
 task("copyJar", Copy::class) {
     dependsOn(tasks.shadowJar)
-    from(tasks.shadowJar).into("${layout.buildDirectory}/jars")
+
+    from(tasks.shadowJar.get().archiveFile)
+        .into(layout.buildDirectory.get().dir("jars"))
 }
 
 
 tasks.register<JPackageTask>("CreateAppImage") {
     dependsOn("build", "copyJar")
 
-    input = "${layout.buildDirectory}/jars"
-    destination = "${layout.buildDirectory}/dist"
+    input = "${layout.buildDirectory.get()}/jars"
+    destination = "${layout.buildDirectory.get()}/dist"
 
     appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"
@@ -79,8 +82,8 @@ tasks.register<JPackageTask>("CreateAppImage") {
 tasks.register<JPackageTask>("CreateEXE") {
     dependsOn("build", "copyJar")
 
-    input = "$buildDir/jars"
-    destination = "$buildDir/dist"
+    input = "${layout.buildDirectory.get()}/jars"
+    destination = "${layout.buildDirectory.get()}/dist"
 
     appName = "MRE-Report"
     vendor = "Institut für Medizinische Informatik Münster"

@@ -146,7 +146,7 @@ class TestdataGenerator {
 
 
     fun Node.addPCRMetaNode(k: String, v: Any) {
-        addNode(xml("pcr-meta") {
+        addElement(xml("pcr-meta") {
             attribute("k", k)
             attribute("v", v)
         })
