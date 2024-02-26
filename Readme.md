@@ -12,7 +12,7 @@ from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/pub
 can decide between a
 
 * Pre-build executable .jar file (*MREReport-Full.jar*, requires an installation of the Java Runtime Environment (JRE)
-  version 17 or higher)
+  *version 21* or higher)
 * An executable installer, which will install MRE-Report alongside its own JRE and creates a Start Menu entry
 * A .jar file, that does not include BaseX or JavaFX (*MREReport-Light.jar*, requires separately installed JRE and
   [BaseX](https://basex.org/) server, run with command line to set connection data)
@@ -44,7 +44,7 @@ clicking on the gear on the top right.
 
 ## Building
 
-⚠ ⚠ ⚠ **Requires: Java 21** ⚠ ⚠ ⚠
+⚠ ❗ ⚠ **Requires: Java 21** (or later) ⚠ ❗ ⚠
 
 Run
 
