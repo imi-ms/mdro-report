@@ -11,10 +11,10 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 
-class LayoutTemplate(url2: String, private val q: String? = null) : Template<HTML> {
+class LayoutTemplate(_url: String, private val q: String? = null) : Template<HTML> {
     val header = Placeholder<FlowContent>()
     val content = Placeholder<FlowContent>()
-    private val url = url2.removePrefix("/")
+    private val url = _url.removePrefix("/")
     override fun HTML.apply() {
         head {
             meta(charset = "UTF-8")

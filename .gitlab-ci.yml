@@ -24,9 +24,10 @@ build:
       - build/libs/MREReport-Full.jar
       - webapp/build/libs/MREReport-Light.jar
       - webapp/build/libs/webapp.war
-      - testdataGenerator/build/libs/MDTestdataGenerator.jar
+      - testdataGenerator/build/libs/MRETestdataGenerator.jar
   only:
     - master
+    - tags
 
 release_job:
   stage: release
