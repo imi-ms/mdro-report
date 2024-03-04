@@ -49,18 +49,15 @@ release_job:
     - job: build
       artifacts: true
   script:
-    - |
-      release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
-        --assets-link "{\"name\":\"MREReport-${CI_COMMIT_TAG}-Full.jar\",\"url\":\"${PACKAGE_REGISTRY_URL}/MREReport-${CI_COMMIT_TAG}-Full.jar\"}" 
-
+    - echo "Hello"
   release:
     name: "Auto-Release $CI_COMMIT_SHORT_SHA"
     description: "Automatic created release $CI_COMMIT_TITLE"
     tag_name: "$CI_COMMIT_SHORT_SHA"
     assets:
       links:
-        - name: "MREReport-Full.jar"
-          url: $CI_PROJECT_URL/-/jobs/${GE_JOB_ID}/artifacts/file/dist/MREReport-Full.jar
+        - name: MREReport-${CI_COMMIT_TAG}-Full.jar
+          url: ${PACKAGE_REGISTRY_URL}/MREReport-${CI_COMMIT_TAG}-Full.jar
 
 
 
