@@ -34,7 +34,7 @@ upload:
   stage: upload
   image: curlimages/curl:latest
   rules:
-    - if: $CI_COMMIT_TAG
+    - if: '$CI_COMMIT_REF_NAME == "master" && $CI_COMMIT_TAG'
   script:
     - |
       PACKAGE_REGISTRY_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}"
@@ -48,16 +48,13 @@ upload:
     - |
       PACKAGE_REGISTRY_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}"
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file testdataGenerator/build/libs/MRETestdataGenerator.jar ${PACKAGE_REGISTRY_URL}/MRETestdataGenerator-${CI_COMMIT_TAG}.jar
-  only:
-    - master
-    - tags
 
 
 release_job:
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   stage: release
   rules:
-    - if: $CI_COMMIT_TAG  
+    - if: '$CI_COMMIT_REF_NAME == "master" && $CI_COMMIT_TAG'
   needs:
     - job: build
       artifacts: true
