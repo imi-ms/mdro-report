@@ -59,7 +59,7 @@ dockerize:
     - docker build --pull -t "$CI_REGISTRY_IMAGE${tag}" .
     - docker push "$CI_REGISTRY_IMAGE${tag}"
     - |
-      if [[ "$CI_COMMIT_TAG" != "" ]]; then
+      if [[ -n "$CI_COMMIT_TAG" ]]; then
         docker push "$CI_REGISTRY_IMAGE${CI_COMMIT_TAG}"
       fi
   # Run this job in a branch where a Dockerfile exists
