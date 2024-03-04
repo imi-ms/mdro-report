@@ -2,6 +2,7 @@ image: gradle:8.6.0-jdk21-alpine
 
 stages:
   - build
+  - upload
   - release
 
 variables:
@@ -29,6 +30,16 @@ build:
     - master
     - tags
 
+upload:
+  stage: upload
+  image: curlimages/curl:latest
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - |
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file build/libs/MREReport-Full.jar ${PACKAGE_REGISTRY_URL}/MREReport-${CI_COMMIT_TAG}-Full.jar
+
+
 release_job:
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   stage: release
@@ -38,7 +49,10 @@ release_job:
     - job: build
       artifacts: true
   script:
-    - echo "Hallo"
+    - |
+      release-cli create --name "Release $CI_COMMIT_TAG" --tag-name $CI_COMMIT_TAG \
+        --assets-link "{\"name\":\"MREReport-${CI_COMMIT_TAG}-Full.jar\",\"url\":\"${PACKAGE_REGISTRY_URL}/MREReport-${CI_COMMIT_TAG}-Full.jar\"}" 
+
   release:
     name: "Auto-Release $CI_COMMIT_SHORT_SHA"
     description: "Automatic created release $CI_COMMIT_TITLE"
