@@ -95,7 +95,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             }
             post("/settings/save") {
                 val parameters = call.receiveParameters()
-                val x = parameters["year"]?.ifBlank { null }?.let { XQueryParams(year = it.toInt()) }
+                val year = parameters["year"]?.ifBlank { null }
+                val caseTypes = parameters.getAll("caseTypes")
+                val x = if (year != null && caseTypes != null) XQueryParams(year.toInt(), caseTypes) else null
                 val q = Json.encodeToString(x)
                 val referrer = call.request.headers[HttpHeaders.Referrer]?.substringBefore("?")
                 call.respondRedirect("$referrer?q=$q")
@@ -117,9 +119,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val q = call.parameters["q"]
                 if (q.isNullOrBlank() || q == "null") {
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                        header { +i18n.getString("page.missingConfig.heading") }
+                        header { +i18n["page.missingConfig.heading"] }
                         content {
-                            +i18n.getString("page.missingConfig.text")
+                            +i18n["page.missingConfig.text"]
                             script(type = "text/javascript") {
                                 unsafe { +"new bootstrap.Modal($('#settings-modal'), { keyboard: false }).show();" }
                             }
@@ -131,7 +133,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
 
             get("/") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +i18n.getString("page.welcome.heading") }
+                    header { +i18n["page.welcome.heading"] }
                     content { drawIndex(baseXClient.getInfo()) }
                 }
             }
@@ -172,7 +174,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(call.xQueryParams)
                 val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                    header { +i18n.getString("navigation.hospitalMetrics") }
+                    header { +i18n["navigation.hospitalMetrics"] }
                     content { drawOverviewTable(overviewContent!!, lastUpdate!!, q) }
                 }
             }
@@ -181,7 +183,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
                     val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                        header { +"$germ: ${i18n.getString("navigation.overview")}" }
+                        header { +"$germ: ${i18n["navigation.overview"]}" }
                         content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!, q) }
                     }
                 }
@@ -189,7 +191,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
                     val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                        header { +"$germ: ${i18n.getString("navigation.list")}" }
+                        header { +"$germ: ${i18n["navigation.list"]}" }
                         content { drawCaseList(germInfo.caseList!!, germInfo.created!!, q) }
                     }
                 }
@@ -205,7 +207,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val probenart = germInfo.caseList!!.groupingBy { it["page.MRGN.caselist.sampleType"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +i18n.getString("page.other.diagrams") }
+                    header { +i18n["page.other.diagrams"] }
                     content {
                         script("text/javascript", "/static/github-com-chartjs-Chart-js/Chart.min.js") {}
                         drawBarChart(i18n.getString("page.MRGN.diagrams.MRGNinDepartments"), departments)
@@ -221,7 +223,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val probenart = germInfo.caseList!!.groupingBy { it["page.VRE.caselist.sampleType"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
-                    header { +i18n.getString("page.other.diagrams") }
+                    header { +i18n["page.other.diagrams"] }
                     content {
                         script("text/javascript", "/static/github-com-chartjs-Chart-js/Chart.min.js") {}
                         drawBarChart(i18n.getString("page.VRE.diagrams.VREinDepartments"), department)

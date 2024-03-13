@@ -77,6 +77,11 @@ fun FlowContent.drawSettingsModal(q: String?) {
                 style = "color:black;font-weight:bold;"
                 +q_.year.toString()
             }
+            span(classes = "") { +" Falltyp: " }
+            span {
+                style = "color:black;font-weight:bold;"
+                +q_.caseTypes.joinToString()
+            }
         }
     }
 
@@ -117,6 +122,22 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                 min = "2000"
                                 max = LocalDate.now().year.toString()
                                 value = q_?.year?.toString() ?: ""
+                            }
+                        }
+                        div(classes = "form-group mb-3") {
+                            for (caseType in listOf("AMBULANT", "STATIONAER", "TEILSTATIONAER", "NACHSTATIONAER")) {
+                                div(classes = "form-check form-check-inline") {
+                                    checkBoxInput(classes = "form-check-input") {
+                                        id = "chk$caseType"
+                                        value = "$caseType"
+                                        name = "caseTypes"
+                                        checked = caseType in (q_?.caseTypes ?: emptyList())
+                                    }
+                                    label(classes = "form-check-label") {
+                                        htmlFor = "chk$caseType"
+                                        +caseType
+                                    }
+                                }
                             }
                         }
                         div(classes = "form-group mb-3") {

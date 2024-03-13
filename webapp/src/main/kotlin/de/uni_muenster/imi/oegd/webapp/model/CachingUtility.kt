@@ -16,18 +16,10 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
     val cacheProvider = CacheProvider(basexInfo)
 
     //Loading the data is timeconsuming. Use a mutex to triggering duplicate report creation
-    private val mutexMap = mutableMapOf<Pair<XQueryParams, GermType?>, Mutex>().apply {
-        for (year in 2000..2030) {
-            val xQueryParams = XQueryParams(year)
-            for (germ in GermType.values()) {
-                put(xQueryParams to germ, Mutex())
-            }
-            put(xQueryParams to null, Mutex())
-        }
-    }
+    private val mutexMap = mutableMapOf<Pair<XQueryParams, GermType?>, Mutex>()
 
     suspend fun getOrLoadGermInfo(xQueryParams: XQueryParams, germ: GermType): GermInfo =
-        mutexMap[xQueryParams to germ]!!.withLock {
+        mutexMap.getOrPut(xQueryParams to germ) { Mutex() }.withLock {
             if (getGermForGermtype(xQueryParams, germ)?.created == null) {
                 log.info { "Loading $germ-GermInfo from BaseX for $xQueryParams" }
                 val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
@@ -41,7 +33,7 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
 
 
     suspend fun getOrLoadGlobalInfo(xQueryParams: XQueryParams): GlobalInfo =
-        mutexMap[xQueryParams to null]!!.withLock {
+        mutexMap.getOrPut(xQueryParams to null) { Mutex() }.withLock {
             if (getGlobalInfo(xQueryParams)?.created == null) {
                 log.info { "Loading GlobalInfo from BaseX for $xQueryParams" }
                 val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
@@ -160,7 +152,7 @@ class CacheProvider(val basexInfo: BasexInfo) {
     }
 
     fun getCacheFileName(xQueryParams: XQueryParams): String {
-        return "${getBaseXPrefix()}--${xQueryParams.year}.mrereport"
+        return "${getBaseXPrefix()}--${xQueryParams.year}-${xQueryParams.caseTypes.joinToString("_")}.mrereport"
     }
 
     fun writeCache(cache: CacheData) {

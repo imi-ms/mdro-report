@@ -3,7 +3,7 @@ let $input :=
 {
 for $x in /patient/case
 where (xs:dateTime($x/@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/@from) < xs:dateTime("#YEAR_END"))
-where $x/@type="STATIONAER"
+where $x/@type=#CASE_TYPE
 return 
 <caseID>
 $x/@id

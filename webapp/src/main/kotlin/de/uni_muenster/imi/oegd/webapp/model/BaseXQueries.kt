@@ -26,8 +26,7 @@ object BaseXQueries {
     }
 
     fun applyParams(query: String, xQueryParams: XQueryParams): String {
-        return applyYearFilter(query, xQueryParams)
-//            .replace("STATIONAER", "S")
+        return applyCaseTypeFilter(applyYearFilter(query, xQueryParams), xQueryParams)
     }
 
     private fun applyYearFilter(query: String, xQueryParams: XQueryParams): String {
@@ -37,6 +36,23 @@ object BaseXQueries {
         return query
             .replace("#YEAR_START", startDate)
             .replace("#YEAR_END", endDate)
+    }
+
+    private fun applyCaseTypeFilter(query: String, xQueryParams: XQueryParams): String {
+        //Add deprecated shortend version
+        val caseTypes = xQueryParams.caseTypes.map {
+            when (it) {
+                "STATIONAER" -> "S"
+                "NACHSTATIONAER" -> "NS"
+                "VORSTATIONAER" -> "VS"
+                "TEILSTATIONAER" -> "TS"
+                "AMBULANT" -> "A"
+                "BEGLEITPERSON" -> "H"
+                "GEPLANTER_FALL" -> "P"
+                else -> ""
+            }
+        } + xQueryParams.caseTypes
+        return query.replace("#CASE_TYPE", caseTypes.joinToString("','", "('", "')"))
     }
 }
 

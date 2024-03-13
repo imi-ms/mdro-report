@@ -11,6 +11,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 data class XQueryParams(
     val year: Int? = null,
+    val caseTypes: List<String> = listOf("STATIONAER")
 ) {
     companion object {
         fun fromJson(json: String?): XQueryParams? {

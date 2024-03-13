@@ -4,7 +4,7 @@ let $input :=
 for $x in /patient/case
 where xs:dateTime($x/@from) < xs:dateTime("#YEAR_START")
 where xs:dateTime($x/@till) > xs:dateTime("#YEAR_START")
-where $x/@type="STATIONAER"
+where $x/@type=#CASE_TYPE
 let $date1:=xs:dateTime("#YEAR_START")
 let $date2:=xs:dateTime($x/@till)
 let $datediff:=ceiling(($date2 - $date1)div xs:dayTimeDuration("P1D"))
