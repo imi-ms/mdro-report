@@ -9,7 +9,7 @@ declare function local:otherwise($value as xs:string?, $value2 as xs:string?) as
 
 for $x in /patient/case/labReport/sample/germ/comment[contains(@class,"MRSA")]
 where $x/../../../../@type=#CASE_TYPE
-where (xs:dateTime($x/../../../../@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/../../../../@from) < xs:dateTime("#YEAR_END"))
+where (xs:dateTime($x/../../../sample/@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/../../../sample/@from) < xs:dateTime("#YEAR_END"))
 
 let $ids:=$x/../../../../@id
 group by $ids
