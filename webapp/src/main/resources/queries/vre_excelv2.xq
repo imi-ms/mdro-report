@@ -14,5 +14,17 @@ let $station := string-join($x/../../../../location[@till > subsequence($x/../..
 let $probenarten := $x/../../../sample/@display
 let $probenart := fn:filter($probenarten, function($a) { contains($a, "Blut") }) ?: subsequence($probenarten, 1, 1)
 
-return
-$x/../../../../@id || "&#9;||&#9;" || subsequence($x/../../../request/@from,1,1) || "&#9;||&#9;"  || $probenart || "&#9;||&#9;" || subsequence($x/../../../request/@sender,1,1)|| "&#9;||&#9;" || ($station ?: "Prästationär") || "&#9;||&#9;" || subsequence($x/../@display,1,1) || "&#9;||&#9;" || subsequence($x/../antibiotic[@LOINC="29258-1"]/result/@string,1,1) || "&#9;||&#9;" || subsequence($x/../antibiotic[@LOINC="42357-4"]/result/@string,1,1)||"&#9;||&#9;" || subsequence($x/../antibiotic[@LOINC="19000-9"]/result/@string,1,1)||"&#9;||&#9;" || subsequence($x/../antibiotic[@LOINC="18989-4"]/result/@string,1,1) || "&#9;||&#9;" || subsequence($x/../antibiotic[@LOINC="23640-6"]/result/@string,1,1)
+return (<data
+    caseID="{$x/../../../../@id}"
+    caseType="{$x/../../../../@type}"
+    samplingDate="{subsequence($x/../../../request/@from,1,1)}"
+    sampleType="{$probenart}"
+    sender="{subsequence($x/../../../request/@sender,1,1)}"
+    department="{($station ?: "Prästationär")}"
+    pathogen="{subsequence($x/../@display,1,1)}"
+    linezolid="{subsequence($x/../antibiotic[@LOINC="29258-1"]/result/@string,1,1)}"
+    tigecylin="{subsequence($x/../antibiotic[@LOINC="42357-4"]/result/@string,1,1)}"
+    vancomycin="{subsequence($x/../antibiotic[@LOINC="19000-9"]/result/@string,1,1)}"
+    teicoplanin="{subsequence($x/../antibiotic[@LOINC="18989-4"]/result/@string,1,1) }"
+    quinupristinAndDalfopristin="{subsequence($x/../antibiotic[@LOINC="23640-6"]/result/@string,1,1)}"
+/>)

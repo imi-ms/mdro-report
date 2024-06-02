@@ -1,6 +1,6 @@
 package de.uni_muenster.imi.oegd.webapp.model
 
-import de.uni_muenster.imi.oegd.webapp.parseCsv
+import de.uni_muenster.imi.oegd.webapp.parseXmlAttributeOrderPreserving
 import de.uni_muenster.imi.oegd.webapp.toGermanDate
 import de.uni_muenster.imi.oegd.webapp.transformEntry
 import java.time.LocalDateTime
@@ -32,48 +32,23 @@ object DataProvider {
 
     suspend fun getMRSACSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
         val mrsaList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.MRSA, xQueryParams))
-        return parseCsv(
-            mrsaList,
-            listOf(
-                "page.MRSA.caselist.caseID",
-                "page.MRSA.caselist.samplingDate",
-                "page.MRSA.caselist.sampleType",
-                "page.MRSA.caselist.infection",
-                "page.MRSA.caselist.nosocomial",
-                "page.MRSA.caselist.sender",
-                "page.MRSA.caselist.department",
-                "page.MRSA.caselist.spa",
-                "page.MRSA.caselist.clustertype"
-            )
-        ).map { it.transformEntry("page.MRSA.caselist.samplingDate", ::toGermanDate) }
+        return parseXmlAttributeOrderPreserving(mrsaList)
+            .map { it.transformEntry("samplingDate", ::toGermanDate) }
+            .map { it.mapKeys { (k, _) -> "page.MRSA.caselist.$k" } }
     }
 
     suspend fun getMRGNCSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
         val mrgnList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.MRGN, xQueryParams))
-        val parsed = parseCsv(
-            mrgnList,
-            listOf(
-                "page.MRGN.caselist.caseID",
-                "page.MRGN.caselist.samplingDate",
-                "page.MRGN.caselist.sampleType",
-                "page.MRGN.caselist.sender",
-                "page.MRGN.caselist.department",
-                "page.MRGN.caselist.pathogen",
-                "page.MRGN.caselist.class",
-                "page.MRGN.caselist.piperacillinAndTazobactam",
-                "page.MRGN.caselist.cefotaxime",
-                "page.MRGN.caselist.cefTAZidime",
-                "page.MRGN.caselist.cefepime",
-                "page.MRGN.caselist.meropenem",
-                "page.MRGN.caselist.imipenem",
-                "page.MRGN.caselist.ciprofloxacin"
-            )
-        ).map {
-            //Replace MRGN3 -> 3MRGN, MRGN4 -> 4MRGN
-            it.transformEntry("page.MRGN.caselist.class") { v ->
-                v.replace("MRGN3", "3MRGN").replace("MRGN4", "4MRGN")
-            }
-        }.map { it.transformEntry("page.MRGN.caselist.samplingDate", ::toGermanDate) }
+        val parsed = parseXmlAttributeOrderPreserving(mrgnList)
+            .map {
+                //Replace MRGN3 -> 3MRGN, MRGN4 -> 4MRGN
+                it.transformEntry("class") { v ->
+                    v.replace("MRGN3", "3MRGN").replace("MRGN4", "4MRGN")
+                }.transformEntry("pathogen") { v ->
+                    v.replace("Klebsiella pneumoniae ssp pneumoniae", "Klebsiella pneumoniae")
+                }
+            }.map { it.transformEntry("samplingDate", ::toGermanDate) }
+            .map { it.mapKeys { (k, _) -> "page.MRGN.caselist.$k" } }
         //E-Mail von Zentralstelle IfSG: "Doppelte Fälle sind nur zulässig, wenn es sich um unterschiedliche Erreger und MRGN-Klassifikationen handelt"
         val result = parsed.distinctBy {
             val case = it["page.MRGN.caselist.caseID"]
@@ -93,26 +68,10 @@ object DataProvider {
 
     suspend fun getVRECSV(baseXClient: IBaseXClient, xQueryParams: XQueryParams): List<Map<String, String>> {
         val vreList = baseXClient.executeXQuery(BaseXQueries.applyParams(BaseXQueries.VRE, xQueryParams))
-        return parseCsv(
-            vreList,
-            listOf(
-                "page.VRE.caselist.caseID",
-                "page.VRE.caselist.samplingDate",
-                "page.VRE.caselist.sampleType",
-                "page.VRE.caselist.sender",
-                "page.VRE.caselist.department",
-                "page.VRE.caselist.pathogen",
-                "page.VRE.caselist.linezolid",
-                "page.VRE.caselist.tigecylin",
-                "page.VRE.caselist.vancomycin",
-                "page.VRE.caselist.teicoplanin",
-                "page.VRE.caselist.quinupristinAndDalfopristin"
-            )
-        ).map {
-            it.transformEntry("page.VRE.caselist.samplingDate", ::toGermanDate)
-        }
+        return parseXmlAttributeOrderPreserving(vreList)
+            .map { it.transformEntry("samplingDate", ::toGermanDate) }
+            .map { it.mapKeys { (k, _) -> "page.VRE.caselist.$k" } }
     }
-
 
 
     //TODO: Übersicht auf Plausibilität checken / checken lassen
@@ -147,6 +106,8 @@ object DataProvider {
         val mrsaTotal = DataProcessor.countMRSATotal(caseList)
         val mrsaNosokomial = DataProcessor.countMRSANosokomial(caseList)
         val mrsaImported = DataProcessor.countMRSAImported(caseList)
+
+        //TODO: Blutkultur-Abfrage hat Vorrang vor den excel sachen => Tabelle mergen.
 
         return listOf(
             entry("page.MRSA.overview.nasalSwabs", BaseXQueries.NasenRachenAbstriche),

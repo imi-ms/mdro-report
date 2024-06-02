@@ -34,6 +34,8 @@ dependencies {
     implementation("io.ktor:ktor-client-cio-jvm:$ktor_version")
     implementation("io.ktor:ktor-client-auth-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging-jvm:$ktor_version")
+
+    implementation("javax.xml.parsers:jaxp-api:1.4.5") //StAX XML API
 }
 
 tasks {
