@@ -168,7 +168,7 @@ fun FlowContent.drawIndex(basexInfo: BasexInfo) {
 }
 
 
-fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String, q: String) {
+fun FlowContent.drawCaseList(germ: GermType, data: List<Map<String, String>>, lastUpdate: String, q: String) {
     drawInvalidateButton(lastUpdate, q)
 
     if (data.isEmpty()) {
@@ -177,7 +177,7 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
     }
 
     a(href = "list/csv?q=${q}", classes = "btn btn-secondary btn-sm mt-2 ms-2") {
-        attributes["download"] = "mrereport-export.csv"
+        attributes["download"] = "mrereport-${germ.germtype}-export.csv"
         +"Download CSV"
     }
 
@@ -188,7 +188,7 @@ fun FlowContent.drawCaseList(data: List<Map<String, String>>, lastUpdate: String
                 for (columnName in columnNames) {
                     th(scope = ThScope.col) {
                         +try {
-                            i18n[columnName]
+                            i18n["page.${germ.germtype}.caselist.$columnName"]
                         } catch (_: Exception) {
                             columnName
                         }
@@ -222,14 +222,16 @@ private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
 }
 
 
-fun FlowContent.drawOverviewTable(data: List<OverviewEntry>, lastUpdate: String, q: String) {
+fun FlowContent.drawOverviewTable(germ: GermType?, data: List<OverviewEntry>, lastUpdate: String, q: String) {
     drawInvalidateButton(lastUpdate, q)
 
     table(classes = "table") {
         for ((index, entry) in data.withIndex()) {
             tr {
                 th {
-                    span { unsafe { +i18n[entry.title] } }
+                    span {
+                        unsafe { +i18n[if (germ != null) "page.${germ.name}.overview.${entry.title}" else entry.title] }
+                    }
                 }
                 td {
                     span { +entry.data }

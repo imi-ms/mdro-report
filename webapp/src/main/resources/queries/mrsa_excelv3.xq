@@ -15,25 +15,19 @@ let $ids:=$x/../../../../@id
 group by $ids
 let $station := string-join($x/../../../../..//location[@till > subsequence($x/../../../sample/@from,1,1) and @from < subsequence($x/../../../sample/@from,1,1)]/@clinic,'; ')
 
-let $caseID := $x/../../../../@id
-let $caseType := $x/../../../../@type
-let $from := subsequence($x/../../../request/@from,1,1)
-let $material := subsequence($x/../../../sample/@display,1,1)
 let $infection := local:quartery(subsequence($x/../../../../hygiene-message/@infection,1,1), "Infektion", "Besiedlung", "unbekannt")
 let $nosocomial := local:quartery(subsequence($x/../../../../hygiene-message/@nosocomial,1,1), "importiert", "nosokomial", "importiert")
-let $sender := subsequence($x/../../../request/@sender,1,1)
 let $spa :=  local:otherwise(subsequence($x/../../germ/pcr-meta[@k="SpaType"]/@v,1,1), subsequence($x/../../germ/pcr-meta[@k="Spa"]/@v,1,1))
 let $cluster := subsequence($x/../../germ/pcr-meta[@k="ClusterType"]/@v,1,1)
 return <data
- caseID="{$caseID}"
- caseType="{$caseType}"
- samplingDate="{$from}"
- sampleType="{$material}"
+ caseID="{$x/../../../../@id}"
+ caseType="{$x/../../../../@type}"
+ samplingDate="{subsequence($x/../../../request/@from,1,1)}"
+ sampleType="{subsequence($x/../../../sample/@display,1,1)}"
  infection="{$infection}"
  nosocomial="{$nosocomial}"
- sender="{$sender}"
+ sender="{subsequence($x/../../../request/@sender,1,1)}"
  department="{$station ?: "Prästationär"}"
  spa="{$spa}"
  clustertype="{$cluster}"
  />
-(: $pid || "&#9;||&#9;" || $from  || "&#9;||&#9;"  || $material || "&#9;||&#9;"  || $infection || "&#9;||&#9;"  || $nosocomial || "&#9;||&#9;" || $sender || "&#9;||&#9;" || ($station ?: "Prästationär") || "&#9;||&#9;" ||  $spa || "&#9;||&#9;" || $cluster :)

@@ -45,7 +45,6 @@ class RestClient(
     }
     override suspend fun executeXQuery(xquery: String): String {
         try {
-//            println(LocalDateTime.now().toString()+" Execute query: ${xquery.filter { it != '\n' && it != '\r' }}")
             return client.post("$baseURL/$database") {
                 setBody("<query><text><![CDATA[ $xquery ]]></text></query>")
             }.body()

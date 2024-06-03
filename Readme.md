@@ -431,7 +431,7 @@ although it is unlikely.
 
 ## Internationalization
 
-Language is automatically chosen based on your systems settings.
+The language is automatically chosen based on your systems settings.
 Add `-Duser.language=en` or `-Duser.language=de` to JVM properties to change language (only German and English are
 supported).
 
@@ -446,3 +446,9 @@ Apache Licence 2.0
 ## Acknowledgement
 
 Supported by BMBF grant No. 01ZZ1802V (HiGHmed/Münster) 
+
+## TODOS
+
+* Punktat herausfiltern oder über bodySiteDisplay matchen
+* MRGN: Piperacillin: Wenn Piperacillin-Tazobactam = "R" dann "R" sonst leer lassen
+* MRSA: Priorisierung der Blutkulturen 

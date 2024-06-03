@@ -9,7 +9,7 @@ return (<data
     caseID="{$x/../../../../@id}"
     caseType="{$x/../../../../@type}"
     samplingDate="{subsequence($x/../../../request/@from,1,1)}"
-    samplingType="{subsequence($x/../../../sample/@display,1,1)}"
+    sampleType="{subsequence($x/../../../sample/@display,1,1)}"
     sender="{subsequence($x/../../../request/@sender,1,1)}"
     department="{($station ?: "Prästationär")}"
     pathogen="{subsequence($x/../@display,1,1)}"

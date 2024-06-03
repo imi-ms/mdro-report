@@ -59,9 +59,7 @@ data class RestConnectionInfo(
 
 @Serializable
 @SerialName("local")
-data class LocalBasexInfo(
-    @SerialName("directory") val directory: String,
-) : BasexInfo()
+data class LocalBasexInfo(val directory: String) : BasexInfo()
 
 
 @Serializable

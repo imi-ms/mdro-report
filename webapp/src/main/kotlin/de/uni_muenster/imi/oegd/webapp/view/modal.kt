@@ -30,7 +30,7 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
                 div(classes = "modal-header") {
                     h5(classes = "modal-title") {
                         id = "query-modal-$index-title"
-                        +"${i18n.getString(entry.title)} - Query"
+                        +"XQuery"
                     }
                     button(classes = "btn-close", type = button) {
                         attributes["data-bs-dismiss"] = "modal"

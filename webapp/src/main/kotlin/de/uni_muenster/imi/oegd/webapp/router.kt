@@ -175,7 +175,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                     header { +i18n["navigation.hospitalMetrics"] }
-                    content { drawOverviewTable(overviewContent!!, lastUpdate!!, q) }
+                    content { drawOverviewTable(null, overviewContent!!, lastUpdate!!, q) }
                 }
             }
             for (germ in GermType.entries) {
@@ -184,7 +184,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: ${i18n["navigation.overview"]}" }
-                        content { drawOverviewTable(germInfo.overviewEntries!!, germInfo.created!!, q) }
+                        content { drawOverviewTable(germ, germInfo.overviewEntries!!, germInfo.created!!, q) }
                     }
                 }
                 get("$germ/list") {
@@ -192,7 +192,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: ${i18n["navigation.list"]}" }
-                        content { drawCaseList(germInfo.caseList!!, germInfo.created!!, q) }
+                        content { drawCaseList(germ, germInfo.caseList!!, germInfo.created!!, q) }
                     }
                 }
                 get("$germ/list/csv") {
@@ -202,9 +202,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             }
             get("MRGN/statistic") {
                 val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRGN)
-                val departments = germInfo.caseList!!.groupingBy { it["page.MRGN.caselist.department"]!! }
+                val departments = germInfo.caseList!!.groupingBy { it["department"]!! }
                     .eachCount().mapValues { it.value.toString() }
-                val probenart = germInfo.caseList!!.groupingBy { it["page.MRGN.caselist.sampleType"]!! }
+                val probenart = germInfo.caseList!!.groupingBy { it["sampleType"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +i18n["page.other.diagrams"] }
@@ -218,9 +218,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             }
             get("VRE/statistic") {
                 val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.VRE)
-                val department = germInfo.caseList!!.groupingBy { it["page.VRE.caselist.department"]!! }
+                val department = germInfo.caseList!!.groupingBy { it["department"]!! }
                     .eachCount().mapValues { it.value.toString() }
-                val probenart = germInfo.caseList!!.groupingBy { it["page.VRE.caselist.sampleType"]!! }
+                val probenart = germInfo.caseList!!.groupingBy { it["sampleType"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +i18n["page.other.diagrams"] }
@@ -233,11 +233,11 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             }
             get("MRSA/statistic") {
                 val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRSA)
-                val department = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.department"]!! }
+                val department = germInfo.caseList!!.groupingBy { it["department"]!! }
                     .eachCount().mapValues { it.value.toString() }
-                val probenart = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.sampleType"]!! }
+                val probenart = germInfo.caseList!!.groupingBy { it["sampleType"]!! }
                     .eachCount().mapValues { it.value.toString() }
-                val importedOrNosocomial = germInfo.caseList!!.groupingBy { it["page.MRSA.caselist.nosocomial"]!! }
+                val importedOrNosocomial = germInfo.caseList!!.groupingBy { it["nosocomial"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +i18n.getString("page.other.diagrams") }
@@ -277,11 +277,11 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                     mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "4MRGN" in it.title }!!.data }.toMap()
                 val mrsaTotalNumberByYear =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA) }
-                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "page.MRSA.overview.numberOfCases" in it.title }!!.data }
+                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "numberOfCases" in it.title }!!.data }
                         .toMap()
                 val vreTotalNumberByYear =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE) }
-                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "page.VRE.overview.numberOfEFaecalisOverall" in it.title }!!.data }
+                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "numberOfEFaecalisOverall" in it.title }!!.data }
                         .toMap() //TODO
                 val data = mapOf(
                     "3MRGN" to mrgn3TotalNumberByYear,

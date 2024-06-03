@@ -19,11 +19,9 @@ object BaseXQueries {
     val EfaeciumBK2: String = readFile("efaecium_bk2.xq")
     val VREBK: String = readFile("vre_bk.xq")
 
-    private fun readFile(filename: String): String {
-        return javaClass.classLoader
-            .getResourceAsStream("queries/$filename")!!
-            .readBytes().toString(Charsets.UTF_8)
-    }
+    private fun readFile(filename: String) = javaClass.classLoader
+        .getResourceAsStream("queries/$filename")!!
+        .readBytes().toString(Charsets.UTF_8)
 
     fun applyParams(query: String, xQueryParams: XQueryParams): String {
         return applyCaseTypeFilter(applyYearFilter(query, xQueryParams), xQueryParams)

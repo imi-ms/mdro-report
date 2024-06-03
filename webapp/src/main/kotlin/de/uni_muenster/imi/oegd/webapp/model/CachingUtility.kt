@@ -13,16 +13,18 @@ import java.time.LocalDateTime
 class CachingUtility(private val baseXClient: IBaseXClient) {
     private val log = KotlinLogging.logger { }
     private val basexInfo: BasexInfo = baseXClient.getInfo()
+    private val dataProvider = DataProvider(baseXClient)
     val cacheProvider = CacheProvider(basexInfo)
 
-    //Loading the data is timeconsuming. Use a mutex to triggering duplicate report creation
+
+    //Loading the data is time-consuming. Use a mutex to triggering duplicate report creation
     private val mutexMap = mutableMapOf<Pair<XQueryParams, GermType?>, Mutex>()
 
     suspend fun getOrLoadGermInfo(xQueryParams: XQueryParams, germ: GermType): GermInfo =
         mutexMap.getOrPut(xQueryParams to germ) { Mutex() }.withLock {
             if (getGermForGermtype(xQueryParams, germ)?.created == null) {
                 log.info { "Loading $germ-GermInfo from BaseX for $xQueryParams" }
-                val germInfo = DataProvider.getGermInfo(baseXClient, germ, xQueryParams)
+                val germInfo = dataProvider.getGermInfo(germ, xQueryParams)
                 cache(xQueryParams, germInfo)
                 log.info { "Done with ${germInfo.type} for $xQueryParams" }
             } else {
@@ -36,7 +38,7 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
         mutexMap.getOrPut(xQueryParams to null) { Mutex() }.withLock {
             if (getGlobalInfo(xQueryParams)?.created == null) {
                 log.info { "Loading GlobalInfo from BaseX for $xQueryParams" }
-                val overviewContent = DataProvider.getGlobalStatistics(baseXClient, xQueryParams)
+                val overviewContent = dataProvider.getGlobalStatistics(xQueryParams)
                 cache(xQueryParams, overviewContent)
                 log.info("Done with GlobalInfo request for $xQueryParams")
             } else {
@@ -47,7 +49,7 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
 
     suspend fun cacheAllData(xQueryParams: XQueryParams) {
         getOrLoadGlobalInfo(xQueryParams)
-        for (germType in GermType.values()) {
+        for (germType in GermType.entries) {
             getOrLoadGermInfo(xQueryParams, germType)
         }
     }
@@ -123,10 +125,12 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
 class CacheProvider(val basexInfo: BasexInfo) {
 
     private val log = KotlinLogging.logger { }
+
     fun getCachedParameters(): List<XQueryParams> {
-        val cached = File(cacheDirectory).listFiles()!!.filter { it.name.startsWith(getBaseXPrefix()) }
+        return File(cacheDirectory).listFiles()!!
+            .filter { it.name.startsWith(getBaseXPrefix()) }
             .map { it.name.substringAfter("--").removeSuffix(".mrereport") }
-        return cached.map { XQueryParams(it.toInt()) }
+            .map { XQueryParams(it.toInt()) }
     }
 
     fun clearCache(xQueryParams: XQueryParams) {
@@ -136,18 +140,16 @@ class CacheProvider(val basexInfo: BasexInfo) {
         }
     }
 
-    private fun cacheExists(xQueryParams: XQueryParams): Boolean {
-        return getCacheFile(xQueryParams).exists()
-    }
+    private fun cacheExists(xQueryParams: XQueryParams) = getCacheFile(xQueryParams).exists()
 
     private fun getCacheFile(xQueryParams: XQueryParams) = File(cacheDirectory, getCacheFileName(xQueryParams))
 
     private val cacheDirectory: String by lazy {
-        val userCacheDir = System.getenv("mrereport.cachedir") ?: AppDirsFactory.getInstance()
-            .getUserCacheDir("mrereport", "1.0", "IMI")!!
+        val userCacheDir =
+            System.getenv("mrereport.cachedir")
+                ?: AppDirsFactory.getInstance().getUserCacheDir("mrereport", "1.0", "IMI")!!
 
         log.info { "Using '$userCacheDir' as cache directory!" }
-        //TODO: Add caching path as property
         userCacheDir
     }
 
@@ -156,21 +158,18 @@ class CacheProvider(val basexInfo: BasexInfo) {
     }
 
     fun writeCache(cache: CacheData) {
-        val json = Json.encodeToString(cache)
         File(cacheDirectory).mkdirs()
-        getCacheFile(cache.metadata.xQueryParams).writeText(json)
+        getCacheFile(cache.metadata.xQueryParams).writeText(Json.encodeToString(cache))
     }
 
     fun getCache(xQueryParams: XQueryParams): CacheData? {
-        if (cacheExists(xQueryParams)) {
-            return try {
-                val json = getCacheFile(xQueryParams).readText()
-                Json.decodeFromString(json)
-            } catch (e: Exception) {
-                null
-            }
+        if (!cacheExists(xQueryParams)) return null
+        return try {
+            Json.decodeFromString(getCacheFile(xQueryParams).readText())
+        } catch (e: Exception) {
+            log.error(e) { "getCache($xQueryParams) failed: $e" }
+            null
         }
-        return null
     }
 
 
