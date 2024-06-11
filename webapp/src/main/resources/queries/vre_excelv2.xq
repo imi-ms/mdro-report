@@ -3,6 +3,10 @@ as xs:string? {
 	if($value = "true") then ($trueValue) else (if($value = "false") then $falseValue else $nullValue)
 };
 
+declare function local:index-of-first($seq as item()*, $criterion as function(item()) as xs:boolean) as xs:integer? {
+  head(for $i in 1 to count($seq) return if ($criterion($seq[$i])) then $i)
+};
+
 for $x in /patient/case/labReport/sample/germ/comment[contains(@class,"VRE")]
 where $x/../../../../@type=#CASE_TYPE
 where (xs:dateTime($x/../../../sample/@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/../../../sample/@from) < xs:dateTime("#YEAR_END"))
@@ -10,21 +14,27 @@ where (xs:dateTime($x/../../../sample/@from) > xs:dateTime("#YEAR_START") and xs
 let $ids:=$x/../../../../@id
 group by $ids
 
-let $station := string-join($x/../../../../location[@till > subsequence($x/../../../sample/@from,1,1) and @from < subsequence($x/../../../sample/@from,1,1)]/@clinic,'; ')
 let $probenarten := $x/../../../sample/@display
-let $probenart := fn:filter($probenarten, function($a) { contains($a, "Blut") }) ?: subsequence($probenarten, 1, 1)
+let $idx := local:index-of-first($probenarten, function($it) { contains($it, "Blut") }) ?: 1 (: TODO: Stichpunktartig ueberpruefen :)
 
-return (<data
+let $station := string-join($x/../../../../location[@till > subsequence($x/../../../sample/@from,$idx,1) and @from < subsequence($x/../../../sample/@from,$idx,1)]/@clinic,'; ')
+
+
+let $probenart :=  subsequence($probenarten, $idx, 1)
+
+return <data
     caseID="{$x/../../../../@id}"
     caseType="{$x/../../../../@type}"
-    samplingDate="{subsequence($x/../../../request/@from,1,1)}"
+    samplingDate="{subsequence($x/../../../request/@from,$idx,1)}"
     sampleType="{$probenart}"
-    sender="{subsequence($x/../../../request/@sender,1,1)}"
+    sender="{subsequence($x/../../../request/@sender,$idx,1)}"
     department="{($station ?: "Prästationär")}"
-    pathogen="{subsequence($x/../@display,1,1)}"
-    linezolid="{subsequence($x/../antibiotic[@LOINC="29258-1"]/result/@string,1,1)}"
-    tigecylin="{subsequence($x/../antibiotic[@LOINC="42357-4"]/result/@string,1,1)}"
-    vancomycin="{subsequence($x/../antibiotic[@LOINC="19000-9"]/result/@string,1,1)}"
-    teicoplanin="{subsequence($x/../antibiotic[@LOINC="18989-4"]/result/@string,1,1) }"
-    quinupristinAndDalfopristin="{subsequence($x/../antibiotic[@LOINC="23640-6"]/result/@string,1,1)}"
-/>)
+    pathogen="{subsequence($x/../@display,$idx,1)}"
+    linezolid="{subsequence($x/../antibiotic[@LOINC="29258-1"]/result/@string,$idx,1)}"
+    tigecylin="{subsequence($x/../antibiotic[@LOINC="42357-4"]/result/@string,$idx,1)}"
+    vancomycin="{subsequence($x/../antibiotic[@LOINC="19000-9"]/result/@string,$idx,1)}"
+    teicoplanin="{subsequence($x/../antibiotic[@LOINC="18989-4"]/result/@string,$idx,1) }"
+    quinupristinAndDalfopristin="{subsequence($x/../antibiotic[@LOINC="23640-6"]/result/@string,$idx,1)}"
+/>
+
+

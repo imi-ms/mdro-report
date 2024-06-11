@@ -14,7 +14,7 @@ return (<data
     department="{($station ?: "Prästationär")}"
     pathogen="{subsequence($x/../@display,1,1)}"
     class="{subsequence($x/@class,1,1)}"
-    piperacillinAndTazobactam="{subsequence($x/../antibiotic[@LOINC="18970-4"]/result/@string,1,1)}"
+    piperacillin="{if(subsequence($x/../antibiotic[@LOINC="18970-4"]/result/@string,1,1) = "R") then "R" else ""}"
     cefotaxime="{subsequence($x/../antibiotic[@LOINC="18886-2"]/result/@string,1,1)}"
     cefTAZidime="{subsequence($x/../antibiotic[@LOINC="18893-8"]/result/@string,1,1)}"
     cefepime="{subsequence($x/../antibiotic[@LOINC="18879-7"]/result/@string,1,1)}"
@@ -22,3 +22,5 @@ return (<data
     imipenem="{subsequence($x/../antibiotic[@LOINC="18932-4"]/result/@string,1,1)}"
     ciprofloxacin="{subsequence($x/../antibiotic[@LOINC="18906-8"]/result/@string,1,1)}"
  />)
+
+ (: 18970-4 = Piperacillin+Tazobactam, so if resistant against both, it is resistant against Piperacillin, otherwise, we cannot make any assumption:)
