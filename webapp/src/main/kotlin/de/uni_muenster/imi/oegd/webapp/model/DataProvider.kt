@@ -6,7 +6,6 @@ import de.uni_muenster.imi.oegd.webapp.transformEntry
 import java.time.LocalDateTime
 
 class DataProvider(val basexClient: IBaseXClient) {
-    //TODO: Create constructor with BaseXClient?
     suspend fun getGermInfo(germ: GermType, xQueryParams: XQueryParams): GermInfo {
         return when (germ) {
             GermType.MRSA -> {
@@ -69,7 +68,6 @@ class DataProvider(val basexClient: IBaseXClient) {
 //            .map { it.mapKeys { (k, _) -> "page.VRE.caselist.$k" } }
     }
 
-
     //TODO: Übersicht auf Plausibilität checken / checken lassen
 
     suspend fun getGlobalStatistics(xQueryParams: XQueryParams): GlobalInfo {
@@ -97,31 +95,25 @@ class DataProvider(val basexClient: IBaseXClient) {
             entry("nasalSwabs", BaseXQueries.NasenRachenAbstriche),
             entry("bloodSAureus", BaseXQueries.MSSABK),
             entry("bloodMRSA", BaseXQueries.MRSABK),
-            OverviewEntry("numberOfCases", BaseXQueries.MRSA, "$mrsaTotal"),
-            OverviewEntry("importedMRSA", BaseXQueries.MRSA, "$mrsaImported"),
-            OverviewEntry("nosocomialMRSA", BaseXQueries.MRSA, "$mrsaNosokomial"),
+            OverviewEntry("numberOfCases", BaseXQueries.MRSA, mrsaTotal),
+            OverviewEntry("importedMRSA", BaseXQueries.MRSA, mrsaImported),
+            OverviewEntry("nosocomialMRSA", BaseXQueries.MRSA, mrsaNosokomial),
             entry("inpatientDays", BaseXQueries.FalltageMRSA)
         )
     }
 
-    suspend fun getMRGNOverview(
-        xQueryParams: XQueryParams,
-        caseList: List<Map<String, String>>
-    ): List<OverviewEntry> {
+    fun getMRGNOverview(xQueryParams: XQueryParams, caseList: List<Map<String, String>>): List<OverviewEntry> {
         val mrgn3Cases = DataProcessor.countMRGN3Cases(caseList)
         val mrgn4Cases = DataProcessor.countMRGN4Cases(caseList)
 
         return listOf(
-            OverviewEntry("numberOf3MRGN", BaseXQueries.MRGN, "$mrgn3Cases"),
-            OverviewEntry("numberOf4MRGN", BaseXQueries.MRGN, "$mrgn4Cases"),
+            OverviewEntry("numberOf3MRGN", BaseXQueries.MRGN, mrgn3Cases),
+            OverviewEntry("numberOf4MRGN", BaseXQueries.MRGN, mrgn4Cases),
         )
     }
 
-    suspend fun getVREOverview(
-        xQueryParams: XQueryParams, caseList: List<Map<String, String>>
-    ): List<OverviewEntry> {
-        suspend fun entry(name: String, query: String) =
-            createBaseXOverviewEntry(name, query, xQueryParams)
+    suspend fun getVREOverview(xQueryParams: XQueryParams, caseList: List<Map<String, String>>): List<OverviewEntry> {
+        suspend fun entry(name: String, query: String) = createBaseXOverviewEntry(name, query, xQueryParams)
         //TODO E.faecuium total und VRE-E.faecium ist gleich, sollte es aber nicht sein
         //TODO: MRE-Aus Blutkulturen sollte höhere Priorität haben ggü. dem Ort der ersten Abnahme.
         val numEfaecalisResistant = DataProcessor.countVREEfaecalisResistant(caseList)
@@ -131,18 +123,17 @@ class DataProvider(val basexClient: IBaseXClient) {
 
         return listOf(
             entry("numberOfEFaecalisOverall", BaseXQueries.AnzahlEFaecalis),
-            OverviewEntry("numberOfVREEFaecalis", BaseXQueries.VRE, "$numEfaecalisResistant"),
+            OverviewEntry("numberOfVREEFaecalis", BaseXQueries.VRE, numEfaecalisResistant),
             entry("numberOfEFaeciumOverall", BaseXQueries.AnzahlEFaecium),
-            OverviewEntry("numberOfVREEFaecium", BaseXQueries.VRE, "$numEfaeciumResistant"),
-            OverviewEntry("otherVRE", BaseXQueries.VRE, "$numOtherCases"),
+            OverviewEntry("numberOfVREEFaecium", BaseXQueries.VRE, numEfaeciumResistant),
+            OverviewEntry("otherVRE", BaseXQueries.VRE, numOtherCases),
             entry("numberEFaeciumComplete", BaseXQueries.EfaeciumBK),
             entry("numberOfVREEFaeciumBlood", BaseXQueries.VREBK)
         )
     }
 
     suspend fun createBaseXOverviewEntry(name: String, query: String, xQueryParams: XQueryParams): OverviewEntry {
-        val query2 = BaseXQueries.applyParams(query, xQueryParams)
-        val result = basexClient.executeXQuery(query2)
-        return OverviewEntry(name, query2, result)
+        val result = basexClient.executeXQuery(BaseXQueries.applyParams(query, xQueryParams))
+        return OverviewEntry(name, BaseXQueries.applyParams(query, xQueryParams), result)
     }
 }

@@ -1,6 +1,7 @@
 package de.uni_muenster.imi.oegd.testdataGenerator
 
 import  de.uni_muenster.imi.oegd.testdataGenerator.AntibioticType.*
+import de.uni_muenster.imi.oegd.testdataGenerator.GermType.*
 
 val MRSAAntibiotics = listOf(
     AMOXICILLIN_CLAVULANSAEURE, AMPICILLIN_SULBACTAM, AZITHROMYCIN, BENZYLPENICILLIN, CEFACLOR, CEFAZOLIN,
@@ -13,12 +14,10 @@ val MRSAAntibiotics = listOf(
 val MRGNAntibiotics =
     listOf(PIPERACILLIN_TAZOBACTAM, CEFOTAXIM, CEFTAZIDIM, CEFEPIM, MEROPENEM, IMIPENEM, CIPROFLOXACIN)
 
-val MRGNGermTypes = listOf(
-    GermType.A_BAUMANNII, GermType.E_COLI, GermType.E_HERMANNII, GermType.K_AEROGENES,
-    GermType.K_OXYTOCA, GermType.M_MORGANII, GermType.P_AERUGINOSA, GermType.P_MIRABILIS
-)
+val MRGNGermTypes =
+    listOf(A_BAUMANNII, E_COLI, E_HERMANNII, K_AEROGENES, K_OXYTOCA, M_MORGANII, P_AERUGINOSA, P_MIRABILIS)
 
-val VREGermTypes = listOf(GermType.E_FAECIUM, GermType.E_FAECALIS)
+val VREGermTypes = listOf(E_FAECIUM, E_FAECALIS)
 
 val VREAntibiotics = listOf(LINEZOLID, TIGECYCLIN, VANCOMYCIN, TEICOPLANIN, QUINUPRISTIN_DALFOPRISTIN)
 

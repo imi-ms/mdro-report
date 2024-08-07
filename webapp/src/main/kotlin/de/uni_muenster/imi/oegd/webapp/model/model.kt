@@ -82,4 +82,6 @@ data class GlobalInfo(
 }
 
 @Serializable
-data class OverviewEntry(val title: String, val query: String, val data: String)
+data class OverviewEntry(val title: String, val query: String, val data: String) {
+    constructor(title: String, query: String, data: Number) : this(title, query, data.toString())
+}

@@ -20,7 +20,7 @@ fun generateStartAndEnddate(startTimeRange: LocalDate, endTimeRange: LocalDate):
     return Pair(startDateTime, endDateTime)
 }
 
-private fun randomTime(): LocalTime = LocalTime.of(
+private fun randomTime() = LocalTime.of(
     Random.nextInt(1, 24),
     Random.nextInt(1, 60),
     Random.nextInt(1, 60)
@@ -38,7 +38,7 @@ fun generateAntibioticsAnalysis(caseInfo: CaseInfo): List<AntibioticsAnalysis> {
 
 fun generateRandomAntibioticsAnalysis(antibiotics: List<AntibioticType>): List<AntibioticsAnalysis> {
     return antibiotics.map {
-        AntibioticsAnalysis(it, AntibioticsResult.values().random())
+        AntibioticsAnalysis(it, AntibioticsResult.entries.random())
     }
 }
 
