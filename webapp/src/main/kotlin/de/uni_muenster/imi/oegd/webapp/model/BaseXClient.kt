@@ -45,6 +45,7 @@ class RestClient(
     }
     override suspend fun executeXQuery(xquery: String): String {
         try {
+            println("xquery = ${xquery}")
             return client.post("$baseURL/$database") {
                 setBody("<query><text><![CDATA[ $xquery ]]></text></query>")
             }.body()

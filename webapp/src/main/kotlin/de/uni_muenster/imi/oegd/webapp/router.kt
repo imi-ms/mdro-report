@@ -1,9 +1,6 @@
 package de.uni_muenster.imi.oegd.webapp
 
-import de.uni_muenster.imi.oegd.webapp.model.CachingUtility
-import de.uni_muenster.imi.oegd.webapp.model.GermType
-import de.uni_muenster.imi.oegd.webapp.model.IBaseXClient
-import de.uni_muenster.imi.oegd.webapp.model.XQueryParams
+import de.uni_muenster.imi.oegd.webapp.model.*
 import de.uni_muenster.imi.oegd.webapp.view.*
 import io.ktor.http.*
 import io.ktor.http.content.*
@@ -28,11 +25,11 @@ import java.util.*
 private val log = KotlinLogging.logger { }
 
 //private val mutex = Mutex()
-val xqueryparams = AttributeKey<XQueryParams>("XQueryParams")
+val queryparams = AttributeKey<Params>("queryParams")
 lateinit var i18n: ResourceBundle
 lateinit var currentLanguage: Locale
-val ApplicationCall.xQueryParams: XQueryParams
-    get() = this.attributes[xqueryparams]
+val ApplicationCall.queryParams: Params
+    get() = this.attributes[queryparams]
 
 /**
  * @param serverMode do not block non-localhost connections
@@ -88,16 +85,19 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 }
             }
             intercept(Plugins) {
-                val params: XQueryParams? = XQueryParams.fromJson(call.parameters["q"])
+                val params = Params.fromJson(call.parameters["q"])
                 if (params != null) {
-                    call.attributes.put(xqueryparams, params)
+                    call.attributes.put(queryparams, params)
                 }
             }
             post("/settings/save") {
                 val parameters = call.receiveParameters()
                 val year = parameters["year"]?.ifBlank { null }
                 val caseTypes = parameters.getAll("caseTypes")
-                val x = if (year != null && caseTypes != null) XQueryParams(year.toInt(), caseTypes) else null
+                val x = if (year != null && caseTypes != null) Params(
+                    XQueryParams(year.toInt()),
+                    FilterParams(caseTypes.map { CaseType.valueOf(it) })
+                ) else null
                 val q = Json.encodeToString(x)
                 val referrer = call.request.headers[HttpHeaders.Referrer]?.substringBefore("?")
                 call.respondRedirect("$referrer?q=$q")
@@ -140,7 +140,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
             post("{germ}/invalidate-cache") {
                 val germ = call.parameters["germ"]!!
                 val parameters = call.receiveParameters()
-                val xQueryParams = XQueryParams.fromJson(parameters["q"])!!
+                val xQueryParams = Params.fromJson(parameters["q"])!!.xquery
                 if (germ == "global") {
                     cachingUtility.clearGlobalInfoCache(xQueryParams)
                 } else {
@@ -155,8 +155,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 call.respondRedirect("/")
             }
             get("/settings/downloadCache") {
-                val xQueryParams = call.xQueryParams
-
+                val xQueryParams = call.queryParams.xquery
                 cachingUtility.cacheAllData(xQueryParams)
 
                 call.response.header(
@@ -171,37 +170,54 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 )
             }
             get("global/overview") {
-                val (overviewContent, lastUpdate) = cachingUtility.getOrLoadGlobalInfo(call.xQueryParams)
+                val globalInfoUnfiltered = cachingUtility.getOrLoadGlobalInfo(call.queryParams.xquery)
+                val overviewContent = applyFilter(call.queryParams.filter, globalInfoUnfiltered.overviewEntries!!)
                 val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                     header { +i18n["navigation.hospitalMetrics"] }
-                    content { drawOverviewTable(null, overviewContent!!, lastUpdate!!, q) }
+                    content { drawOverviewTable(null, overviewContent, globalInfoUnfiltered.created!!, q) }
                 }
             }
             for (germ in GermType.entries) {
                 get("$germ/overview") {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(call.queryParams.xquery, germ)
                     val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
+
+
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: ${i18n["navigation.overview"]}" }
-                        content { drawOverviewTable(germ, germInfo.overviewEntries!!, germInfo.created!!, q) }
+                        content {
+                            drawOverviewTable(
+                                germ,
+                                applyFilter(call.queryParams.filter, germInfo.overviewEntries!!),
+                                germInfo.created!!,
+                                q
+                            )
+                        }
                     }
                 }
                 get("$germ/list") {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(call.queryParams.xquery, germ)
                     val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: ${i18n["navigation.list"]}" }
-                        content { drawCaseList(germ, germInfo.caseList!!, germInfo.created!!, q) }
+                        content {
+                            drawCaseList(
+                                germ,
+                                germInfo.caseList!!.filterCaseType(call.queryParams.filter.caseTypes),
+                                germInfo.created!!,
+                                q
+                            )
+                        }
                     }
                 }
                 get("$germ/list/csv") {
-                    val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, germ)
+                    val germInfo = cachingUtility.getOrLoadGermInfo(call.queryParams.xquery, germ)
                     call.respond(germInfo.caseList!!.toCsv())
                 }
             }
             get("MRGN/statistic") {
-                val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRGN)
+                val germInfo = cachingUtility.getOrLoadGermInfo(call.queryParams.xquery, GermType.MRGN)
                 val departments = germInfo.caseList!!.groupingBy { it["department"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 val probenart = germInfo.caseList!!.groupingBy { it["sampleType"]!! }
@@ -217,7 +233,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
 
             }
             get("VRE/statistic") {
-                val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.VRE)
+                val germInfo = cachingUtility.getOrLoadGermInfo(call.queryParams.xquery, GermType.VRE)
                 val department = germInfo.caseList!!.groupingBy { it["department"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 val probenart = germInfo.caseList!!.groupingBy { it["sampleType"]!! }
@@ -232,7 +248,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 }
             }
             get("MRSA/statistic") {
-                val germInfo = cachingUtility.getOrLoadGermInfo(call.xQueryParams, GermType.MRSA)
+                val germInfo = cachingUtility.getOrLoadGermInfo(call.queryParams.xquery, GermType.MRSA)
                 val department = germInfo.caseList!!.groupingBy { it["department"]!! }
                     .eachCount().mapValues { it.value.toString() }
                 val probenart = germInfo.caseList!!.groupingBy { it["sampleType"]!! }
@@ -272,16 +288,34 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 val xqueryParams = yearsEnabled.map { XQueryParams(it) }
                 val mrgnData = xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRGN) }
                 val mrgn3TotalNumberByYear =
-                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "3MRGN" in it.title }!!.data }.toMap()
+                    mrgnData.map { (k, v) ->
+                        k.year to applyFilter(call.queryParams.filter, v.overviewEntries!!)
+                            .find { "3MRGN" in it.title }!!.data
+                    }.toMap()
                 val mrgn4TotalNumberByYear =
-                    mrgnData.map { (k, v) -> k.year to v.overviewEntries!!.find { "4MRGN" in it.title }!!.data }.toMap()
+                    mrgnData.map { (k, v) ->
+                        k.year to applyFilter(
+                            call.queryParams.filter,
+                            v.overviewEntries!!
+                        ).find { "4MRGN" in it.title }!!.data
+                    }.toMap()
                 val mrsaTotalNumberByYear =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRSA) }
-                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "numberOfCases" in it.title }!!.data }
+                        .map { (key, v) ->
+                            key.year to applyFilter(
+                                call.queryParams.filter,
+                                v.overviewEntries!!
+                            ).find { "numberOfCases" in it.title }!!.data
+                        }
                         .toMap()
                 val vreTotalNumberByYear =
                     xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.VRE) }
-                        .map { (key, value) -> key.year to value.overviewEntries!!.find { "numberOfEFaecalisOverall" in it.title }!!.data }
+                        .map { (key, v) ->
+                            key.year to applyFilter(
+                                call.queryParams.filter,
+                                v.overviewEntries!!
+                            ).find { "numberOfEFaecalisOverall" in it.title }!!.data
+                        }
                         .toMap() //TODO
                 val data = mapOf(
                     "3MRGN" to mrgn3TotalNumberByYear,
@@ -338,6 +372,21 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
     }
 }
 
+fun applyFilter(filter: FilterParams, overviewEntries: Map<CaseType, List<OverviewEntry>>): List<OverviewEntry> {
+    val entries = mutableListOf<OverviewEntry>()
+    for (caseType in filter.caseTypes) {
+        overviewEntries[caseType]!!.forEach { overviewEntry ->
+            val find = entries.find { it.title == overviewEntry.title }
+            if (find == null) {
+                entries += overviewEntry
+            } else {
+                find.data = (find.data.toLong() + overviewEntry.data.toLong()).toString()
+            }
+        }
+    }
+    return entries
+}
+
 
 private fun changeLanguage(languageSelectValue: String) {
     i18n = when (languageSelectValue) {
@@ -360,3 +409,7 @@ private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: Ca
 
 }
 
+private fun List<Map<String, String>>.filterCaseType(caseTypes: List<CaseType>): List<Map<String, String>> {
+    val foo = caseTypes.flatMap { it.basexName }
+    return this.filter { it["caseType"] in foo }
+}

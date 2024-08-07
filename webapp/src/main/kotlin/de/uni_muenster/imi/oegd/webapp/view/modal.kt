@@ -2,8 +2,9 @@ package de.uni_muenster.imi.oegd.webapp.view
 
 import de.uni_muenster.imi.oegd.webapp.get
 import de.uni_muenster.imi.oegd.webapp.i18n
+import de.uni_muenster.imi.oegd.webapp.model.CaseType
 import de.uni_muenster.imi.oegd.webapp.model.OverviewEntry
-import de.uni_muenster.imi.oegd.webapp.model.XQueryParams
+import de.uni_muenster.imi.oegd.webapp.model.Params
 import kotlinx.html.*
 import kotlinx.html.ButtonType.button
 import kotlinx.html.ButtonType.submit
@@ -46,7 +47,7 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
 }
 
 fun FlowContent.drawSettingsModal(q: String?) {
-    val q_ = XQueryParams.fromJson(q)
+    val q_ = Params.fromJson(q)
     form(method = post, action = "/changeLanguage") {
         select(classes = "form-select languageSelect navbar-text text-muted") {
             id = "languageSelect"
@@ -75,12 +76,12 @@ fun FlowContent.drawSettingsModal(q: String?) {
             span(classes = "") { +"${i18n["settingspanel.year"]}: " }
             span {
                 style = "color:black;font-weight:bold;"
-                +q_.year.toString()
+                +q_.xquery.year.toString()
             }
             span(classes = "") { +" Falltyp: " }
             span {
                 style = "color:black;font-weight:bold;"
-                +q_.caseTypes.joinToString()
+                +q_.filter.caseTypes.joinToString()
             }
         }
     }
@@ -121,21 +122,21 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                 id = "inputYear"
                                 min = "2000"
                                 max = LocalDate.now().year.toString()
-                                value = q_?.year?.toString() ?: ""
+                                value = q_?.xquery?.year?.toString() ?: ""
                             }
                         }
                         div(classes = "form-group mb-3") {
-                            for (caseType in listOf("AMBULANT", "STATIONAER", "TEILSTATIONAER", "NACHSTATIONAER")) {
+                            for (caseType in CaseType.entries) {
                                 div(classes = "form-check form-check-inline") {
                                     checkBoxInput(classes = "form-check-input") {
                                         id = "chk$caseType"
                                         value = "$caseType"
                                         name = "caseTypes"
-                                        checked = caseType in (q_?.caseTypes ?: emptyList())
+                                        checked = caseType in (q_?.filter?.caseTypes ?: emptyList())
                                     }
                                     label(classes = "form-check-label") {
                                         htmlFor = "chk$caseType"
-                                        +caseType
+                                        +i18n["settingspanel.casetype." + caseType.toString().lowercase()]
                                     }
                                 }
                             }

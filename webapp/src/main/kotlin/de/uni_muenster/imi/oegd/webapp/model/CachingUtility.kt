@@ -154,7 +154,7 @@ class CacheProvider(val basexInfo: BasexInfo) {
     }
 
     fun getCacheFileName(xQueryParams: XQueryParams): String {
-        return "${getBaseXPrefix()}--${xQueryParams.year}-${xQueryParams.caseTypes.joinToString("_")}.mrereport"
+        return "${getBaseXPrefix()}--${xQueryParams.year}.mrereport"
     }
 
     fun writeCache(cache: CacheData) {

@@ -1,5 +1,5 @@
 for $x in /patient/case/labReport/sample/germ/comment[contains(@class,"MRGN")]
-where $x/../../../../@type=#CASE_TYPE
+(: where $x/../../../../@type=#CASE_TYPE :)
 where (xs:dateTime($x/../../../sample/@from) > xs:dateTime("#YEAR_START") and xs:dateTime($x/../../../sample/@from) < xs:dateTime("#YEAR_END"))
 
 group by $id:=$x/../../../../@id, $name:=$x/../@display, $class:=$x/@class

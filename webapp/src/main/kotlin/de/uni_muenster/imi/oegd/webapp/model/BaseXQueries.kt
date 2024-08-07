@@ -23,9 +23,14 @@ object BaseXQueries {
         .getResourceAsStream("queries/$filename")!!
         .readBytes().toString(Charsets.UTF_8)
 
-    fun applyParams(query: String, xQueryParams: XQueryParams): String {
-        return applyCaseTypeFilter(applyYearFilter(query, xQueryParams), xQueryParams)
+    fun applyParams(query: String, params: Params): String {
+        return applyCaseTypeFilter(applyXQueryParams(query, params.xquery), params.filter)
     }
+
+    fun applyXQueryParams(query: String, params: XQueryParams): String {
+        return applyYearFilter(query, params)
+    }
+
 
     private fun applyYearFilter(query: String, xQueryParams: XQueryParams): String {
         val startDate = "${xQueryParams.year}-01-01T00:00:00"
@@ -36,20 +41,17 @@ object BaseXQueries {
             .replace("#YEAR_END", endDate)
     }
 
-    private fun applyCaseTypeFilter(query: String, xQueryParams: XQueryParams): String {
+
+    // "STATIONAER" -> "S"
+    //                "NACHSTATIONAER" -> "NS"
+//                "VORSTATIONAER" -> "VS"
+//                "TEILSTATIONAER" -> "TS"
+//                "AMBULANT" -> "A"
+//                "BEGLEITPERSON" -> "H"
+//                "GEPLANTER_FALL" -> "P"
+    private fun applyCaseTypeFilter(query: String, filterParams: FilterParams): String {
         //Add deprecated shortend version
-        val caseTypes = xQueryParams.caseTypes.map {
-            when (it) {
-                "STATIONAER" -> "S"
-                "NACHSTATIONAER" -> "NS"
-                "VORSTATIONAER" -> "VS"
-                "TEILSTATIONAER" -> "TS"
-                "AMBULANT" -> "A"
-                "BEGLEITPERSON" -> "H"
-                "GEPLANTER_FALL" -> "P"
-                else -> ""
-            }
-        } + xQueryParams.caseTypes
+        val caseTypes = filterParams.caseTypes.flatMap { it.basexName }
         return query.replace("#CASE_TYPE", caseTypes.joinToString("','", "('", "')"))
     }
 }
