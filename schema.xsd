@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            xmlns:tns="http://imi.uni-muenster.de/medic/integrationschema"
+            targetNamespace="http://imi.uni-muenster.de/medic/integrationschema"
+            elementFormDefault="qualified">
+
+    <xsd:complexType name="Coding">
+        <xsd:attribute name="system" type="xsd:string" use="required"/>
+        <xsd:attribute name="version" type="xsd:string"/>
+        <xsd:attribute name="code" type="xsd:string" use="required"/>
+        <xsd:attribute name="display" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="Identifier">
+        <xsd:attribute use="required" name="system" type="tns:systems"/>
+        <xsd:attribute use="required" name="key" type="xsd:string"/>
+        <xsd:attribute use="required" name="value" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="systems">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="ORBIS"/>
+            <xsd:enumeration value="OPUS"/>
+            <xsd:enumeration value="SEQSPHERE"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+
+    <xsd:attributeGroup name="terminologies">
+        <xsd:attribute name="OPUS" type="xsd:string"/>
+        <xsd:attribute name="ORBIS" type="xsd:string"/>
+        <xsd:attribute name="LOINC" type="xsd:string"/>
+        <xsd:attribute name="SNOMED" type="xsd:string"/>
+        <xsd:attribute name="openTerm" type="xsd:string"/>
+        <xsd:attribute name="display" type="xsd:string"/>
+    </xsd:attributeGroup>
+
+
+    <xsd:element name="patient">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="identifier" type="tns:Identifier" minOccurs="0" maxOccurs="unbounded"/>
+                <xsd:element name="case" type="tns:Case" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+
+            <xsd:attribute use="required" name="birthYear" type="xsd:positiveInteger"/>
+            <xsd:attribute use="required" name="sex" type="tns:sex"/>
+            <xsd:attribute use="required" name="id" type="xsd:string"/>
+            <xsd:attribute use="required" name="storniert" type="xsd:string">
+            </xsd:attribute>
+        </xsd:complexType>
+    </xsd:element>
+
+
+    <xsd:simpleType name="sex">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="M"/>
+            <xsd:enumeration value="F"/>
+            <xsd:enumeration value="D"/>
+            <xsd:enumeration value="?"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:complexType name="Case">
+        <xsd:sequence>
+            <xsd:element name="identifier" type="tns:Identifier" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="location" type="tns:Location" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="labReport" type="tns:LabReport" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="hygiene-message" type="tns:HygieneMessage" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="biobank"
+                         type="tns:Biobank"
+                         minOccurs="0"
+                         maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attribute use="required" name="id" type="xsd:string"/>
+        <xsd:attribute use="required" name="from" type="xsd:dateTime"/>
+        <xsd:attribute use="required" name="till" type="xsd:dateTime"/>
+        <xsd:attribute use="required" name="type" type="tns:CaseType"/>
+        <xsd:attribute use="required" name="subtype" type="xsd:string"/>
+        <xsd:attribute use="required" name="admissionCause" type="xsd:string"/>
+        <xsd:attribute use="required" name="admissionReason301" type="xsd:string"/>
+        <xsd:attribute use="required" name="dischargeType301" type="xsd:string"/>
+        <xsd:attribute use="required" name="state" type="tns:CaseState"/>
+    </xsd:complexType>
+
+
+    <xsd:simpleType name="CaseType">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="STATIONAER"/>
+            <xsd:enumeration value="NACHSTATIONAER"/>
+            <xsd:enumeration value="VORSTATIONAER"/>
+            <xsd:enumeration value="TEILSTATIONAER"/>
+            <xsd:enumeration value="AMBULANT"/>
+            <xsd:enumeration value="BEGLEITPERSON"/>
+            <xsd:enumeration value="GEPLANTER_FALL"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <xsd:simpleType name="CaseState">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="AKTUELL"/>
+            <xsd:enumeration value="ENTLASSEN"/>
+            <xsd:enumeration value="STORNIERT"/>
+            <xsd:enumeration value="IN_AUFNAHME"/>
+        </xsd:restriction>
+    </xsd:simpleType>
+
+
+    <xsd:complexType name="Location">
+        <xsd:attribute use="required" name="id" type="xsd:string"/>
+        <xsd:attribute use="required" name="from" type="xsd:dateTime"/>
+        <xsd:attribute name="till" type="xsd:dateTime"/>
+        <xsd:attribute use="required" name="clinic" type="xsd:string"/>
+        <xsd:attribute name="clinicP21" type="xsd:string"/>
+        <xsd:attribute name="ward" type="xsd:string"/>
+        <xsd:attribute name="room" type="xsd:string"/>
+        <xsd:attribute name="bedPosition" type="xsd:string"/>
+
+    </xsd:complexType>
+
+    <xsd:complexType name="LabReport">
+        <xsd:sequence>
+            <xsd:element name="comment" type="tns:Comment" minOccurs="0" maxOccurs="1">
+                <xsd:annotation>
+                    <xsd:documentation>MIBI messages only: OBX-3-1 == "mibi" and OBX-3-2 == "befund" => textual finding
+                        is in following NTE-segment
+                    </xsd:documentation>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="request" type="tns:LabRequest" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="sample" type="tns:LabSample" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+
+        <xsd:attribute use="required" name="id" type="xsd:string"/>
+        <xsd:attribute name="from" type="xsd:dateTime"/>
+        <xsd:attribute name="order" type="xsd:int"/>
+        <xsd:attribute name="hoursSinceAdmission" type="xsd:int"/>
+        <xsd:attribute name="source" type="xsd:string"/>
+
+    </xsd:complexType>
+
+    <!--    https://stackoverflow.com/questions/376582/xml-schema-element-with-attributes-containing-only-text-->
+    <!--    https://stackoverflow.com/questions/6084431/difference-of-mixed-true-and-xsextension-in-xml-schema-->
+
+    <xsd:complexType name="LabRequest">
+        <xsd:annotation>
+            <xsd:documentation>Even though there is a ORC-Segment in the HL7 specification, the request is
+                stored as an OBX-observation with OBX-3-1 == "frage". Content/value of this element is OBX-5-1.
+                Currently, this applies only for HL7 messages from source "MIBI".
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="from" type="xsd:dateTime"/>
+                <xsd:attribute name="sender" type="xsd:string"/>
+                <xsd:attribute name="class" type="xsd:token"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="LabSample">
+        <xsd:annotation>
+            <xsd:documentation>In case of MIBI-messages: The samples are OBR-segments grouped by OBR-18-1, otherwise one
+                sample is created per OBR-segment.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="comment" type="tns:Comment" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="analysis" type="tns:LabAnalysis" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="germ" type="tns:Germ" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+
+        <xsd:attributeGroup ref="tns:terminologies"/>
+        <xsd:attribute name="hoursSinceAdmission" type="xsd:int"/>
+        <xsd:attribute name="result" type="xsd:string"/>
+        <xsd:attribute name="from" type="xsd:dateTime"/>
+        <xsd:attribute use="required" name="description" type="xsd:string"/>
+        <xsd:attribute name="bodySite" type="xsd:string"/>
+        <xsd:attribute name="bodySiteDisplay" type="xsd:string"/>
+        <xsd:attribute name="bodySiteLaterality" type="tns:Laterality"/>
+    </xsd:complexType>
+
+    <xsd:simpleType name="Laterality">
+        <xsd:restriction base="xsd:string">
+            <xsd:enumeration value="LEFT"/>
+            <xsd:enumeration value="RIGHT"/>
+            <xsd:enumeration value="UNKNOWN"/>
+            <xsd:enumeration value="NONE"/>
+            <!--            <xsd:enumeration value="MIRTH"/>-->
+        </xsd:restriction>
+    </xsd:simpleType>
+
+    <!--    PCR wird ueber einen eigenen export realisiert der nichts anderes enthaelt-->
+
+
+    <xsd:complexType name="KeyValue">
+        <xsd:attribute name="k" type="xsd:string"/>
+        <xsd:attribute name="v" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="HygieneMessage">
+        <xsd:attribute name="germ-name" type="xsd:string"/>
+        <xsd:attribute name="germ-number" type="xsd:int"/>
+        <xsd:attribute name="nosocomial" type="xsd:boolean"/>
+        <xsd:attribute name="infection" type="xsd:boolean"/>
+        <xsd:attribute name="infection-string" type="xsd:string"/>
+        <xsd:attribute name="MRG-class" type="xsd:string"/>
+    </xsd:complexType>
+
+    <xsd:complexType name="Biobank">
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="type" type="xsd:string"/>
+        <xsd:attribute name="kind" type="xsd:string"/>
+        <xsd:attribute name="amount" type="xsd:string"/>
+        <xsd:attribute name="from" type="xsd:date"/>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="Germ">
+        <xsd:annotation>
+            <xsd:documentation>In case of MIBI-messages: Germ-analysis are marked by OBR-26-1 == "keim" and grouped by
+                OBR-26-2.
+                Those elements are excluded from labSample.analysis list and put into this Germ item.
+            </xsd:documentation>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="comment" type="tns:Comment" minOccurs="0" maxOccurs="1"/>
+            <xsd:element name="analysis" type="tns:LabAnalysis" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="pcr-meta" type="tns:KeyValue" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="pcr" type="tns:KeyValue" minOccurs="0" maxOccurs="unbounded"/>
+            <xsd:element name="antibiotic" type="tns:LabAnalysis" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+
+
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="class" type="xsd:token"/>
+        <xsd:attribute use="required" name="number" type="xsd:int"/>
+        <xsd:attributeGroup ref="tns:terminologies"/>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="Comment">
+        <xsd:simpleContent>
+            <xsd:extension base="xsd:string">
+                <xsd:attribute name="class" type="xsd:token"/>
+            </xsd:extension>
+        </xsd:simpleContent>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="LabAnalysis">
+        <xsd:sequence>
+            <xsd:element name="result" type="tns:LabResult" minOccurs="1" maxOccurs="1"/>
+            <xsd:element name="comment" type="tns:Comment" minOccurs="0" maxOccurs="1">
+            </xsd:element>
+        </xsd:sequence>
+        <xsd:attribute name="id" type="xsd:string"/>
+        <xsd:attribute name="type" type="xsd:string"/>
+
+        <xsd:attribute name="class"
+                       type="xsd:token"/> <!-- TODO: Is this ever used? It seems not.. -->
+
+        <xsd:attributeGroup ref="tns:terminologies"/>
+    </xsd:complexType>
+
+
+    <xsd:complexType name="LabResult">
+        <xsd:sequence>
+            <xsd:element name="comment" type="tns:Comment" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute name="numeric" type="xsd:float"/>
+        <xsd:attribute name="string" type="xsd:string"/>
+        <xsd:attribute name="unit" type="xsd:string"/>
+        <xsd:attribute name="unitUCUM" type="xsd:string"/>
+        <xsd:attribute name="norm" type="xsd:string"/>
+        <xsd:attribute name="low" type="xsd:float"/>
+        <xsd:attribute name="high" type="xsd:float"/>
+        <xsd:attribute
+                name="interpretation"
+                type="xsd:string">
+            <!--            hi, ok, lo-->
+        </xsd:attribute>
+
+        <xsd:attribute
+                name="MIC"
+                type="xsd:string">
+            <!--            <xsd:annotation>-->
+            <!--                <xsd:documentation>minimal hemmkonzentration / min. inhib. conc.</xsd:documentation>-->
+            <!--            </xsd:annotation>-->
+        </xsd:attribute>
+
+        <xsd:attributeGroup ref="tns:terminologies"/>
+    </xsd:complexType>
+
+
+</xsd:schema>
