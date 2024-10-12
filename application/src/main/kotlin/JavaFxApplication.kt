@@ -5,6 +5,7 @@ import de.uni_muenster.imi.oegd.webapp.createServer
 import de.uni_muenster.imi.oegd.webapp.findOpenPortInRange
 import de.uni_muenster.imi.oegd.webapp.model.IBaseXClient
 import de.uni_muenster.imi.oegd.webapp.model.RestClient
+import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import javafx.application.Application
 import javafx.application.Platform
@@ -54,7 +55,7 @@ fun <T : javafx.scene.Node> javafx.scene.Node.find(cssSelector: String) = this.l
 
 class JavaFxApplication : Application() {
     private val webappPort = findOpenPortInRange(1024..49151) ?: error("Cannot find free port for internal webserver!")
-    private var server: NettyApplicationEngine? = null
+    private var server: EmbeddedServer<NettyApplicationEngine, NettyApplicationEngine.Configuration>? = null
     private var directory: File? = null
     private var language = Language.findByLocale(Locale.getDefault()) ?: Language.ENGLISH
     private lateinit var i18n: ResourceBundle
