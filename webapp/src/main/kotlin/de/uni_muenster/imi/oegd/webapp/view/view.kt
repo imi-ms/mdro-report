@@ -199,11 +199,21 @@ fun FlowContent.drawCaseList(germ: GermType, data: List<Map<String, String>>, la
         for (datum in data) {
             tr {
                 for (key in columnNames) {
-                    td { +(datum[key] ?: "null") }
+                    td { +translate(germ, key, datum[key]) }
                 }
             }
         }
     }
+}
+
+private fun translate(germ: GermType, columnName: String, value: String?): String {
+    if (columnName in setOf("caseType", "infection", "nosocomial")) {
+        val i18nSlug = "page.caselist.$columnName.$value"
+        return if (i18n.containsKey(i18nSlug)) i18n[i18nSlug] else value ?: "null"
+    }
+
+
+    return value ?: "null"
 }
 
 private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {

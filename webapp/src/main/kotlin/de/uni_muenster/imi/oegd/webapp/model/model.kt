@@ -36,7 +36,6 @@ data class Params(val xquery: XQueryParams, val filter: FilterParams) {
 }
 
 @Serializable
-@SerialName("Customer")
 private data class ParamsSurrogate(val year: Int? = null, val caseTypes: List<CaseType> = listOf(CaseType.STATIONAER))
 object CustomSerializer : KSerializer<Params> {
     override val descriptor: SerialDescriptor = ParamsSurrogate.serializer().descriptor
