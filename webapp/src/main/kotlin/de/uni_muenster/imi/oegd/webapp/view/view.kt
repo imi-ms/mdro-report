@@ -5,6 +5,8 @@ import de.uni_muenster.imi.oegd.webapp.i18n
 import de.uni_muenster.imi.oegd.webapp.model.*
 import io.ktor.server.html.*
 import kotlinx.html.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 import java.text.MessageFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -213,7 +215,21 @@ private fun translate(germ: GermType, columnName: String, value: String?): Strin
     }
 
 
+    if (columnName == "sampleType" && i18n.locale.language != "de") {
+        return sampleTranslations[value?.trim()] ?: run {
+            println("Translation missing '$value'")
+            value
+        }
+        ?: "null"
+    }
+
+
     return value ?: "null"
+}
+
+val sampleTranslations: Map<String, String> by lazy {
+    val `is` = object {}::class.java.classLoader.getResourceAsStream("view/translation.json")
+    Json.decodeFromStream(`is`)
 }
 
 private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
