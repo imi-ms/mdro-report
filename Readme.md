@@ -111,6 +111,7 @@ For each of these objects the following attributes are important:
 Example:
 
 ```xml
+
 <patient birthYear="1970" sex="F" id="5630133">...</patient>
 ```
 
@@ -125,6 +126,7 @@ Example:
 Example:
 
 ```xml
+
 <case id="99814764" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" type="STATIONAER">...</case>
 ```
 
@@ -139,6 +141,7 @@ Example:
 Example:
 
 ```xml
+
 <location id="8909885" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" clinic="FA_GYN"/>
 ```
 
@@ -150,6 +153,7 @@ Example:
 Example:
 
 ```xml
+
 <labReport id="32005541" source="MIBI">...</labReport>
 ```
 
@@ -161,6 +165,7 @@ Example:
 Example:
 
 ```xml
+
 <request from="2021-04-16T19:14:46" sender="Klinik für Gynäkologie"/>
 ```
 
@@ -173,6 +178,7 @@ Example:
 Example:
 
 ```xml
+
 <sample from="2021-04-16T19:14:46" bodySiteDisplay="Nase und Rachen" display="Abstrich-oberflächlich">...</sample>
 ```
 
@@ -185,6 +191,7 @@ Example:
 Example:
 
 ```xml
+
 <germ id="25403319" SNOMED="3092008" display="Staphylococcus aureus">...</germ>
 ```
 
@@ -198,7 +205,6 @@ This explanation is specific to the comment that is attatched to the germ node.
 Example:
 
 ```xml
-
 <comment class="MRSA">...</comment>
 ```
 
@@ -211,7 +217,6 @@ Example:
 Example:
 
 ```xml
-
 <antibiotic LOINC="18862-3" display="Amoxicillin/Clavulansäure">...</antibiotic>
 ```
 
@@ -445,10 +450,9 @@ Apache Licence 2.0
 
 ## Acknowledgement
 
-Supported by BMBF grant No. 01ZZ1802V (HiGHmed/Münster) 
+Supported by BMBF grant No. 01ZZ1802V (HiGHmed/Münster)
 
 ## TODOS
 
 * Punktat herausfiltern oder über bodySiteDisplay matchen
-* MRGN: Piperacillin: Wenn Piperacillin-Tazobactam = "R" dann "R" sonst leer lassen
 * MRSA: Priorisierung der Blutkulturen 
