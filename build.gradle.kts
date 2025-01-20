@@ -15,7 +15,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.4.2"
+    version = "1.4.3"
     jvmToolchain(21)
 }
 
@@ -37,7 +37,7 @@ dependencies {
 subprojects {
     plugins.withType(JavaPlugin::class) {
         dependencies {
-            implementation("ch.qos.logback:logback-classic:1.4.14")
+            implementation("ch.qos.logback:logback-classic:1.5.16")
             implementation("io.github.microutils:kotlin-logging:3.0.5")
         }
     }
