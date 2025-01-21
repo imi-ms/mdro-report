@@ -5,7 +5,6 @@ import de.uni_muenster.imi.oegd.webapp.view.*
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
-import io.ktor.server.application.ApplicationCallPipeline.ApplicationPhase.Plugins
 import io.ktor.server.html.*
 import io.ktor.server.http.content.*
 import io.ktor.server.plugins.statuspages.*
@@ -13,12 +12,11 @@ import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.util.*
+import io.ktor.utils.io.*
 import kotlinx.html.*
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import java.net.InetAddress
-import java.nio.charset.StandardCharsets
 import java.text.MessageFormat
 import java.util.*
 
@@ -30,6 +28,53 @@ lateinit var i18n: ResourceBundle
 lateinit var currentLanguage: Locale
 val ApplicationCall.queryParams: Params
     get() = this.attributes[queryparams]
+
+private val OnlyLocalhostPlugin = createRouteScopedPlugin("OnlyLocalhostPlugin") {
+    onCall { call ->
+        val ip = InetAddress.getByName(call.request.local.remoteHost)
+        if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
+            call.respondText(
+                text = MessageFormat.format(i18n["page.error.noLocalhost"], ip),
+                status = HttpStatusCode.Unauthorized
+            )
+            //call.finish()
+        }
+    }
+}
+
+private val PutParamsPlugin = createRouteScopedPlugin("PutParamsPlugin") {
+    onCall { call ->
+        val params = Params.fromJson(call.parameters["q"])
+        if (params != null) {
+            call.attributes.put(queryparams, params)
+        }
+    }
+}
+
+private val AskForConfigForMostPages = createRouteScopedPlugin("AskForConfigForMostPages") {
+    onCall { call ->
+        if (call.request.uri.startsWith("/settings/save")) return@onCall
+        if (call.request.uri.startsWith("/about")) return@onCall
+        if (call.request.uri == "/") return@onCall
+        if (call.request.uri.startsWith("/static")) return@onCall
+        if (call.request.uri.contains("invalidate-cache")) return@onCall
+        if (call.request.uri.startsWith("/statistic")) return@onCall
+        if (call.request.uri.startsWith("/changeLanguage")) return@onCall
+        val q = call.parameters["q"]
+        if (q.isNullOrBlank() || q == "null") {
+            call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
+                header { +i18n["page.missingConfig.heading"] }
+                content {
+                    +i18n["page.missingConfig.text"]
+                    script(type = "text/javascript") {
+                        unsafe { +"new bootstrap.Modal($('#settings-modal'), { keyboard: false }).show();" }
+                    }
+                }
+            }
+//                this.finish()
+        }
+    }
+}
 
 /**
  * @param serverMode do not block non-localhost connections
@@ -73,23 +118,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
         routing {
             //Protect against non-localhost calls, avoid leaking data to unauthorized persons
             if (!serverMode) {
-                intercept(Plugins) {
-                    val ip = InetAddress.getByName(call.request.local.remoteHost)
-                    if (!(ip.isAnyLocalAddress || ip.isLoopbackAddress)) {
-                        call.respondText(
-                            text = MessageFormat.format(i18n["page.error.noLocalhost"], ip),
-                            status = HttpStatusCode.Unauthorized
-                        )
-                        this.finish()
-                    }
-                }
+                install(OnlyLocalhostPlugin)
             }
-            intercept(Plugins) {
-                val params = Params.fromJson(call.parameters["q"])
-                if (params != null) {
-                    call.attributes.put(queryparams, params)
-                }
-            }
+            install(PutParamsPlugin)
             post("/settings/save") {
                 val parameters = call.receiveParameters()
                 val year = parameters["year"]?.ifBlank { null }
@@ -108,28 +139,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 changeLanguage(parameters["language"] ?: "en")
                 call.respondRedirect("$referrer?q=${parameters["q"]}")
             }
-            intercept(ApplicationCallPipeline.Call) {
-                if (call.request.uri.startsWith("/settings/save")) return@intercept
-                if (call.request.uri.startsWith("/about")) return@intercept
-                if (call.request.uri == "/") return@intercept
-                if (call.request.uri.startsWith("/static")) return@intercept
-                if (call.request.uri.contains("invalidate-cache")) return@intercept
-                if (call.request.uri.startsWith("/statistic")) return@intercept
-                if (call.request.uri.startsWith("/changeLanguage")) return@intercept
-                val q = call.parameters["q"]
-                if (q.isNullOrBlank() || q == "null") {
-                    call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
-                        header { +i18n["page.missingConfig.heading"] }
-                        content {
-                            +i18n["page.missingConfig.text"]
-                            script(type = "text/javascript") {
-                                unsafe { +"new bootstrap.Modal($('#settings-modal'), { keyboard: false }).show();" }
-                            }
-                        }
-                    }
-                    this.finish()
-                }
-            }
+            install(AskForConfigForMostPages)
 
             get("/") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
@@ -366,7 +376,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
 
             staticResources("/static", "static")
         }
-        environment.monitor.subscribe(ApplicationStopping) {
+        monitor.subscribe(ApplicationStopping) {
             baseXClient.close()
         }
     }
@@ -400,8 +410,7 @@ private fun changeLanguage(languageSelectValue: String) {
 private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: CachingUtility) {
     multipartdata.forEachPart { part ->
         if (part is PartData.FileItem) {
-            val fileBytes = part.streamProvider().readBytes()
-            val newCache = String(fileBytes, StandardCharsets.UTF_8)
+            val newCache = part.provider().readRemaining().readText()
             cachingUtility.uploadExistingCache(newCache)
         }
         part.dispose()
@@ -410,6 +419,6 @@ private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: Ca
 }
 
 private fun List<Map<String, String>>.filterCaseType(caseTypes: List<CaseType>): List<Map<String, String>> {
-    val foo = caseTypes.flatMap { it.basexName }
-    return this.filter { it["caseType"] in foo }
+    val basexNames = caseTypes.flatMap { it.basexName }
+    return this.filter { it["caseType"] in basexNames }
 }

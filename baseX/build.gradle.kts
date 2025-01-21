@@ -13,5 +13,5 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":webapp"))
-    implementation("org.basex:basex:10.7")
+    implementation("org.basex:basex:11.6")
 }

@@ -228,8 +228,7 @@ private fun translate(germ: GermType, columnName: String, value: String?): Strin
 }
 
 val sampleTranslations: Map<String, String> by lazy {
-    val `is` = object {}::class.java.classLoader.getResourceAsStream("view/translation.json")
-    Json.decodeFromStream(`is`)
+    Json.decodeFromStream(object {}::class.java.classLoader.getResourceAsStream("view/translation.json"))
 }
 
 private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {

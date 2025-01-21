@@ -11,7 +11,7 @@ return (<data
     samplingDate="{subsequence($x/../../../request/@from,1,1)}"
     sampleType="{subsequence($x/../../../sample/@display,1,1)}"
     sender="{subsequence($x/../../../request/@sender,1,1)}"
-    department="{($station ?: "Prästationär")}"
+    department="{($station otherwise "Prästationär")}"
     pathogen="{subsequence($x/../@display,1,1)}"
     class="{subsequence($x/@class,1,1)}"
     piperacillin="{if(subsequence($x/../antibiotic[@LOINC="18970-4"]/result/@string,1,1) = "R") then "R" else ""}"

@@ -31,7 +31,7 @@ import javafx.stage.Stage
 import kotlinx.coroutines.runBlocking
 import netscape.javascript.JSObject
 import java.io.File
-import java.net.URL
+import java.net.URI
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -205,18 +205,18 @@ class JavaFxApplication : Application() {
 
         fun downloadFile(url: String) {
             val data = object : Task<String>() {
-                override fun call() = URL(url).readText()
+                override fun call() = URI.create(url).toURL().readText()
             }
             data.setOnFailed {
-                Alert(Alert.AlertType.ERROR, "Cannot download report. Please check stacktrace!")
+                Alert(Alert.AlertType.ERROR, "Cannot download report. Please check stacktrace!").showAndWait()
             }
 
             val file = FileChooser().apply {
                 initialFileName = when {
-                    url.contains("downloadCache") -> "report.mrereport"
-                    url.contains("MRGN") -> "mrgn.csv"
-                    url.contains("MRSA") -> "mrsa.csv"
-                    url.contains("VRE") -> "vre.csv"
+                    "downloadCache" in url -> "report.mrereport"
+                    "MRGN" in url -> "mrgn.csv"
+                    "MRSA" in url -> "mrsa.csv"
+                    "VRE" in url -> "vre.csv"
                     else -> "file.txt"
                 }
             }.showSaveDialog(primaryStage) ?: return
@@ -241,7 +241,7 @@ class JavaFxApplication : Application() {
                 downloadFile(newLocation)
                 webView.engine.load(oldLocation)
             }
-            if (newLocation.contains("imi.uni-muenster.de") || newLocation.contains("ukm.de")) {
+            if ("imi.uni-muenster.de" in newLocation || "ukm.de" in newLocation) {
                 hostServices.showDocument(newLocation)
                 webView.engine.load(oldLocation)
             }
@@ -250,7 +250,7 @@ class JavaFxApplication : Application() {
         primaryStage.centerOnScreen()
     }
 
-    private fun createImageLabel(label: String, imgPath: String): Label = Label(label).apply {
+    private fun createImageLabel(label: String, imgPath: String) = Label(label).apply {
         style = "-fx-text-fill: black"
         graphic = ImageView(Image(imgPath)).apply {
             fitWidth = 21.6

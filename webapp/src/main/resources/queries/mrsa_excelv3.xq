@@ -18,7 +18,7 @@ where (xs:dateTime($x/../../../sample/@from) > xs:dateTime("#YEAR_START") and xs
 let $ids:=$x/../../../../@id
 group by $ids
 let $probenarten := $x/../../../sample/@display
-let $idx := local:index-of-first($probenarten, function($it) { contains($it, "Blut") }) ?: 1 (: TODO: Stichpunktartig ueberpruefen :)
+let $idx := local:index-of-first($probenarten, function($it) { contains($it, "Blut") }) otherwise 1
 
 let $station := string-join($x/../../../../..//location[@till > subsequence($x/../../../sample/@from,$idx,1) and @from < subsequence($x/../../../sample/@from,$idx,1)]/@clinic,'; ')
 
@@ -34,7 +34,7 @@ return <data
  infection="{$infection}"
  nosocomial="{$nosocomial}"
  sender="{subsequence($x/../../../request/@sender,$idx,1)}"
- department="{$station ?: "Prästationär"}"
+ department="{$station otherwise "Prästationär"}"
  spa="{$spa}"
  clustertype="{$cluster}"
  />

@@ -15,7 +15,7 @@ let $ids:=$x/../../../../@id
 group by $ids
 
 let $probenarten := $x/../../../sample/@display
-let $idx := local:index-of-first($probenarten, function($it) { contains($it, "Blut") }) ?: 1 (: TODO: Stichpunktartig ueberpruefen :)
+let $idx := local:index-of-first($probenarten, function($it) { contains($it, "Blut") }) otherwise 1
 
 let $station := string-join($x/../../../../location[@till > subsequence($x/../../../sample/@from,$idx,1) and @from < subsequence($x/../../../sample/@from,$idx,1)]/@clinic,'; ')
 
@@ -28,7 +28,7 @@ return <data
     samplingDate="{subsequence($x/../../../request/@from,$idx,1)}"
     sampleType="{$probenart}"
     sender="{subsequence($x/../../../request/@sender,$idx,1)}"
-    department="{($station ?: "Prästationär")}"
+    department="{($station otherwise "Prästationär")}"
     pathogen="{subsequence($x/../@display,$idx,1)}"
     linezolid="{subsequence($x/../antibiotic[@LOINC="29258-1"]/result/@string,$idx,1)}"
     tigecylin="{subsequence($x/../antibiotic[@LOINC="42357-4"]/result/@string,$idx,1)}"
