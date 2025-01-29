@@ -15,8 +15,8 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.4.3"
-    jvmToolchain(21)
+    version = "1.4.4"
+    jvmToolchain(17)
 }
 
 java {
