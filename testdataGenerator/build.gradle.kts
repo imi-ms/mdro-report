@@ -9,7 +9,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd.testdataGenerator"
-    jvmToolchain(17)
+    jvmToolchain(21)
 }
 
 repositories {
@@ -26,7 +26,7 @@ tasks {
         manifest {
             attributes("Main-Class" to "de.uni_muenster.imi.oegd.testdataGenerator.Main")
         }
-        archiveFileName.set("MRETestdataGenerator.jar")
+        archiveFileName.set("MDROTestdataGenerator.jar")
     }
 }
 
@@ -45,7 +45,7 @@ tasks.register<JPackageTask>("CreateAppImage") {
     input = "${layout.buildDirectory}/jars"
     destination = "${layout.buildDirectory}/dist"
 
-    appName = "MREReport-Testdata-Generator"
+    appName = "MDRO-Report-Testdata-Generator"
     vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.jar.get().archiveFileName.get()

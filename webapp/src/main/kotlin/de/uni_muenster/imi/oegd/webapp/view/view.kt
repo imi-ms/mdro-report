@@ -32,7 +32,7 @@ class LayoutTemplate(_url: String, private val q: String? = null) : Template<HTM
             div(classes = "wrapper") {
                 nav(classes = "navbar navbar-expand-md navbar-light bg-light px-2") {
                     a(classes = "navbar-brand", href = "/?q=$q") {
-                        +"MRE-Report"
+                        +"MDRO-Report"
                     }
                     button(classes = "navbar-toggler") {
                         attributes["data-bs-toggle"] = "collapse"
@@ -179,7 +179,7 @@ fun FlowContent.drawCaseList(germ: GermType, data: List<Map<String, String>>, la
     }
 
     a(href = "list/csv?q=${q}", classes = "btn btn-secondary btn-sm mt-2 ms-2") {
-        attributes["download"] = "mrereport-${germ.germtype}-export.csv"
+        attributes["download"] = "mdroreport-${germ.germtype}-export.csv"
         +"Download CSV"
     }
 

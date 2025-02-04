@@ -21,7 +21,9 @@ let $station := string-join($x/../../../../location[@till > subsequence($x/../..
 
 
 let $probenart :=  subsequence($probenarten, $idx, 1)
-
+let $stType := subsequence($x/../../germ/pcr-meta[@k="ST"]/@v,$idx,1)
+let $vanA := subsequence($x/../../germ/pcr-meta[@k="vanA"]/@v,$idx,1)
+let $vanB := subsequence($x/../../germ/pcr-meta[@k="vanB"]/@v,$idx,1)
 return <data
     caseID="{$x/../../../../@id}"
     caseType="{$x/../../../../@type}"
@@ -35,6 +37,9 @@ return <data
     vancomycin="{subsequence($x/../antibiotic[@LOINC="19000-9"]/result/@string,$idx,1)}"
     teicoplanin="{subsequence($x/../antibiotic[@LOINC="18989-4"]/result/@string,$idx,1) }"
     quinupristinAndDalfopristin="{subsequence($x/../antibiotic[@LOINC="23640-6"]/result/@string,$idx,1)}"
+    stType="{$stType}"
+    vanA="{$vanA}"
+    vanB="{$vanB}"
 />
 
 

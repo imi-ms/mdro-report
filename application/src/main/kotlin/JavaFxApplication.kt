@@ -31,7 +31,6 @@ import javafx.stage.Stage
 import kotlinx.coroutines.runBlocking
 import netscape.javascript.JSObject
 import java.io.File
-import java.net.URI
 import java.util.*
 import kotlin.system.exitProcess
 
@@ -68,7 +67,7 @@ class JavaFxApplication : Application() {
         i18n = ResourceBundle.getBundle("internationalization", language.locale)
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"), i18n)
         primaryStage.scene = Scene(page)
-        primaryStage.title = "MREReport"
+        primaryStage.title = "MDRO-Report"
         primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 
@@ -205,15 +204,19 @@ class JavaFxApplication : Application() {
 
         fun downloadFile(url: String) {
             val data = object : Task<String>() {
-                override fun call() = URI.create(url).toURL().readText()
+                //TODO: Use newer API that works also with URLs that contain JSON object
+                override fun call() = java.net.URL(url).readText()
             }
             data.setOnFailed {
-                Alert(Alert.AlertType.ERROR, "Cannot download report. Please check stacktrace!").showAndWait()
+                Alert(
+                    Alert.AlertType.ERROR,
+                    "Cannot download report. Please check stacktrace!\n" + data.exception.stackTraceToString(),
+                ).showAndWait()
             }
 
             val file = FileChooser().apply {
                 initialFileName = when {
-                    "downloadCache" in url -> "report.mrereport"
+                    "downloadCache" in url -> "report.mdroreport"
                     "MRGN" in url -> "mrgn.csv"
                     "MRSA" in url -> "mrsa.csv"
                     "VRE" in url -> "vre.csv"

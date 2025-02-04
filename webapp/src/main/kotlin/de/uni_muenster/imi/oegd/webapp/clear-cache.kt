@@ -4,8 +4,8 @@ import net.harawata.appdirs.AppDirsFactory
 import java.io.File
 
 fun main() {
-    val userCacheDir = System.getenv("mrereport.cachedir") ?: AppDirsFactory.getInstance()
-        .getUserCacheDir("mrereport", "1.0", "IMI")!!
+    val userCacheDir = System.getenv("mdroreport.cachedir") ?: AppDirsFactory.getInstance()
+        .getUserCacheDir("mdroreport", "1.0", "IMI")!!
 
     val file = File(userCacheDir)
     println(file)

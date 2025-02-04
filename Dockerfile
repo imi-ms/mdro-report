@@ -8,7 +8,7 @@ RUN gradle clean :webapp:shadowJar --no-daemon
 
 # actual container
 FROM eclipse-temurin:21-alpine
-ENV ARTIFACT_NAME=MREReport-Light.jar
+ENV ARTIFACT_NAME=MDROReport-Light.jar
 ENV APP_HOME=/home/gradle/src
 
 WORKDIR $APP_HOME

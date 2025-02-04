@@ -44,6 +44,6 @@ tasks {
             attributes("Main-Class" to "de.uni_muenster.imi.oegd.webapp.EntrypointsKt")
         }
 
-        archiveFileName.set("MREReport-Light.jar")
+        archiveFileName.set("MDROReport-Light.jar")
     }
 }

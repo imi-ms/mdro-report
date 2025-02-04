@@ -21,6 +21,7 @@ return (<data
     meropenem="{subsequence($x/../antibiotic[@LOINC="18943-1"]/result/@string,1,1)}"
     imipenem="{subsequence($x/../antibiotic[@LOINC="18932-4"]/result/@string,1,1)}"
     ciprofloxacin="{subsequence($x/../antibiotic[@LOINC="18906-8"]/result/@string,1,1)}"
+    stType="{subsequence($x/../pcr-meta[@k="ST"]/@v,1,1)}"
  />)
 
  (: 18970-4 = Piperacillin+Tazobactam, so if resistant against both, it is resistant against Piperacillin, otherwise, we cannot make any assumption:)

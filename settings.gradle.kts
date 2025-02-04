@@ -1,4 +1,4 @@
-rootProject.name = "mre-report"
+rootProject.name = "mdro-report"
 include(
     "webapp",
     "baseX",

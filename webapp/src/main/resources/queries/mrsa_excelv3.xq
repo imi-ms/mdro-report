@@ -26,6 +26,8 @@ let $infection := local:quartery(subsequence($x/../../../../hygiene-message/@inf
 let $nosocomial := local:quartery(subsequence($x/../../../../hygiene-message/@nosocomial,1,1), "importiert", "nosokomial", "importiert")
 let $spa :=  local:otherwise(subsequence($x/../../germ/pcr-meta[@k="SpaType"]/@v,$idx,1), subsequence($x/../../germ/pcr-meta[@k="Spa"]/@v,$idx,1))
 let $cluster := subsequence($x/../../germ/pcr-meta[@k="ClusterType"]/@v,$idx,1)
+let $stType := subsequence($x/../../germ/pcr-meta[@k="ST"]/@v,$idx,1)
+
 return <data
  caseID="{$x/../../../../@id}"
  caseType="{$x/../../../../@type}"
@@ -37,5 +39,6 @@ return <data
  department="{$station otherwise "Prästationär"}"
  spa="{$spa}"
  clustertype="{$cluster}"
+ stType="{$stType}"
  />
 

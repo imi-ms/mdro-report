@@ -54,7 +54,7 @@ class JavaFxApplication : Application() {
         i18n = ResourceBundle.getBundle("testdataGeneratorMessages", language.locale)
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/testdataGenerator.fxml"), i18n)
         primaryStage.scene = Scene(page)
-        primaryStage.title = "MREReport Testdata Generator"
+        primaryStage.title = "MDRO-Report Testdata Generator"
         primaryStage.icons.add(Image("label.png"))
         primaryStage.show()
 

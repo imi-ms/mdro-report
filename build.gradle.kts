@@ -15,8 +15,8 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.4.4"
-    jvmToolchain(17)
+    version = "1.5.0"
+    jvmToolchain(21)
 }
 
 java {
@@ -69,7 +69,7 @@ tasks.register<JPackageTask>("CreateAppImage") {
     input = "${layout.buildDirectory.get()}/jars"
     destination = "${layout.buildDirectory.get()}/dist"
 
-    appName = "MRE-Report"
+    appName = "MDRO-Report"
     vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.shadowJar.get().archiveFileName.get()
@@ -85,7 +85,7 @@ tasks.register<JPackageTask>("CreateEXE") {
     input = "${layout.buildDirectory.get()}/jars"
     destination = "${layout.buildDirectory.get()}/dist"
 
-    appName = "MRE-Report"
+    appName = "MDRO-Report"
     vendor = "Institut für Medizinische Informatik Münster"
 
     mainJar = tasks.shadowJar.get().archiveFileName.get()
@@ -100,7 +100,7 @@ tasks.register<JPackageTask>("CreateEXE") {
 
 tasks {
     shadowJar {
-        archiveFileName.set("MREReport-Full.jar")
+        archiveFileName.set("MDROReport-Full.jar")
         exclude {
             //Only include minified versions of webjar library into the distributed bundle
             it.path.contains("META-INF/resources/webjars")

@@ -2,7 +2,6 @@ package de.uni_muenster.imi.oegd.webapp.model
 
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import mu.KotlinLogging
 import net.harawata.appdirs.AppDirsFactory
@@ -129,7 +128,7 @@ class CacheProvider(val basexInfo: BasexInfo) {
     fun getCachedParameters(): List<XQueryParams> {
         return File(cacheDirectory).listFiles()!!
             .filter { it.name.startsWith(getBaseXPrefix()) }
-            .map { it.name.substringAfter("--").removeSuffix(".mrereport") }
+            .map { it.name.substringAfter("--").removeSuffix(".mdroreport") }
             .map { XQueryParams(it.toInt()) }
     }
 
@@ -146,15 +145,15 @@ class CacheProvider(val basexInfo: BasexInfo) {
 
     private val cacheDirectory: String by lazy {
         val userCacheDir =
-            System.getenv("mrereport.cachedir")
-                ?: AppDirsFactory.getInstance().getUserCacheDir("mrereport", "1.0", "IMI")!!
+            System.getenv("mdroreport.cachedir")
+                ?: AppDirsFactory.getInstance().getUserCacheDir("mdroreport", "1.0", "IMI")!!
 
         log.info { "Using '$userCacheDir' as cache directory!" }
         userCacheDir
     }
 
     fun getCacheFileName(xQueryParams: XQueryParams): String {
-        return "${getBaseXPrefix()}--${xQueryParams.year}.mrereport"
+        return "${getBaseXPrefix()}--${xQueryParams.year}.mdroreport"
     }
 
     fun writeCache(cache: CacheData) {

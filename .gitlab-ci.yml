@@ -23,10 +23,10 @@ build:
       - .gradle
   artifacts:
     paths:
-      - build/libs/MREReport-Full.jar
-      - webapp/build/libs/MREReport-Light.jar
+      - build/libs/MDROReport-Full.jar
+      - webapp/build/libs/MDROReport-Light.jar
       - webapp/build/libs/webapp.war
-      - testdataGenerator/build/libs/MRETestdataGenerator.jar
+      - testdataGenerator/build/libs/MDROTestdataGenerator.jar
   only:
     - master
     - tags
@@ -73,16 +73,16 @@ upload:
   script:
     - |
       PACKAGE_REGISTRY_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}"
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file build/libs/MREReport-Full.jar ${PACKAGE_REGISTRY_URL}/MREReport-${CI_COMMIT_TAG}-Full.jar
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file build/libs/MDROReport-Full.jar ${PACKAGE_REGISTRY_URL}/MDROReport-${CI_COMMIT_TAG}-Full.jar
     - |
       PACKAGE_REGISTRY_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}"
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file webapp/build/libs/MREReport-Light.jar ${PACKAGE_REGISTRY_URL}/MREReport-${CI_COMMIT_TAG}-Light.jar
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file webapp/build/libs/MDROReport-Light.jar ${PACKAGE_REGISTRY_URL}/MDROReport-${CI_COMMIT_TAG}-Light.jar
     - |
       PACKAGE_REGISTRY_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}"
       curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file webapp/build/libs/webapp.war ${PACKAGE_REGISTRY_URL}/webapp-${CI_COMMIT_TAG}.war
     - |
       PACKAGE_REGISTRY_URL="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}"
-      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file testdataGenerator/build/libs/MRETestdataGenerator.jar ${PACKAGE_REGISTRY_URL}/MRETestdataGenerator-${CI_COMMIT_TAG}.jar
+      curl --header "JOB-TOKEN: ${CI_JOB_TOKEN}" --upload-file testdataGenerator/build/libs/MDROTestdataGenerator.jar ${PACKAGE_REGISTRY_URL}/MDROTestdataGenerator-${CI_COMMIT_TAG}.jar
 
 
 release_job:
@@ -102,11 +102,11 @@ release_job:
     tag_name: "$CI_COMMIT_SHORT_SHA"
     assets:
       links:
-        - name: MREReport-${CI_COMMIT_TAG}-Full.jar
-          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/MREReport-${CI_COMMIT_TAG}-Full.jar
-        - name: MREReport-${CI_COMMIT_TAG}-Light.jar
-          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/MREReport-${CI_COMMIT_TAG}-Light.jar
+        - name: MDROReport-${CI_COMMIT_TAG}-Full.jar
+          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/MDROReport-${CI_COMMIT_TAG}-Full.jar
+        - name: MDROReport-${CI_COMMIT_TAG}-Light.jar
+          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/MDROReport-${CI_COMMIT_TAG}-Light.jar
         - name: webapp-${CI_COMMIT_TAG}.war
           url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/webapp-${CI_COMMIT_TAG}.war
-        - name: MRETestdataGenerator-${CI_COMMIT_TAG}.jar
-          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/MRETestdataGenerator-${CI_COMMIT_TAG}.jar
+        - name: MDROTestdataGenerator-${CI_COMMIT_TAG}.jar
+          url: ${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic/${CI_PROJECT_NAME}/${CI_COMMIT_TAG}/MDROTestdataGenerator-${CI_COMMIT_TAG}.jar

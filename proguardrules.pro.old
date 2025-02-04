@@ -16,8 +16,8 @@ tasks.register<proguard.gradle.ProGuardTask>("minimizedJar") {
     verbose()
 //    ignorewarnings()
 
-    injars("$buildDir/jars/MREReport-Full.jar")
-    outjars("$buildDir/minJar/MREReport.min.jar")
+    injars("$buildDir/jars/MDROReport-Full.jar")
+    outjars("$buildDir/minJar/MDROReport.min.jar")
 
     val javaHome = System.getProperty("java.home")
     // Automatically handle the Java version of this build.

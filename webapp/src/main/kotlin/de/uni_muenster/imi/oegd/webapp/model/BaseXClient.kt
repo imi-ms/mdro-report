@@ -48,7 +48,7 @@ class RestClient(
             println("xquery = ${xquery}")
             return client.post("$baseURL/$database") {
                 setBody("<query><text><![CDATA[ $xquery ]]></text></query>")
-            }.body()
+            }.body<String>().also { println(it) }
         } catch (e: Exception) {
             println("Error when executing XQuery: '$xquery'!")
             e.printStackTrace(System.out)
