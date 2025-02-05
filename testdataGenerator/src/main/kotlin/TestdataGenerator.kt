@@ -103,7 +103,7 @@ class TestdataGenerator {
                         attribute("SNOMED", caseInfo.germType.SNOMED)
                         attribute("display", caseInfo.germType.display)
                         attribute("class", caseInfo.caseScope.type)
-                        "comment"{
+                        "comment" {
                             if (caseInfo.caseScope.type != "VRE" || caseInfo.germType != GermType.E_FAECALIS) { // do not create VRE for E.faecalis
                                 attribute("class", caseInfo.caseScope.type) //TODO: Currently xquery searches for this
                             }
@@ -116,9 +116,18 @@ class TestdataGenerator {
                             addPCRMetaNode("SampleID", "${caseInfo.sampleId}")
                             addPCRMetaNode("CollectionDate", "${caseInfo.startDateTime}")
                             addPCRMetaNode("Spa", "${caseInfo.spaType?.type}")
+                            addPCRMetaNode("ST", "${caseInfo.stTypeMRSA?.type}")
                             addPCRMetaNode("ClusterType", "${caseInfo.clusterType}")
                         }
+                        if (caseInfo.caseScope == CaseScope.VRE) {
+                            addPCRMetaNode("ST", "${caseInfo.stTypeVRE?.type}")
+                            addPCRMetaNode("vanA", "${caseInfo.stTypeVRE?.type}")
+                            addPCRMetaNode("vanB", "${caseInfo.stTypeVRE?.type}")
+                        }
 
+                        if (caseInfo.caseScope in setOf(CaseScope.MRGN3, CaseScope.MRGN4)) {
+                            addPCRMetaNode("ST", "${caseInfo.stTypeMRGN?.type}")
+                        }
 
                         for ((antibiotic, result) in generateAntibioticsAnalysis(caseInfo)) {
                             "antibiotic" {
@@ -175,6 +184,11 @@ data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) 
     var clusterType: ClusterType? = null
     var nosocomial: Boolean? = null
     var infection: Boolean? = null
+    var stTypeMRSA: MRSA_ST? = null
+    var stTypeMRGN: ST_MRGN? = null
+    var stTypeVRE: VRE_ST? = null
+    var vanA: VRE_vanA? = null
+    var vanB: VRE_vanB? = null
 
     init {
         when (caseScope) {
@@ -184,15 +198,24 @@ data class CaseInfo(val caseScope: CaseScope, val generator: TestdataGenerator) 
                 clusterType = getRandomTypeWithProbability(ClusterType.entries)
                 nosocomial = Random.nextBoolean()
                 infection = Random.nextBoolean()
+                stTypeMRSA = randomEnum()
             }
+
             CaseScope.MRGN3, CaseScope.MRGN4 -> {
                 germType = MRGNGermTypes.random()
+                stTypeMRGN = randomEnum()
             }
+
             CaseScope.VRE -> {
                 germType = VREGermTypes.random()
+                vanA = randomEnum()
+                vanB = randomEnum()
+                stTypeVRE = randomEnum()
             }
         }
     }
 }
 
-
+private inline fun <reified T : ProbabilityEnum> randomEnum(): T {
+    return getRandomTypeWithProbability(T::class.java.enumConstants.toList())
+}
