@@ -54,7 +54,7 @@
             <TextField id="server" text="https://basex.ukmuenster.de/rest" GridPane.columnIndex="1"
                        GridPane.vgrow="ALWAYS" styleClass="disabled_while_loading"/>
             <Label text="%label.username" GridPane.rowIndex="1"/>
-            <TextField id="username" text="oehm" GridPane.columnIndex="1" GridPane.rowIndex="1"
+            <TextField id="username" GridPane.columnIndex="1" GridPane.rowIndex="1"
                        styleClass="disabled_while_loading"/>
             <Label text="%label.password" GridPane.rowIndex="2"/>
             <PasswordField id="password" GridPane.columnIndex="1" GridPane.rowIndex="2"
