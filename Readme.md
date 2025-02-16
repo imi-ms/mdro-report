@@ -3,7 +3,8 @@
 This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html) by running XQuery queries.
 
-MDROs is short for multidrug-resistant organisms, also known in GERMAN as MRE (Multi-Resistente Erreger). The following
+MDRO is short for *multidrug-resistant organism*, also known in German as MRE (*Multi-Resistente Erreger*). The
+following
 germs are supported by this tool:
 
 | abbr | 🇬🇧                                        | 🇩🇪                                          |
@@ -78,7 +79,7 @@ If you only want to use the web interface and connect to a separate running Base
 ## Server Deployment via Docker 🐳
 
 You can create run the server to connect with an external BaseX-instance. To build and run, check out and execute:
-`docker build -t wwuimi/mdroreport . && docker run -p 127.0.0.1:8080:8080 -e SERVER_URL=https://basex.ukmuenster.de/ -e USERNAME=oehm -e PASSWORD=secret -e DATABASE=2022 wwuimi/mrereport`
+`docker build -t wwuimi/mdroreport . && docker run -p 127.0.0.1:8080:8080 -e SERVER_URL=https://basex.ukmuenster.de/ -e USERNAME=oehm -e PASSWORD=secret -e DATABASE=2025 wwuimi/mrereport`
 
 Please add some password protected reverse proxy in front of the application when deployed to a public server.
 
@@ -462,8 +463,3 @@ Apache Licence 2.0
 ## Acknowledgement
 
 Supported by BMBF grant No. 01ZZ1802V (HiGHmed/Münster)
-
-## TODOS
-
-* Punktat herausfiltern oder über bodySiteDisplay matchen
-* MRSA: Priorisierung der Blutkulturen 
