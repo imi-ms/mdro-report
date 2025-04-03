@@ -1,0 +1,33 @@
+name: Test Build on Branch
+
+on:
+  push:
+    branches:
+      - feature/test-github-ci
+
+jobs:
+  build-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Build JAR and WAR
+        run: ./gradlew build shadowJar
+
+      - name: Upload artifacts (.jar and .war)
+        uses: actions/upload-artifact@v3
+        with:
+          name: jars-and-wars
+          path: |
+            build/libs/*.jar
+            build/libs/*.war
