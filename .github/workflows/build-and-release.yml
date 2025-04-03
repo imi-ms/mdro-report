@@ -45,8 +45,12 @@ jobs:
           distribution: 'temurin'
           java-version: '21'
 
-      - name: Install WiX Toolset
-        run: choco install wix-toolset --yes
+      - name: Download and extract WiX Toolset 3.11
+        run: |
+          Invoke-WebRequest -Uri https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip -OutFile wix.zip
+          Expand-Archive wix.zip -DestinationPath "$env:ProgramFiles\wix"
+          echo "$env:ProgramFiles\wix" | Out-File -Append -Encoding ascii $env:GITHUB_PATH
+        shell: pwsh
 
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
