@@ -1,9 +1,9 @@
-name: Test Build on Branch
+name: Build and Release
 
 on:
   push:
-    branches:
-      - feature/test-github-ci
+    tags:
+      - 'v*'
 
 jobs:
   build-artifacts:
@@ -31,6 +31,15 @@ jobs:
           path: |
             build/libs/*.jar
             build/libs/*.war
+
+      - name: Create GitHub Release with JAR/WAR files
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/libs/*.jar
+            build/libs/*.war
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-exe:
     runs-on: windows-latest
@@ -63,3 +72,10 @@ jobs:
         with:
           name: windows-installer
           path: build/**/*.exe
+
+      - name: Add EXE to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
