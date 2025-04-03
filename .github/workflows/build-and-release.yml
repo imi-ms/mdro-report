@@ -31,3 +31,31 @@ jobs:
           path: |
             build/libs/*.jar
             build/libs/*.war
+
+  build-exe:
+    runs-on: windows-latest
+    needs: build-artifacts
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Install WiX Toolset
+        run: choco install wix --yes
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Run createEXE task
+        run: ./gradlew createEXE
+
+      - name: Upload EXE Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: build/**/*.exe
