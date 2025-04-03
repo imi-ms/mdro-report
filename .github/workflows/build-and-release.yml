@@ -46,7 +46,7 @@ jobs:
           java-version: '21'
 
       - name: Install WiX Toolset
-        run: choco install wix --yes
+        run: choco install wix-toolset --yes
 
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
