@@ -65,7 +65,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Run createEXE task with debug output
-        run: ./gradlew createEXE --stacktrace --info
+        run: ./gradlew createEXE
 
       - name: Upload EXE Installer
         uses: actions/upload-artifact@v4
