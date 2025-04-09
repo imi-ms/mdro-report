@@ -30,6 +30,7 @@ jobs:
           name: jars-and-wars
           path: |
             build/libs/*.jar
+            build/libs/MDROReport-Light.jar
             build/libs/*.war
             webapp/build/libs/*.war
 
@@ -38,6 +39,7 @@ jobs:
         with:
           files: |
             build/libs/*.jar
+            build/libs/MDROReport-Light.jar
             build/libs/*.war
             webapp/build/libs/*.war
         env:
