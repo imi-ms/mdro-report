@@ -22,7 +22,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Build JAR, ShadowJAR and WAR
-        run: ./gradlew build shadowJar :webapp:lightJar :webapp:war
+        run: ./gradlew build shadowJar :webapp:shadowJar :webapp:war
 
       - name: Upload artifacts (.jar and .war)
         uses: actions/upload-artifact@v4
