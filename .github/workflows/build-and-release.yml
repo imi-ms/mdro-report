@@ -22,7 +22,7 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Build JAR, ShadowJAR and WAR
-        run: ./gradlew build shadowJar :webapp:war
+        run: ./gradlew build shadowJar :webapp:lightJar :webapp:war
 
       - name: Upload artifacts (.jar and .war)
         uses: actions/upload-artifact@v4
@@ -30,8 +30,8 @@ jobs:
           name: jars-and-wars
           path: |
             build/libs/*.jar
-            build/libs/MDROReport-Light.jar
             build/libs/*.war
+            webapp/build/libs/*.jar
             webapp/build/libs/*.war
 
       - name: Create GitHub Release with JAR/WAR files
@@ -39,9 +39,9 @@ jobs:
         with:
           files: |
             build/libs/*.jar
-            build/libs/MDROReport-Light.jar
             build/libs/*.war
             webapp/build/libs/*.war
+            webapp/build/libs/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
