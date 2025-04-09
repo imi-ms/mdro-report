@@ -21,8 +21,8 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Build JAR and WAR
-        run: ./gradlew build shadowJar
+      - name: Build JAR, ShadowJAR and WAR
+        run: ./gradlew build shadowJar :webapp:war
 
       - name: Upload artifacts (.jar and .war)
         uses: actions/upload-artifact@v4
@@ -31,6 +31,7 @@ jobs:
           path: |
             build/libs/*.jar
             build/libs/*.war
+            webapp/build/libs/*.war
 
       - name: Create GitHub Release with JAR/WAR files
         uses: softprops/action-gh-release@v1
@@ -38,6 +39,7 @@ jobs:
           files: |
             build/libs/*.jar
             build/libs/*.war
+            webapp/build/libs/*.war
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
 
