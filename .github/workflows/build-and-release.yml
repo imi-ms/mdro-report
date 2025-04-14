@@ -1,0 +1,85 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Build JAR, ShadowJAR and WAR
+        run: ./gradlew build shadowJar :webapp:shadowJar :webapp:war
+
+      - name: Upload artifacts (.jar and .war)
+        uses: actions/upload-artifact@v4
+        with:
+          name: jars-and-wars
+          path: |
+            build/libs/*.jar
+            build/libs/*.war
+            webapp/build/libs/*.jar
+            webapp/build/libs/*.war
+
+      - name: Create GitHub Release with JAR/WAR files
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/libs/*.jar
+            build/libs/*.war
+            webapp/build/libs/*.war
+            webapp/build/libs/*.jar
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+
+  build-exe:
+    runs-on: windows-latest
+    needs: build-artifacts
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - name: Download and extract WiX Toolset 3.11
+        run: |
+          Invoke-WebRequest -Uri https://github.com/wixtoolset/wix3/releases/download/wix3111rtm/wix311-binaries.zip -OutFile wix.zip
+          Expand-Archive wix.zip -DestinationPath "$env:ProgramFiles\wix"
+          echo "$env:ProgramFiles\wix" | Out-File -Append -Encoding ascii $env:GITHUB_PATH
+        shell: pwsh
+
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2
+
+      - name: Run createEXE task with debug output
+        run: ./gradlew createEXE
+
+      - name: Upload EXE Installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: build/**/*.exe
+
+      - name: Add EXE to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/**/*.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
