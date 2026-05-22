@@ -2,8 +2,8 @@
 System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
-    kotlin("jvm") version "2.3.10"
-    kotlin("plugin.serialization") version "2.3.10"
+    kotlin("jvm") version "2.3.21"
+    kotlin("plugin.serialization") version "2.3.21"
     java
     application
     id("org.openjfx.javafxplugin") version "0.1.0"
@@ -14,7 +14,7 @@ plugins {
 
 kotlin {
     group = "de.uni_muenster.imi.oegd"
-    version = "1.5.0"
+    version = "1.5.1"
     jvmToolchain(21)
 }
 
@@ -36,7 +36,7 @@ dependencies {
 subprojects {
     plugins.withType(JavaPlugin::class) {
         dependencies {
-            implementation("ch.qos.logback:logback-classic:1.5.16")
+            implementation("ch.qos.logback:logback-classic:1.5.32")
             implementation("io.github.microutils:kotlin-logging:3.0.5")
         }
     }
