@@ -1,10 +1,9 @@
-import org.panteleyev.jpackage.JPackageTask
 
 plugins {
     kotlin("jvm")
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
     id("org.openjfx.javafxplugin")
-    id("org.panteleyev.jpackageplugin")
+//    id("org.panteleyev.jpackageplugin")
 }
 
 kotlin {
@@ -39,6 +38,7 @@ task("copyJar", Copy::class) {
     from(tasks.jar).into("${layout.buildDirectory}/jars")
 }
 
+/*
 tasks.register<JPackageTask>("CreateAppImage") {
     dependsOn("build", "copyDependencies", "copyJar")
 
@@ -54,6 +54,8 @@ tasks.register<JPackageTask>("CreateAppImage") {
     javaOptions = listOf("-Dfile.encoding=UTF-8")
     type = org.panteleyev.jpackage.ImageType.APP_IMAGE
 }
+
+ */
 
 val javafx_version: String by project
 

@@ -1,13 +1,10 @@
 plugins {
     kotlin("jvm")
     kotlin("plugin.serialization")
-    id("com.github.johnrengelman.shadow")
+    id("com.gradleup.shadow")
     war
 }
 
-war {
-    webAppDirName = "webapp"
-}
 
 kotlin {
     group = "de.uni_muenster.imi.oegd.webapp"

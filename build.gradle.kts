@@ -1,15 +1,14 @@
-import org.panteleyev.jpackage.JPackageTask
 
 System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
-    kotlin("jvm") version "2.1.20"
-    kotlin("plugin.serialization") version "2.1.20"
+    kotlin("jvm") version "2.3.10"
+    kotlin("plugin.serialization") version "2.3.10"
     java
     application
     id("org.openjfx.javafxplugin") version "0.1.0"
-    id("com.github.johnrengelman.shadow") version "8.1.1"
-    id("org.panteleyev.jpackageplugin") version "1.5.2"
+    id("com.gradleup.shadow") version "9.4.1"
+//    id("org.panteleyev.jpackageplugin") version "1.5.2"
 }
 
 
@@ -62,7 +61,7 @@ task("copyJar", Copy::class) {
         .into(layout.buildDirectory.get().dir("jars"))
 }
 
-
+/*
 tasks.register<JPackageTask>("CreateAppImage") {
     dependsOn("build", "copyJar")
 
@@ -97,7 +96,7 @@ tasks.register<JPackageTask>("CreateEXE") {
     winDirChooser = true
     winMenu = true
 }
-
+*/
 tasks {
     shadowJar {
         archiveFileName.set("MDROReport-Full.jar")
