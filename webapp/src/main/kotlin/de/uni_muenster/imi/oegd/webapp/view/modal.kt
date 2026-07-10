@@ -57,12 +57,12 @@ fun FlowContent.drawSettingsModal(q: String?) {
             option {
                 selected = i18n.locale == Locale.GERMAN
                 value = "de"
-                +i18n.getString("settingspanel.language.german")
+                +i18n["settingspanel.language.german"]
             }
             option {
                 selected = i18n.locale == Locale.ENGLISH
                 value = "en"
-                +i18n.getString("settingspanel.language.english")
+                +i18n["settingspanel.language.english"]
             }
         }
         hiddenInput(name = "q") { value = q ?: "null" }
@@ -128,10 +128,9 @@ fun FlowContent.drawSettingsModal(q: String?) {
                         div(classes = "form-group mb-3") {
                             for (caseType in CaseType.entries) {
                                 div(classes = "form-check form-check-inline") {
-                                    checkBoxInput(classes = "form-check-input") {
+                                    checkBoxInput(classes = "form-check-input", name = "caseTypes") {
                                         id = "chk$caseType"
                                         value = "$caseType"
-                                        name = "caseTypes"
                                         checked = caseType in (q_?.filter?.caseTypes ?: emptyList())
                                     }
                                     label(classes = "form-check-label") {

@@ -117,7 +117,7 @@ class JavaFxApplication : Application() {
                     page.find<PasswordField>("#password").text
                 )
 
-                val task: Task<String> = object : Task<String>() {
+                val testConnectionAndStartServerTask: Task<String> = object : Task<String>() {
                     override fun call(): String {
                         return runBlocking { basex.executeXQuery("\"Test\"") }
                     }
@@ -139,7 +139,7 @@ class JavaFxApplication : Application() {
                     }
                 }
 
-                Thread(task).start()
+                Thread(testConnectionAndStartServerTask).start()
 
             } else {
                 if (directory == null) {

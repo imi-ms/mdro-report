@@ -13,9 +13,7 @@ import io.ktor.client.request.*
 interface IBaseXClient : AutoCloseable {
     suspend fun executeXQuery(xquery: String): String
 
-    /**
-     * Info for serialization
-     */
+    /** Info for serialization*/
     fun getInfo(): BasexInfo
 }
 
@@ -29,24 +27,23 @@ class RestClient(
     private val password: String
 ) : IBaseXClient {
     private val client = HttpClient {
-        install(Auth) {
+ /*       install(Auth) {
             basic {
                 credentials { BasicAuthCredentials(this@RestClient.username, this@RestClient.password) }
                 sendWithoutRequest { true }
             }
-        }
+        } */
         install(HttpTimeout) {
             requestTimeoutMillis = Long.MAX_VALUE
         }
     }
 
-    override fun close() {
-        client.close()
-    }
+
     override suspend fun executeXQuery(xquery: String): String {
         try {
-            println("xquery = ${xquery}")
+            println("xquery = $xquery")
             return client.post("$baseURL/$database") {
+                basicAuth(username, password)
                 setBody("<query><text><![CDATA[ $xquery ]]></text></query>")
             }.body<String>().also { println(it) }
         } catch (e: Exception) {
@@ -56,6 +53,10 @@ class RestClient(
         }
     }
 
+
+    override fun close() {
+        client.close()
+    }
     override fun getInfo() = RestConnectionInfo(baseURL, database)
 
 }

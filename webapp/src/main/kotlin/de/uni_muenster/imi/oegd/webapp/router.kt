@@ -53,16 +53,18 @@ private val PutParamsPlugin = createRouteScopedPlugin("PutParamsPlugin") {
 
 private val AskForConfigForMostPages = createRouteScopedPlugin("AskForConfigForMostPages") {
     onCall { call ->
-        if (call.request.uri.startsWith("/settings/save")) return@onCall
-        if (call.request.uri.startsWith("/about")) return@onCall
-        if (call.request.uri == "/") return@onCall
-        if (call.request.uri.startsWith("/static")) return@onCall
-        if (call.request.uri.contains("invalidate-cache")) return@onCall
-        if (call.request.uri.startsWith("/statistic")) return@onCall
-        if (call.request.uri.startsWith("/changeLanguage")) return@onCall
+        val url = call.request.uri
+        if (url.startsWith("/settings/save")
+            || url.startsWith("/about")
+            || url.startsWith("/static")
+            || url.startsWith("/statistic")
+            || url.startsWith("/changeLanguage")
+            || "invalidate-cache" in url
+            || url == "/"
+        ) return@onCall
         val q = call.parameters["q"]
         if (q.isNullOrBlank() || q == "null") {
-            call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
+            call.respondHtmlTemplate(LayoutTemplate(url, q)) {
                 header { +i18n["page.missingConfig.heading"] }
                 content {
                     +i18n["page.missingConfig.text"]
@@ -71,7 +73,6 @@ private val AskForConfigForMostPages = createRouteScopedPlugin("AskForConfigForM
                     }
                 }
             }
-//                this.finish()
         }
     }
 }
@@ -117,10 +118,9 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
 //        }
         routing {
             //Protect against non-localhost calls, avoid leaking data to unauthorized persons
-            if (!serverMode) {
-                install(OnlyLocalhostPlugin)
-            }
+            if (!serverMode) install(OnlyLocalhostPlugin)
             install(PutParamsPlugin)
+            install(AskForConfigForMostPages)
             post("/settings/save") {
                 val parameters = call.receiveParameters()
                 val year = parameters["year"]?.ifBlank { null }
@@ -139,8 +139,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 changeLanguage(parameters["language"] ?: "en")
                 call.respondRedirect("$referrer?q=${parameters["q"]}")
             }
-            install(AskForConfigForMostPages)
-
             get("/") {
                 call.respondHtmlTemplate(LayoutTemplate(call.request.uri, call.parameters["q"])) {
                     header { +i18n["page.welcome.heading"] }
@@ -192,7 +190,6 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 get("$germ/overview") {
                     val germInfo = cachingUtility.getOrLoadGermInfo(call.queryParams.xquery, germ)
                     val q = call.parameters["q"] ?: error(i18n.getString("page.error.missingQ"))
-
 
                     call.respondHtmlTemplate(LayoutTemplate(call.request.uri, q)) {
                         header { +"$germ: ${i18n["navigation.overview"]}" }

@@ -3,6 +3,7 @@ package de.uni_muenster.imi.oegd.webapp
 import net.harawata.appdirs.AppDirsFactory
 import java.io.File
 
+/** helper function for deleting the cache during development **/
 fun main() {
     val userCacheDir = System.getenv("mdroreport.cachedir") ?: AppDirsFactory.getInstance()
         .getUserCacheDir("mdroreport", "1.0", "IMI")!!

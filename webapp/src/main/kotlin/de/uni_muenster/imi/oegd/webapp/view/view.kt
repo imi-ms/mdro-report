@@ -45,7 +45,7 @@ class LayoutTemplate(_url: String, private val q: String? = null) : Template<HTM
                     div(classes = "collapse navbar-collapse") {
                         id = "navbarNav"
                         ul(classes = "navbar-nav") {
-                            navItem("global/overview?q=$q", i18n.getString("navigation.hospitalMetrics"))
+                            navItem("global/overview?q=$q", i18n["navigation.hospitalMetrics"])
                             for (germ in GermType.entries.map { it.germtype }) {
                                 li(classes = "nav-item dropdown") {
                                     if (url.startsWith(germ)) {
@@ -62,21 +62,21 @@ class LayoutTemplate(_url: String, private val q: String? = null) : Template<HTM
                                     div(classes = "dropdown-menu") {
                                         attributes["aria-labelledby"] = "navbar$germ"
                                         a(classes = "dropdown-item", href = "/$germ/overview?q=$q") {
-                                            +"${i18n.getString("navigation.overview")} $germ"
+                                            +"${i18n["navigation.overview"]} $germ"
                                         }
                                         a(
                                             classes = "dropdown-item",
                                             href = "/$germ/list?q=$q"
-                                        ) { +i18n.getString("navigation.list") }
+                                        ) { +i18n["navigation.list"] }
                                         a(
                                             classes = "dropdown-item",
                                             href = "/$germ/statistic?q=$q"
-                                        ) { +i18n.getString("navigation.diagrams") }
+                                        ) { +i18n["navigation.diagrams"] }
                                     }
                                 }
                             }
-                            navItem("statistic?q=$q", i18n.getString("navigation.diagrams"))
-                            navItem("about?q=$q", i18n.getString("navigation.about"))
+                            navItem("statistic?q=$q", i18n["navigation.diagrams"])
+                            navItem("about?q=$q", i18n["navigation.about"])
                         }
                     }
                     div(classes = "navbar float-left") {
@@ -138,7 +138,7 @@ class LayoutTemplate(_url: String, private val q: String? = null) : Template<HTM
 
 fun FlowContent.drawIndex(basexInfo: BasexInfo) {
     div(classes = "mb-5") {
-        +i18n.getString("page.welcome.description")
+        +i18n["page.welcome.description"]
     }
 
     div {
@@ -146,21 +146,21 @@ fun FlowContent.drawIndex(basexInfo: BasexInfo) {
             tr {
                 td {
                     attributes["colspan"] = "2"
-                    +i18n.getString("page.welcome.currentSettings")
+                    +i18n["page.welcome.currentSettings"]
                 }
             }
             if (basexInfo is RestConnectionInfo) {
                 tr {
-                    td { +"${i18n.getString("page.welcome.URL")}: " }
+                    td { +"${i18n["page.welcome.URL"]}: " }
                     td { +basexInfo.serverUrl }
                 }
                 tr {
-                    td { +"${i18n.getString("page.welcome.database")}: " }
+                    td { +"${i18n["page.welcome.database"]}: " }
                     td { +basexInfo.databaseId }
                 }
             } else if (basexInfo is LocalBasexInfo) {
                 tr {
-                    td { +"${i18n.getString("page.welcome.directory")}: " }
+                    td { +"${i18n["page.welcome.directory"]}: " }
                     td { +basexInfo.directory }
                 }
             }

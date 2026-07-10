@@ -32,7 +32,10 @@ fun main(args: Array<String>) {
     )
 
     //Test connnection
-    runBlocking { baseXClient.executeXQuery("'Test'") == "Test" || error("Cannot connect to BaseX") }
+    runBlocking {
+        val testQueryResult = baseXClient.executeXQuery("'Test'")
+        require(testQueryResult == "Test") { "Cannot connect to BaseX: $testQueryResult" }
+    }
 
     log.info { "Starting local webserver on port $webappPort" }
 
