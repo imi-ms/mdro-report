@@ -16,6 +16,7 @@ import javafx.scene.image.Image
 import javafx.scene.image.ImageView
 import javafx.stage.DirectoryChooser
 import javafx.stage.Stage
+import javafx.util.Callback
 import java.io.File
 import java.time.LocalDate
 import java.util.*
@@ -27,7 +28,7 @@ import kotlin.system.exitProcess
  * By running the application with this workaround we can use
  * the modular javafx-plugin
  */
-class Main {
+class TestdataMain {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
@@ -62,23 +63,14 @@ class JavaFxApplication : Application() {
             Bindings.format("%.0f", page.find<Slider>("#slider_numberOfPatients").valueProperty())
         )
 
-        page.find<ComboBox<Any>>("#language_comboBox").apply {
-
-            items = FXCollections.observableArrayList<Any>().apply {
-                add(createImageLabel(i18n.getString(LANGUAGE.GERMAN.languageCode), LANGUAGE.GERMAN.imgPath))
-                add(createImageLabel(i18n.getString(LANGUAGE.ENGLISH.languageCode), LANGUAGE.ENGLISH.imgPath))
-            }
-
-            value = createImageLabel(i18n.getString(language.languageCode), language.imgPath).apply {
-                style = "-fx-text-fill: black"
-            }
-
+        page.find<ComboBox<LANGUAGE>>("#language_comboBox").apply {
+            items = FXCollections.observableArrayList(LANGUAGE.entries)
+            value = language
+            cellFactory = Callback { LanguageCell(i18n, "-fx-text-fill: black") }
+            buttonCell = LanguageCell(i18n, "-fx-text-fill: black")
             selectionModel.selectedItemProperty().addListener { _, _, newValue ->
-                run {
-                    language = LANGUAGE.values().find { i18n.getString(it.languageCode) == ((newValue as Label).text) }
-                        ?: LANGUAGE.ENGLISH
-                    drawStartDialog(primaryStage)
-                }
+                language = newValue
+                drawStartDialog(primaryStage)
             }
         }
 
@@ -89,7 +81,7 @@ class JavaFxApplication : Application() {
 
                 page.find<Label>("#label_location").text = directory.absolutePath
                 page.find<Button>("#button_ok").isDisable = false
-            } catch (e: Exception) {/*Nothing to do here*/
+            } catch (_: Exception) {/*Nothing to do here*/
             }
         }
         page.find<ChoiceBox<Int>>("#selectBox_yearStart").apply {
@@ -111,7 +103,25 @@ class JavaFxApplication : Application() {
             val yearStart = page.find<ChoiceBox<Int>>("#selectBox_yearStart").value
             val yearEnd = page.find<ChoiceBox<Int>>("#selectBox_yearEnd").value
             val location = directory.absolutePath
-            generateData(primaryStage, yearStart, yearEnd, numberOfPatients, location)
+            val language = page.find<ComboBox<LANGUAGE>>("#language_comboBox").value
+            generateData(primaryStage, yearStart, yearEnd, numberOfPatients, location, language)
+        }
+    }
+
+    private class LanguageCell(val i18n: ResourceBundle, val additionalStyle: String): ListCell<LANGUAGE>() {
+        override fun updateItem(item: LANGUAGE?, empty: Boolean) {
+            super.updateItem(item, empty)
+            item ?: return
+            graphic = createImageLabel(i18n.getString(item.languageCode), item.imgPath)
+            text = null
+        }
+
+        private fun createImageLabel(label: String, imgPath: String) = Label(label).apply {
+            graphic = ImageView(Image(imgPath)).apply {
+                fitWidth = 21.6
+                fitHeight = 21.6
+            }
+            style = additionalStyle
         }
     }
 
@@ -120,7 +130,8 @@ class JavaFxApplication : Application() {
         yearStart: Int,
         yearEnd: Int,
         numberOfPatients: Int,
-        location: String
+        location: String,
+        language: LANGUAGE
     ) {
         val progressView = FXMLLoader.load<Parent>(javaClass.getResource("/progressView.fxml"), i18n)
         primaryStage.scene = Scene(progressView)
@@ -131,6 +142,7 @@ class JavaFxApplication : Application() {
                 val generator = TestdataGenerator()
                 generator.setStartYear(yearStart)
                 generator.setEndYear(yearEnd)
+                generator.language = language
 
                 for (i in 1..numberOfPatients) {
                     try {
@@ -175,15 +187,11 @@ class JavaFxApplication : Application() {
         return FXCollections.observableList((1990..2030).toList())
     }
 
-    private fun createImageLabel(label: String, imgPath: String) = Label(label).apply {
-        graphic = ImageView(Image(imgPath)).apply {
-            fitWidth = 21.6
-            fitHeight = 21.6
-        }
-    }
 
-    private enum class LANGUAGE(val languageCode: String, val locale: Locale, val imgPath: String) {
-        GERMAN("language.de", Locale.GERMAN, "de.png"),
-        ENGLISH("language.en", Locale.ENGLISH, "gb.png")
-    }
+
+}
+
+enum class LANGUAGE(val languageCode: String, val locale: Locale, val imgPath: String) {
+    GERMAN("language.de", Locale.GERMAN, "de.png"),
+    ENGLISH("language.en", Locale.ENGLISH, "gb.png")
 }

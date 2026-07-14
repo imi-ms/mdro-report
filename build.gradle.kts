@@ -1,3 +1,4 @@
+import org.gradle.kotlin.dsl.register
 
 System.setProperty("user.dir", project.projectDir.toString())
 
@@ -7,7 +8,7 @@ plugins {
     java
     application
     id("org.openjfx.javafxplugin") version "0.1.0"
-    id("com.gradleup.shadow") version "9.4.2"
+    id("com.gradleup.shadow") version "9.5.1"
 //    id("org.panteleyev.jpackageplugin") version "1.5.2"
 }
 
@@ -36,7 +37,7 @@ dependencies {
 subprojects {
     plugins.withType(JavaPlugin::class) {
         dependencies {
-            implementation("ch.qos.logback:logback-classic:1.5.32")
+            implementation("ch.qos.logback:logback-classic:1.5.38")
             implementation("io.github.microutils:kotlin-logging:3.0.5")
         }
     }
@@ -49,12 +50,14 @@ application {
 }
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
-task("copyDependencies", Copy::class) {
+tasks.register<Copy>("copyDependencies") {
+    description = "copy all dependencies"
     from(configurations.runtimeClasspath)
         .into(layout.buildDirectory.get().dir("jars"))
 }
 
-task("copyJar", Copy::class) {
+tasks.register<Copy>("copyJar") {
+    description = "copy all jar files"
     dependsOn(tasks.shadowJar)
 
     from(tasks.shadowJar.get().archiveFile)

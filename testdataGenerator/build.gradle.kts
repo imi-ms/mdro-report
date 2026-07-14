@@ -30,11 +30,11 @@ tasks {
 }
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
-task("copyDependencies", Copy::class) {
+tasks.register<Copy>("copyDependencies") {
     from(configurations.runtimeClasspath).into("${layout.buildDirectory}/jars")
 }
 
-task("copyJar", Copy::class) {
+tasks.register<Copy>("copyJar") {
     from(tasks.jar).into("${layout.buildDirectory}/jars")
 }
 
@@ -54,10 +54,9 @@ tasks.register<JPackageTask>("CreateAppImage") {
     javaOptions = listOf("-Dfile.encoding=UTF-8")
     type = org.panteleyev.jpackage.ImageType.APP_IMAGE
 }
+*/
 
- */
-
-val javafx_version: String by project
+val javafx_version = project.findProperty("javafx_version") as String
 
 javafx {
     version = javafx_version

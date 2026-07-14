@@ -7,39 +7,40 @@ enum class CaseScope(val type: String) {
     VRE("VRE")
 }
 
-enum class Casetype(val type: String) {
-    STATIONAER("STATIONAER"),
-    NACHSTATIONAER("NACHSTATIONAER"),
-    VORSTATIONAER("VORSTATIONAER"),
-    TEILSTATIONAER("TEILSTATIONAER"),
-    AMBULANT("AMBULANT"),
-    BEGLEITPERSON("BEGLEITPERSON"),
-    GEPLANTER_FALL("GEPLANTER_FALL")
+enum class Casetype(val type: String, val type_en: String) {
+    STATIONAER("STATIONAER", "INPATIENT"),
+    NACHSTATIONAER("NACHSTATIONAER", "POST_INPATIENT"),
+    VORSTATIONAER("VORSTATIONAER", "PRE_INPATIENT"),
+    TEILSTATIONAER("TEILSTATIONAER", "PARTIAL_INPATIENT"),
+    AMBULANT("AMBULANT", "OUTPATIENT"),
+    BEGLEITPERSON("BEGLEITPERSON", "ACCOMPANYING_PERSON"),
+    GEPLANTER_FALL("GEPLANTER_FALL", "PLANNED_CASE")
 }
 
-enum class Department(val clinic: String, val fa_code: String) {
-    GYNAEKOLOGIE("Klinik für Gynäkologie", "FA_GYN"),
-    HNO("Hals- Nasen- Ohrenklinik", "FA_HNO"),
-    AUGE("Augenklinik", "FA_AUGE"),
-    ANASESTHESIE("Anästhesie" , "FA_ANAES"),
-    NEUROLOGIE("Neurologie", "FA_NEURO"),
-    NEUROCHIRURGIE("Neurochirurgie", "FA_NEUCH"),
-    KARDIOLOGIE("Department für Kardiologie u. Angiologie", "FA_KARD"),
-    HAUT("Hautklinik", "FA_HAUT"),
-    MEDIZINISCHE_KLINIK_D("Medizinische Klinik D", "FA_MEDD"),
-    KINDERKLINIK("Kinderklinik, Schulkinder-Stration", "FA_KIALL")
+
+enum class Department(val clinic: String, val fa_code: String, val clinic_en: String, val fa_code_en: String) {
+    GYNAEKOLOGIE("Klinik für Gynäkologie", "FA_GYN", "Department of Gynecology", "GYN"),
+    HNO("Hals- Nasen- Ohrenklinik", "FA_HNO", "Department of Ear, Nose and Throat", "ENT"),
+    AUGE("Augenklinik", "FA_AUGE", "Department of Ophthalmology", "EYE"),
+    ANASESTHESIE("Anästhesie", "FA_ANAES", "Department of Anesthesiology", "ANES"),
+    NEUROLOGIE("Neurologie", "FA_NEURO", "Department of Neurology", "NEURO"),
+    NEUROCHIRURGIE("Neurochirurgie", "FA_NEUCH", "Department of Neurosurgery", "NEUSURG"),
+    KARDIOLOGIE("Department für Kardiologie u. Angiologie", "FA_KARD", "Department of Cardiology and Angiology", "CARD"),
+    HAUT("Hautklinik", "FA_HAUT", "Department of Dermatology", "SKIN"),
+    MEDIZINISCHE_KLINIK_D("Medizinische Klinik D", "FA_MEDD", "Department of Internal Medicine D", "MEDD"),
+    KINDERKLINIK("Kinderklinik, Schulkinder-Stration", "FA_KIALL", "Children's Hospital", "FA_CHILD")
 }
 
-enum class SmearType(val bodySiteDisplay: String, val display: String) {
-    NASE("Nase", "Abstrich-oberflächlich"),
-    RACHEN("Rachen", "Abstrich-oberflächlich"),
-    NASE_RACHEN("Nase und Rachen", "Abstrich-oberflächlich"),
-    BLUT_PERIPHER("Blut-peripher entnommen", "Blutkultur"),
-    BLUT_ZENTRAL("Blut-zentral entnommen", "Blutkultur"),
-    MITTELSTRAHLURIN("Mittelstrahl-Urin", "Mittelstrahl-Urin")
+enum class SmearType(val bodySiteDisplay: String, val display: String, val bodySiteDisplay_en: String, val display_en: String) {
+    NASE("Nase", "Abstrich-oberflächlich", "Nose", "Superficial swab"),
+    RACHEN("Rachen", "Abstrich-oberflächlich", "Throat", "Superficial swab"),
+    NASE_RACHEN("Nase und Rachen", "Abstrich-oberflächlich", "Nose and throat", "Superficial swab"),
+    BLUT_PERIPHER("Blut-peripher entnommen", "Blutkultur", "Peripheral blood", "Blood culture"),
+    BLUT_ZENTRAL("Blut-zentral entnommen", "Blutkultur", "Central blood", "Blood culture"),
+    MITTELSTRAHLURIN("Mittelstrahl-Urin", "Mittelstrahl-Urin", "Midstream urine", "Midstream urine")
 }
 
-enum class GermType(val display: String, val SNOMED: String){
+enum class GermType(val display: String, val SNOMED: String) {
     S_AUREUS("Staphylococcus aureus", "3092008"),
     P_AERUGINOSA("Pseudomonas aeruginosa", "52499004"),
     K_AEROGENES("Klebsiella aerogenes", "62592009"),
@@ -53,8 +54,8 @@ enum class GermType(val display: String, val SNOMED: String){
     A_BAUMANNII("Acinetobacter baumannii", "91288006")
 }
 
-enum class AntibioticType(val LOINC: String, val display: String) {
-    AMOXICILLIN_CLAVULANSAEURE("18862-3", "Amoxicillin/Clavulansäure"),
+enum class AntibioticType(val LOINC: String, val display: String, val display_en: String = display) {
+    AMOXICILLIN_CLAVULANSAEURE("18862-3", "Amoxicillin/Clavulansäure", "Amoxicillin/Clavulanic acid"),
     AMPICILLIN_SULBACTAM("18865-6", "Ampicillin/Sulbactam"),
     AZITHROMYCIN("18866-4", "Azithromycin"),
     AZTREONAM("18868-0", "Aztreonam"),
@@ -76,7 +77,7 @@ enum class AntibioticType(val LOINC: String, val display: String) {
     FUSIDINSAEURE("18927-4", "Fusidinsäure"),
     GENTAMICIN("18928-2", "Gentamicin"),
     IMIPENEM("18932-4", "Imipenem"),
-    INDUCED_CLINDAMYCIN("61188-9", "Induzierbare Clindamycin-Resistenz"),
+    INDUCED_CLINDAMYCIN("61188-9", "Induzierbare Clindamycin-Resistenz", "Inducible clindamycin resistance"),
     LEVOFLOXACIN("20629-2", "Levofloxacin"),
     LINEZOLID("29258-1", "Linezolid"),
     MEROPENEM("18943-1", "Meropenem"),
@@ -90,7 +91,7 @@ enum class AntibioticType(val LOINC: String, val display: String) {
     TETRACYCLIN("18993-6", "Tetracyclin"),
     TIGECYCLIN("42357-4", "Tigecyclin"),
     TOBRAMYCIN("18996-9", "Tobramycin"),
-    TRIMETHOPRIM_SULFAMETHOXAZOL("18998-5", "Trimethoprim/Sulfamethoxazol"),
+    TRIMETHOPRIM_SULFAMETHOXAZOL("18998-5", "Trimethoprim/Sulfamethoxazol", "Trimethoprim/Sulfamethoxazole"),
     VANCOMYCIN("19000-9", "Vancomycin")
 }
 
@@ -101,12 +102,12 @@ enum class AntibioticsResult(val LOINC: String, val result: String) {
     UNKNOWN("", "")
 }
 
-interface ProbabilityEnum{
+interface ProbabilityEnum {
     val type: Any
     val relativeProbability: Double
 }
 
-enum class SpaType(override val type: String, override val relativeProbability: Double): ProbabilityEnum {
+enum class SpaType(override val type: String, override val relativeProbability: Double) : ProbabilityEnum {
     T011("t011", 0.154),
     T032("t032", 0.146),
     T034("t034", 0.142),
@@ -385,8 +386,7 @@ enum class MRSA_ST(override val type: String, override val relativeProbability: 
 }
 
 
-
-enum class ClusterType(override val type: String, override val relativeProbability: Double): ProbabilityEnum {
+enum class ClusterType(override val type: String, override val relativeProbability: Double) : ProbabilityEnum {
     CLUSTER_68("68", 0.058),
     CLUSTER_569("569", 0.056),
     CLUSTER_44("44", 0.053),

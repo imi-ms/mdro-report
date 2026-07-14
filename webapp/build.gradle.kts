@@ -15,8 +15,9 @@ repositories {
 }
 
 
-val ktor_version: String by project
+val ktor_version = project.findProperty("ktor_version") as String
 val kotlinx_html_version = "0.12.0"
+
 dependencies {
     implementation(kotlin("stdlib"))
     implementation("org.jetbrains.kotlinx:kotlinx-html-jvm:$kotlinx_html_version")

@@ -11,7 +11,8 @@ repositories {
     mavenCentral()
 }
 
-val ktor_version: String by project
+val ktor_version = project.findProperty("ktor_version") as String
+
 dependencies {
     implementation(kotlin("stdlib"))
     implementation(project(":baseX"))
@@ -19,7 +20,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
 }
 
-val javafx_version: String by project
+val javafx_version = project.findProperty("javafx_version") as String
 
 javafx {
     version = javafx_version
