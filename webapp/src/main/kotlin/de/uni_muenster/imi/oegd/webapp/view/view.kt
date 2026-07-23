@@ -215,21 +215,10 @@ private fun translate(germ: GermType, columnName: String, value: String?): Strin
     }
 
 
-    if (columnName == "sampleType" && i18n.locale.language != "de") {
-        return sampleTranslations[value?.trim()] ?: run {
-            println("Translation missing '$value'")
-            value
-        }
-        ?: "null"
-    }
-
 
     return value ?: "null"
 }
 
-val sampleTranslations: Map<String, String> by lazy {
-    Json.decodeFromStream(object {}::class.java.classLoader.getResourceAsStream("view/translation.json"))
-}
 
 private fun FlowContent.drawInvalidateButton(lastUpdate: String, q: String) {
     div(classes = "btn-toolbar") {

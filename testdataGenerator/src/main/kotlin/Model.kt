@@ -27,7 +27,7 @@ enum class Department(val clinic: String, val fa_code: String, val clinic_en: St
     NEUROCHIRURGIE("Neurochirurgie", "FA_NEUCH", "Department of Neurosurgery", "NEUSURG"),
     KARDIOLOGIE("Department für Kardiologie u. Angiologie", "FA_KARD", "Department of Cardiology and Angiology", "CARD"),
     HAUT("Hautklinik", "FA_HAUT", "Department of Dermatology", "SKIN"),
-    MEDIZINISCHE_KLINIK_D("Medizinische Klinik D", "FA_MEDD", "Department of Internal Medicine D", "MEDD"),
+    MEDIZINISCHE_KLINIK_D("Medizinische Klinik D", "FA_MEDD", "Department of Internal Medicine D", "INT"),
     KINDERKLINIK("Kinderklinik, Schulkinder-Stration", "FA_KIALL", "Children's Hospital", "FA_CHILD")
 }
 
