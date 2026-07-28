@@ -100,7 +100,7 @@ class LayoutTemplate(_url: String, private val q: String? = null) : Template<HTM
                 footer(classes = "footer") {
                     div(classes = "container") {
                         span(classes = "text-muted") {
-                            +"© 2024 Copyright "
+                            +"© ${LocalDate.now().year} Copyright "
                         }
                         a(
                             classes = "text-muted link-underline link-underline-opacity-50 link-underline-opacity-100-hover",
