@@ -33,7 +33,7 @@ can decide between a
 
 At startup, a window will ask you to enter the credentials to your BaseX instance.
 
-![](images/start.PNG)
+![](images/start.png)
 
 As an alternative, you can import a folder of .xml-files. A built-in BaseX-server will load all the files and answer the
 queries.
@@ -41,16 +41,16 @@ queries.
 After start, please use the navigation bar at the top to switch between the different germs. The data for each germ is
 created on demand and cached.
 
-![](images/dropdown.PNG)
+![](images/dropdown.png)
 
 The queries are parameterized by year, so at first, you will be asked to set up a year. You can change the parameter by
 clicking on the gear on the top right.
 
-![](images/settings.PNG)
+![](images/settings.png)
 
-![](images/overview.PNG)
-![](images/caselist.PNG)
-![](images/diagrams.PNG)
+![](images/overview.png)
+![](images/caselist.png)
+![](images/diagrams.png)
 
 ## Building
 
