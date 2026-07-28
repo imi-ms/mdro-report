@@ -1,4 +1,5 @@
 import org.gradle.kotlin.dsl.register
+import org.panteleyev.jpackage.JPackageTask
 
 System.setProperty("user.dir", project.projectDir.toString())
 
@@ -9,7 +10,7 @@ plugins {
     application
     id("org.openjfx.javafxplugin") version "0.1.0"
     id("com.gradleup.shadow") version "9.5.1"
-//    id("org.panteleyev.jpackageplugin") version "1.5.2"
+    id("org.panteleyev.jpackageplugin") version "2.1.0"
 }
 
 
@@ -64,15 +65,15 @@ tasks.register<Copy>("copyJar") {
         .into(layout.buildDirectory.get().dir("jars"))
 }
 
-/*
 tasks.register<JPackageTask>("CreateAppImage") {
     dependsOn("build", "copyJar")
 
-    input = "${layout.buildDirectory.get()}/jars"
-    destination = "${layout.buildDirectory.get()}/dist"
+    input = layout.buildDirectory.dir("jars")
+    destination = layout.buildDirectory.dir("dist")
+
 
     appName = "MDRO-Report"
-    vendor = "Institut für Medizinische Informatik Münster"
+    vendor = "Institute of Medical Informatics & Institute of Hygiene Münster"
 
     mainJar = tasks.shadowJar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
@@ -84,11 +85,11 @@ tasks.register<JPackageTask>("CreateAppImage") {
 tasks.register<JPackageTask>("CreateEXE") {
     dependsOn("build", "copyJar")
 
-    input = "${layout.buildDirectory.get()}/jars"
-    destination = "${layout.buildDirectory.get()}/dist"
+    input = layout.buildDirectory.dir("jars")
+    destination = layout.buildDirectory.dir("dist")
 
     appName = "MDRO-Report"
-    vendor = "Institut für Medizinische Informatik Münster"
+    vendor = "Institute of Medical Informatics & Institute of Hygiene Münster"
 
     mainJar = tasks.shadowJar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
@@ -99,7 +100,6 @@ tasks.register<JPackageTask>("CreateEXE") {
     winDirChooser = true
     winMenu = true
 }
-*/
 tasks {
     shadowJar {
         archiveFileName.set("MDROReport-Full.jar")
