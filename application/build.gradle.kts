@@ -20,9 +20,7 @@ dependencies {
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
 }
 
-val javafx_version = project.findProperty("javafx_version") as String
-
 javafx {
-    version = javafx_version
+    version = project.findProperty("javafx_version") as String
     modules("javafx.base", "javafx.controls", "javafx.fxml", "javafx.graphics", "javafx.web")
 }
