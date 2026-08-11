@@ -42,13 +42,13 @@ object BaseXQueries {
     }
 
 
-    // "STATIONAER" -> "S"
-    //                "NACHSTATIONAER" -> "NS"
-//                "VORSTATIONAER" -> "VS"
-//                "TEILSTATIONAER" -> "TS"
-//                "AMBULANT" -> "A"
-//                "BEGLEITPERSON" -> "H"
-//                "GEPLANTER_FALL" -> "P"
+//     "STATIONAER" -> "S"
+//     "NACHSTATIONAER" -> "NS"
+//     "VORSTATIONAER" -> "VS"
+//     "TEILSTATIONAER" -> "TS"
+//     "AMBULANT" -> "A"
+//     "BEGLEITPERSON" -> "H"
+//     "GEPLANTER_FALL" -> "P"
     private fun applyCaseTypeFilter(query: String, filterParams: FilterParams): String {
         //Add deprecated shortend version
         val caseTypes = filterParams.caseTypes.flatMap { it.basexName }

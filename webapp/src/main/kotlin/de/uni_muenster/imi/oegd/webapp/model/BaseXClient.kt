@@ -27,12 +27,6 @@ class RestClient(
     private val password: String
 ) : IBaseXClient {
     private val client = HttpClient {
- /*       install(Auth) {
-            basic {
-                credentials { BasicAuthCredentials(this@RestClient.username, this@RestClient.password) }
-                sendWithoutRequest { true }
-            }
-        } */
         install(HttpTimeout) {
             requestTimeoutMillis = Long.MAX_VALUE
         }
@@ -40,14 +34,14 @@ class RestClient(
 
 
     override suspend fun executeXQuery(xquery: String): String {
+        println("executing xquery = $xquery")
         try {
-            println("xquery = $xquery")
             return client.post("$baseURL/$database") {
                 basicAuth(username, password)
                 setBody("<query><text><![CDATA[ $xquery ]]></text></query>")
             }.body<String>().also { println(it) }
         } catch (e: Exception) {
-            println("Error when executing XQuery: '$xquery'!")
+            println("Error $e when executing XQuery: '$xquery'!")
             e.printStackTrace(System.out)
             throw e
         }

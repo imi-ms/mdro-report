@@ -420,7 +420,7 @@ Following these special requirements, a valid example for a MRSA-case could look
                 </germ>
             </sample>
         </labReport>
-        <hygiene-message germ-name="Staphylococcus aureus" nosocomial="true" infection="true" MRG-class="MRSA"/>
+        <hygiene-message germ-name="Staphylococcus aureus" nosocomial="true" infection="true" MDR-class="MRSA"/>
     </case>
 </patient>
 ```
@@ -462,4 +462,6 @@ Apache Licence 2.0
 
 ## Acknowledgement
 
-Supported by BMBF grant No. 01ZZ1802V (HiGHmed/Münster)
+Supported by BMFTR grant 01KX2524 (Netzwerk Universitätsmedizin, NUM-DIZ).
+
+Generative AI was used to create the icon of MDRO-Report. 

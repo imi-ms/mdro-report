@@ -2,7 +2,7 @@ package de.uni_muenster.imi.oegd.webapp.model
 
 import de.uni_muenster.imi.oegd.webapp.parseXmlAttributeOrderPreserving
 import de.uni_muenster.imi.oegd.webapp.toGermanDate
-import de.uni_muenster.imi.oegd.webapp.transformEntry
+import de.uni_muenster.imi.oegd.webapp.update
 import java.time.LocalDateTime
 
 class DataProvider(val basexClient: IBaseXClient) {
@@ -32,7 +32,7 @@ class DataProvider(val basexClient: IBaseXClient) {
     suspend fun getMRSACaselist(xQueryParams: XQueryParams): List<Map<String, String>> {
         val mrsaList = basexClient.executeXQuery(BaseXQueries.applyXQueryParams(BaseXQueries.MRSA, xQueryParams))
         return parseXmlAttributeOrderPreserving(mrsaList)
-            .map { it.transformEntry("samplingDate", ::toGermanDate) }
+            .map { it.update("samplingDate", ::toGermanDate) }
 //            .map { it.mapKeys { (k, _) -> "page.MRSA.caselist.$k" } }
     }
 
@@ -40,11 +40,11 @@ class DataProvider(val basexClient: IBaseXClient) {
         val mrgnList = basexClient.executeXQuery(BaseXQueries.applyXQueryParams(BaseXQueries.MRGN, xQueryParams))
         val parsed = parseXmlAttributeOrderPreserving(mrgnList).map {
             //Replace MRGN3 -> 3MRGN, MRGN4 -> 4MRGN
-            it.transformEntry("class") { v ->
+            it.update("class") { v ->
                 v.replace("MRGN3", "3MRGN").replace("MRGN4", "4MRGN")
-            }.transformEntry("pathogen") { v ->
+            }.update("pathogen") { v ->
                 v.replace("Klebsiella pneumoniae ssp pneumoniae", "Klebsiella pneumoniae")
-            }.transformEntry("samplingDate", ::toGermanDate)
+            }.update("samplingDate", ::toGermanDate)
         }
         //E-Mail von Zentralstelle IfSG: "Doppelte Fälle sind nur zulässig, wenn es sich um unterschiedliche Erreger und MRGN-Klassifikationen handelt"
         val result = parsed.distinctBy {
@@ -64,7 +64,7 @@ class DataProvider(val basexClient: IBaseXClient) {
     suspend fun getVRECaselist(xQueryParams: XQueryParams): List<Map<String, String>> {
         val vreList = basexClient.executeXQuery(BaseXQueries.applyXQueryParams(BaseXQueries.VRE, xQueryParams))
         return parseXmlAttributeOrderPreserving(vreList)
-            .map { it.transformEntry("samplingDate", ::toGermanDate) }
+            .map { it.update("samplingDate", ::toGermanDate) }
 //            .map { it.mapKeys { (k, _) -> "page.VRE.caselist.$k" } }
     }
 

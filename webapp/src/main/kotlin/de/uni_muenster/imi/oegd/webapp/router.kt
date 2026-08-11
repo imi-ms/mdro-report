@@ -290,7 +290,7 @@ fun application(baseXClient: IBaseXClient, serverMode: Boolean = false, language
                 }
             }
             get("/statistic") {
-                val yearsEnabled = call.parameters.getAll("year[]")?.map { it.toInt() } ?: emptyList()
+                val yearsEnabled = call.parameters.getAll("year[]")?.map { it.toInt() }.orEmpty()
                 val years = cachingUtility.cacheProvider.getCachedParameters().map { it.year!! }
                 val xqueryParams = yearsEnabled.map { XQueryParams(it) }
                 val mrgnData = xqueryParams.associateWith { cachingUtility.getOrLoadGermInfo(it, GermType.MRGN) }

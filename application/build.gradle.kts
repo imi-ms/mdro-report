@@ -11,7 +11,7 @@ repositories {
     mavenCentral()
 }
 
-val ktor_version = project.findProperty("ktor_version") as String
+val ktor_version = findProperty("ktor_version") as String
 
 dependencies {
     implementation(kotlin("stdlib"))

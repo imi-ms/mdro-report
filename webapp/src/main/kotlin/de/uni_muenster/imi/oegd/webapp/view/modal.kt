@@ -131,7 +131,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                     checkBoxInput(classes = "form-check-input", name = "caseTypes") {
                                         id = "chk$caseType"
                                         value = "$caseType"
-                                        checked = caseType in (q_?.filter?.caseTypes ?: emptyList())
+                                        checked = caseType in q_?.filter?.caseTypes.orEmpty()
                                     }
                                     label(classes = "form-check-label") {
                                         htmlFor = "chk$caseType"

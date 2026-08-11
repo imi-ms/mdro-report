@@ -60,7 +60,7 @@
             <PasswordField id="password" GridPane.columnIndex="1" GridPane.rowIndex="2"
                            styleClass="disabled_while_loading"/>
             <Label text="%label.database" GridPane.rowIndex="3"/>
-            <TextField id="database" text="2024" GridPane.columnIndex="1" GridPane.rowIndex="3"
+            <TextField id="database" text="prod" GridPane.columnIndex="1" GridPane.rowIndex="3"
                        styleClass="disabled_while_loading"/>
         </GridPane>
         <ProgressIndicator id="loading_spinner" visible="false">

@@ -152,7 +152,7 @@ class TestdataGenerator {
                     attribute("germ-name", case.germType.display)
                     attribute("nosocomial", "${case.nosocomial}")
                     attribute("infection", "${case.infection}")
-                    attribute("MRG-class", case.caseScope)
+                    attribute("MDR-class", case.caseScope)
                 }
             }
         })

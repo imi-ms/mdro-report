@@ -7,6 +7,7 @@ import mu.KotlinLogging
 import net.harawata.appdirs.AppDirsFactory
 import java.io.File
 import java.time.LocalDateTime
+import kotlin.time.measureTimedValue
 
 
 class CachingUtility(private val baseXClient: IBaseXClient) {
@@ -23,9 +24,9 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
         mutexMap.getOrPut(xQueryParams to germ) { Mutex() }.withLock {
             if (getGermForGermtype(xQueryParams, germ)?.created == null) {
                 log.info { "Loading $germ-GermInfo from BaseX for $xQueryParams" }
-                val germInfo = dataProvider.getGermInfo(germ, xQueryParams)
+                val (germInfo, time) = measureTimedValue { dataProvider.getGermInfo(germ, xQueryParams) }
                 cache(xQueryParams, germInfo)
-                log.info { "Done with ${germInfo.type} for $xQueryParams" }
+                log.info { "Done with ${germInfo.type} for $xQueryParams (took $time)" }
             } else {
                 log.info { "Loading $germ-GermInfo for $xQueryParams from Cache" }
             }
@@ -37,9 +38,9 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
         mutexMap.getOrPut(xQueryParams to null) { Mutex() }.withLock {
             if (getGlobalInfo(xQueryParams)?.created == null) {
                 log.info { "Loading GlobalInfo from BaseX for $xQueryParams" }
-                val overviewContent = dataProvider.getGlobalStatistics(xQueryParams)
+                val (overviewContent, time) = measureTimedValue { dataProvider.getGlobalStatistics(xQueryParams) }
                 cache(xQueryParams, overviewContent)
-                log.info("Done with GlobalInfo request for $xQueryParams")
+                log.info("Done with GlobalInfo request for $xQueryParams (took $time)")
             } else {
                 log.info { "Loading GlobalInfo from Cache" }
             }
@@ -172,11 +173,9 @@ class CacheProvider(val basexInfo: BasexInfo) {
     }
 
 
-    private fun getBaseXPrefix() = if (basexInfo is RestConnectionInfo) {
-        "${sanitizeFilename(basexInfo.serverUrl)}-${sanitizeFilename(basexInfo.databaseId)}"
-    } else {
-        basexInfo as LocalBasexInfo
-        "local-${sanitizeFilename(basexInfo.directory)}"
+    private fun getBaseXPrefix() = when (basexInfo) {
+        is RestConnectionInfo -> "${sanitizeFilename(basexInfo.serverUrl)}-${sanitizeFilename(basexInfo.databaseId)}"
+        is LocalBasexInfo -> "local-${sanitizeFilename(basexInfo.directory)}"
     }
 
 

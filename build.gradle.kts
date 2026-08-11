@@ -4,12 +4,12 @@ import org.panteleyev.jpackage.JPackageTask
 System.setProperty("user.dir", project.projectDir.toString())
 
 plugins {
-    kotlin("jvm") version "2.4.0"
-    kotlin("plugin.serialization") version "2.4.0"
+    kotlin("jvm") version "2.4.10"
+    kotlin("plugin.serialization") version "2.4.10"
     java
     application
     id("org.openjfx.javafxplugin") version "0.1.0"
-    id("com.gradleup.shadow") version "9.5.1"
+    id("com.gradleup.shadow") version "9.6.1"
     id("org.panteleyev.jpackageplugin") version "2.1.0"
 }
 
@@ -31,28 +31,42 @@ dependencies {
 
 // Add logging dependencies to all subprojects
 subprojects {
-    plugins.withType(JavaPlugin::class) {
+    plugins.withType<JavaPlugin> {
         dependencies {
-            implementation("ch.qos.logback:logback-classic:1.5.38")
+            implementation("ch.qos.logback:logback-classic:1.6.1")
             implementation("io.github.microutils:kotlin-logging:3.0.5")
         }
     }
 }
 
-//CREATES EXECUTABLE JAR
 application {
     mainClass.set("de.uni_muenster.imi.oegd.application.Main")
     applicationDefaultJvmArgs = listOf("-Dio.netty.tryReflectionSetAccessible=true")
 }
 
+
+tasks.shadowJar {
+    archiveFileName.set("MDROReport-Full.jar")
+    exclude {
+        //Only include minified versions of webjar library into the distributed bundle
+        "META-INF/resources/webjars" in it.path
+                && it.name !in setOf(
+            "jquery.min.js", "Chart.min.js", "bootstrap.bundle.min.js", "bootstrap-icons.css",
+            "bootstrap-icons.woff2", "bootstrap-icons.woff", "bootstrap.min.css"
+        )
+    }
+    exclude { it.path.startsWith("META-INF/maven") }
+}
+
+
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
-tasks.register<Copy>("copyDependencies") {
+val copyDependencies = tasks.register<Copy>("copyDependencies") {
     description = "copy all dependencies"
     from(configurations.runtimeClasspath)
         .into(layout.buildDirectory.get().dir("jars"))
 }
 
-tasks.register<Copy>("copyJar") {
+val copyJar = tasks.register<Copy>("copyJar") {
     description = "copy all jar files"
     dependsOn(tasks.shadowJar)
 
@@ -61,7 +75,7 @@ tasks.register<Copy>("copyJar") {
 }
 
 tasks.register<JPackageTask>("CreateAppImage") {
-    dependsOn("build", "copyJar")
+    dependsOn("build", copyJar)
 
     input = layout.buildDirectory.dir("jars")
     destination = layout.buildDirectory.dir("dist")
@@ -78,7 +92,7 @@ tasks.register<JPackageTask>("CreateAppImage") {
 }
 
 tasks.register<JPackageTask>("CreateEXE") {
-    dependsOn("build", "copyJar")
+    dependsOn("build", copyJar)
 
     input = layout.buildDirectory.dir("jars")
     destination = layout.buildDirectory.dir("dist")
@@ -94,18 +108,4 @@ tasks.register<JPackageTask>("CreateEXE") {
 
     winDirChooser = true
     winMenu = true
-}
-tasks {
-    shadowJar {
-        archiveFileName.set("MDROReport-Full.jar")
-        exclude {
-            //Only include minified versions of webjar library into the distributed bundle
-            it.path.contains("META-INF/resources/webjars")
-                    && it.name !in setOf(
-                "jquery.min.js", "Chart.min.js", "bootstrap.bundle.min.js", "bootstrap-icons.css",
-                "bootstrap-icons.woff2", "bootstrap-icons.woff", "bootstrap.min.css"
-            )
-        }
-        exclude { it.path.startsWith("META-INF/maven") }
-    }
 }

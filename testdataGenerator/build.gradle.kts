@@ -18,7 +18,7 @@ repositories {
 
 dependencies {
     implementation(kotlin("stdlib"))
-    implementation("org.redundent:kotlin-xml-builder:1.9.1")
+    implementation("org.redundent:kotlin-xml-builder:1.9.3")
 }
 
 javafx {
@@ -26,32 +26,30 @@ javafx {
     modules("javafx.base", "javafx.controls", "javafx.fxml", "javafx.graphics")
 }
 
-tasks {
-    shadowJar {
-        mainClass.set("de.uni_muenster.imi.oegd.testdataGenerator.TestdataMain")
-        archiveFileName.set("MDROTestdataGenerator.jar")
-    }
+tasks.shadowJar {
+    mainClass.set("de.uni_muenster.imi.oegd.testdataGenerator.TestdataMain")
+    archiveFileName.set("MDROTestdataGenerator.jar")
 }
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
-tasks.register<Copy>("copyDependencies") {
+val copyDependencies = tasks.register<Copy>("copyDependencies") {
     from(configurations.runtimeClasspath).into(layout.buildDirectory.dir("jars"))
 }
 
-tasks.register<Copy>("copyJar") {
+val copyJar = tasks.register<Copy>("copyJar") {
     dependsOn(tasks.shadowJar)
     from(tasks.jar).into(layout.buildDirectory.dir("jars"))
 }
 
 tasks.register<JPackageTask>("CreateEXE") {
-    dependsOn("build", "copyDependencies", "copyJar")
+    dependsOn("build", copyDependencies, copyJar)
 
     input = layout.buildDirectory.dir("jars")
     destination = layout.buildDirectory.dir("dist")
 
     appName = "MDRO-Report Testdata-Generator"
     vendor = "Institute for Medical Informatics Muenster"
-    appVersion = "1.0"
+    appVersion = project.version.toString()
 
     mainJar = tasks.jar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.testdataGenerator.TestdataMain"
