@@ -317,7 +317,7 @@ enum class VRE_vanB(override val type: String, override val relativeProbability:
     new("? (new)", 0.002),
     not_found("? (not found)", 0.110),
     not_applicable("n/a", 0.786),
-    `vanB04`("vanB04", 0.102),
+    vanB04("vanB04", 0.102),
 }
 
 
