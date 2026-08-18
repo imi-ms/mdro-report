@@ -44,7 +44,7 @@ jobs:
             webapp/build/libs/*.war
             webapp/build/libs/*.jar
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT  }}
 
   build-exe:
     runs-on: windows-latest
@@ -79,8 +79,8 @@ jobs:
           path: build/**/*.exe
 
       - name: Add EXE to GitHub Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           files: build/**/*.exe
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT  }}
