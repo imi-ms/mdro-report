@@ -6,6 +6,9 @@ on:
       - 'v*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-artifacts:
     runs-on: ubuntu-latest
@@ -44,7 +47,7 @@ jobs:
             webapp/build/libs/*.war
             webapp/build/libs/*.jar
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
 
   build-exe:
     runs-on: windows-latest
@@ -83,4 +86,4 @@ jobs:
         with:
           files: build/**/*.exe
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT  }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
