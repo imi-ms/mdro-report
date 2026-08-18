@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1
-FROM gradle:9.5-jdk21-alpine AS TEMP_BUILD_IMAGE
+FROM gradle:9.6-jdk21-alpine AS TEMP_BUILD_IMAGE
 
 COPY --chown=gradle:gradle . /home/gradle/src/
 WORKDIR /home/gradle/src
