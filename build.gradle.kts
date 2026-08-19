@@ -34,7 +34,7 @@ subprojects {
     plugins.withType<JavaPlugin> {
         dependencies {
             implementation("ch.qos.logback:logback-classic:1.6.3")
-            implementation("io.github.microutils:kotlin-logging:3.0.5")
+            implementation("io.github.oshai:kotlin-logging-jvm:8.0.4")
         }
     }
 }
@@ -75,7 +75,7 @@ val copyJar = tasks.register<Copy>("copyJar") {
 }
 
 tasks.register<JPackageTask>("CreateAppImage") {
-    dependsOn("build", copyJar)
+    dependsOn(tasks.build, copyJar)
 
     input = layout.buildDirectory.dir("jars")
     destination = layout.buildDirectory.dir("dist")
@@ -92,7 +92,7 @@ tasks.register<JPackageTask>("CreateAppImage") {
 }
 
 tasks.register<JPackageTask>("CreateEXE") {
-    dependsOn("build", copyJar)
+    dependsOn(tasks.build, copyJar)
 
     input = layout.buildDirectory.dir("jars")
     destination = layout.buildDirectory.dir("dist")
