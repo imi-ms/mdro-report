@@ -3,6 +3,7 @@ package de.uni_muenster.imi.oegd.webapp.model
 object BaseXQueries {
     val MRSA: String = readFile("mrsa_excelv3.xq")
     val MRGN: String = readFile("mrgn_excelv3.xq")
+    val MRGNv4: String = readFile("mrgn_excelv4.xq")
     val VRE: String = readFile("vre_excelv2.xq")
     val Falltage: String = readFile("Falltage.xq")
     val FalltageMRSA: String = readFile("Falltage_mrsa1.xq")
@@ -49,7 +50,7 @@ object BaseXQueries {
 //     "AMBULANT" -> "A"
 //     "BEGLEITPERSON" -> "H"
 //     "GEPLANTER_FALL" -> "P"
-    private fun applyCaseTypeFilter(query: String, filterParams: FilterParams): String {
+    fun applyCaseTypeFilter(query: String, filterParams: FilterParams): String {
         //Add deprecated shortend version
         val caseTypes = filterParams.caseTypes.flatMap { it.basexName }
         return query.replace("#CASE_TYPE", caseTypes.joinToString("','", "('", "')"))

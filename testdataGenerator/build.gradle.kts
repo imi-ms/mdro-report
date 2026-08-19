@@ -49,7 +49,7 @@ tasks.register<JPackageTask>("CreateEXE") {
 
     appName = "MDRO-Report Testdata-Generator"
     vendor = "Institute for Medical Informatics Muenster"
-    appVersion = project.version.toString()
+    appVersion = project.parent?.version.toString()
 
     mainJar = tasks.jar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.testdataGenerator.TestdataMain"
