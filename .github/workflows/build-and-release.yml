@@ -26,26 +26,24 @@ jobs:
         uses: gradle/gradle-build-action@v2
 
       - name: Build JAR, ShadowJAR and WAR
-        run: ./gradlew build shadowJar :webapp:shadowJar :webapp:war
+        run: ./gradlew build shadowJar :webapp:shadowJar :webapp:war :testdataGenerator:shadowJar
 
       - name: Upload artifacts (.jar and .war)
         uses: actions/upload-artifact@v4
         with:
           name: jars-and-wars
           path: |
-            build/libs/*.jar
-            build/libs/*.war
-            webapp/build/libs/*.jar
+            build/libs/MDROReport-Full.jar
+            build/libs/MDROReport-Light.jar
+            testdataGenerator/build/libs/MDROTestdataGenerator.jar
             webapp/build/libs/*.war
-
       - name: Create GitHub Release with JAR/WAR files
         uses: softprops/action-gh-release@v3
         with:
           files: |
-            build/libs/*.jar
-            build/libs/*.war
+            build/libs/MDROReport-Full.jar
+            build/libs/MDROReport-Light.jar
             webapp/build/libs/*.war
-            webapp/build/libs/*.jar
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
 
@@ -79,11 +77,15 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: build/**/*.exe
+          path: |
+            build/**/*.exe
+            testdataGenerator/build/**/*.exe
 
       - name: Add EXE to GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: build/**/*.exe
+          files: |
+            build/**/*.exe
+            testdataGenerator/build/**/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN  }}
