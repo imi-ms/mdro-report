@@ -83,6 +83,7 @@ tasks.register<JPackageTask>("CreateAppImage") {
 
     appName = "MDRO-Report"
     vendor = "Institute of Medical Informatics & Institute of Hygiene Münster"
+    version = project.version.toString()
 
     mainJar = tasks.shadowJar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
@@ -99,6 +100,7 @@ tasks.register<JPackageTask>("CreateEXE") {
 
     appName = "MDRO-Report"
     vendor = "Institute of Medical Informatics & Institute of Hygiene Münster"
+    version = project.version.toString()
 
     mainJar = tasks.shadowJar.get().archiveFileName.get()
     mainClass = "de.uni_muenster.imi.oegd.application.Main"
