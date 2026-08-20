@@ -2,11 +2,11 @@ package de.uni_muenster.imi.oegd.webapp
 
 import de.uni_muenster.imi.oegd.webapp.model.IBaseXClient
 import de.uni_muenster.imi.oegd.webapp.model.RestClient
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
 import io.ktor.server.netty.*
 import kotlinx.coroutines.runBlocking
-import mu.KotlinLogging
 import java.util.*
 
 

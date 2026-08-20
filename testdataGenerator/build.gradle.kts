@@ -43,9 +43,6 @@ val copyLogo = tasks.register<Copy>("copyLogo") {
     description = "copy the logo file from the application subproject"
     from(project(":application").file("src/main/resources/logo")).into(layout.buildDirectory.dir("resources"))
 }
-tasks.build {
-    dependsOn(copyLogo)
-}
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
 val copyDependencies = tasks.register<Copy>("copyDependencies") {

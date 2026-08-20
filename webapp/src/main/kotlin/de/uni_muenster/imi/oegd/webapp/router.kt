@@ -2,6 +2,7 @@ package de.uni_muenster.imi.oegd.webapp
 
 import de.uni_muenster.imi.oegd.webapp.model.*
 import de.uni_muenster.imi.oegd.webapp.view.*
+import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.http.*
 import io.ktor.http.content.*
 import io.ktor.server.application.*
@@ -15,7 +16,6 @@ import io.ktor.util.*
 import io.ktor.utils.io.*
 import kotlinx.html.*
 import kotlinx.serialization.json.Json
-import mu.KotlinLogging
 import java.net.InetAddress
 import java.text.MessageFormat
 import java.util.*

@@ -1,6 +1,6 @@
 package de.uni_muenster.imi.oegd.testdataGenerator
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.redundent.kotlin.xml.Node
 import org.redundent.kotlin.xml.xml
 import java.io.File
@@ -57,7 +57,7 @@ class TestdataGenerator {
         for (i in 1..numberOfTestdata) {
             val caseScope = CaseScope.entries.random()
             result.add(createPatient(caseScope).toString())
-            log.info("Created new Patient with $caseScope case. Patient no. $i")
+            log.info { "Created new Patient with $caseScope case. Patient no. $i" }
         }
         return result
     }

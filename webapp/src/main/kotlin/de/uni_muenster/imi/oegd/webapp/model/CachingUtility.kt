@@ -1,9 +1,9 @@
 package de.uni_muenster.imi.oegd.webapp.model
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
-import mu.KotlinLogging
 import net.harawata.appdirs.AppDirsFactory
 import java.io.File
 import java.time.LocalDateTime
@@ -40,7 +40,7 @@ class CachingUtility(private val baseXClient: IBaseXClient) {
                 log.info { "Loading GlobalInfo from BaseX for $xQueryParams" }
                 val (overviewContent, time) = measureTimedValue { dataProvider.getGlobalStatistics(xQueryParams) }
                 cache(xQueryParams, overviewContent)
-                log.info("Done with GlobalInfo request for $xQueryParams (took $time)")
+                log.info { "Done with GlobalInfo request for $xQueryParams (took $time)" }
             } else {
                 log.info { "Loading GlobalInfo from Cache" }
             }
