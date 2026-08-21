@@ -39,6 +39,8 @@ dockerize:
   variables:
     GIT_SUBMODULE_STRATEGY: recursive
     GIT_SUBMODULE_DEPTH: 1
+    # Fix for https://forum.gitlab.com/t/started-yesterday-docker-push-error-from-registry-blob-unknown-to-registry/134733
+    BUILDX_NO_DEFAULT_ATTESTATIONS: "1"
   services:
     - docker:dind
   tags:
