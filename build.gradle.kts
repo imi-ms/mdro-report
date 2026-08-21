@@ -92,8 +92,13 @@ tasks.register<JPackageTask>("CreateAppImage") {
     type = org.panteleyev.jpackage.ImageType.APP_IMAGE
 }
 
+val createIco = tasks.register<ConvertPngToIcoTask>("createIco") {
+    inputFile.set(project(":application").file("src/main/resources/label.png"))
+    outputFile.set(layout.buildDirectory.file("logo.ico"))
+}
+
 tasks.register<JPackageTask>("CreateEXE") {
-    dependsOn(tasks.build, copyJar)
+    dependsOn(tasks.build, copyJar, createIco)
 
     input = layout.buildDirectory.dir("jars")
     destination = layout.buildDirectory.dir("dist")
@@ -107,6 +112,8 @@ tasks.register<JPackageTask>("CreateEXE") {
 
     javaOptions = listOf("-Dfile.encoding=UTF-8")
     type = org.panteleyev.jpackage.ImageType.EXE
+
+    icon = layout.buildDirectory.file("logo.ico")
 
     winDirChooser = true
     winMenu = true

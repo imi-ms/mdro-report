@@ -410,7 +410,7 @@ private suspend fun uploadCache(multipartdata: MultiPartData, cachingUtility: Ca
             val newCache = part.provider().readRemaining().readText()
             cachingUtility.uploadExistingCache(newCache)
         }
-        part.dispose()
+        part.release()
     }
 
 }

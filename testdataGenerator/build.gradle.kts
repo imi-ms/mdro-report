@@ -1,12 +1,4 @@
 import org.panteleyev.jpackage.JPackageTask
-import java.awt.Image.SCALE_SMOOTH
-import java.awt.image.BufferedImage
-import java.awt.image.BufferedImage.TYPE_INT_ARGB
-import java.util.Locale
-import javax.imageio.IIOImage
-import javax.imageio.ImageIO
-import javax.imageio.ImageWriteParam
-
 
 plugins {
     kotlin("jvm")
@@ -34,15 +26,22 @@ javafx {
     modules("javafx.base", "javafx.controls", "javafx.fxml", "javafx.graphics")
 }
 
+
+
+val copyLogo = tasks.register<Copy>("copyLogo") {
+    description = "copy the logo file from the application subproject"
+    from(project(":application").file("src/main/resources/label.png"))
+        .into(layout.buildDirectory.dir("resources"))
+}
+
+tasks.jar { dependsOn(copyLogo) }
 tasks.shadowJar {
+    dependsOn(copyLogo)
     mainClass.set("de.uni_muenster.imi.oegd.testdataGenerator.TestdataMain")
     archiveFileName.set("MDROTestdataGenerator.jar")
 }
 
-val copyLogo = tasks.register<Copy>("copyLogo") {
-    description = "copy the logo file from the application subproject"
-    from(project(":application").file("src/main/resources/logo")).into(layout.buildDirectory.dir("resources"))
-}
+
 
 //FOLLOWING TASKS CREATE SYSTEM DEPENDENT BINARY WITH JRE
 val copyDependencies = tasks.register<Copy>("copyDependencies") {
@@ -54,8 +53,9 @@ val copyJar = tasks.register<Copy>("copyJar") {
     from(tasks.jar).into(layout.buildDirectory.dir("jars"))
 }
 val createIco = tasks.register<ConvertPngToIcoTask>("createIco") {
-    inputFile.set(layout.projectDirectory.file("src/main/resources/label.png"))
-    outputFile.set(layout.buildDirectory.file("generated/label.ico"))
+    dependsOn(copyLogo)
+    inputFile.set(layout.buildDirectory.file("resources/label.png"))
+    outputFile.set(layout.buildDirectory.file("logo.ico"))
 }
 
 
@@ -75,7 +75,7 @@ tasks.register<JPackageTask>("CreateEXE") {
     javaOptions = listOf("-Dfile.encoding=UTF-8")
     type = org.panteleyev.jpackage.ImageType.EXE
 
-    icon = layout.buildDirectory.file("resources/logo.ico")
+    icon = layout.buildDirectory.file("logo.ico")
 
     winDirChooser = true
     winMenu = true
