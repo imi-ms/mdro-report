@@ -17,13 +17,12 @@ germs are supported by this tool:
 
 ## Download
 
-You can download the pre-built binaries
-from [our institute's GitLab Release page](https://imigitlab.uni-muenster.de/published/medic/mre-report/-/releases). You
+You can download the pre-built binaries from [GitHub Releases](https://github.com/imi-ms/mdro-report/releases). You
 can decide between a
 
 * Pre-build executable .jar file (*MDROReport-Full.jar*, requires an installation of the Java Runtime Environment (JRE)
   *version 21* or higher)
-* An executable installer, which will install MDRO-Report alongside its own JRE and creates a Start Menu entry
+* An executable installer, which will install MDRO-Report alongside its own JRE and creates a start menu entry
 * A .jar file, that does not include BaseX or JavaFX (*MDROReport-Light.jar*, requires separately installed JRE and
   [BaseX](https://basex.org/) server, run with command line to set connection data)
 * A .war file for server deployment (tested with tomcat, usage instructions see below)

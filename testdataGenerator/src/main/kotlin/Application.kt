@@ -56,7 +56,11 @@ class JavaFxApplication : Application() {
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/testdataGenerator.fxml"), i18n)
         primaryStage.scene = Scene(page)
         primaryStage.title = "MDRO-Report Testdata Generator"
-        primaryStage.icons.add(Image("label.png"))
+        try {
+            primaryStage.icons.add(Image("label.png"))
+        } catch (e: Exception) {
+            println("cannot load logo: $e")
+        }
         primaryStage.show()
 
         page.find<Label>("#label_sliderValue").textProperty().bind(
@@ -108,7 +112,7 @@ class JavaFxApplication : Application() {
         }
     }
 
-    private class LanguageCell(val i18n: ResourceBundle, val additionalStyle: String): ListCell<LANGUAGE>() {
+    private class LanguageCell(val i18n: ResourceBundle, val additionalStyle: String) : ListCell<LANGUAGE>() {
         override fun updateItem(item: LANGUAGE?, empty: Boolean) {
             super.updateItem(item, empty)
             item ?: return
@@ -186,7 +190,6 @@ class JavaFxApplication : Application() {
     private fun getYearsList(): ObservableList<Int> {
         return FXCollections.observableList((1990..2030).toList())
     }
-
 
 
 }
