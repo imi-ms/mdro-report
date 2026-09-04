@@ -58,11 +58,9 @@ enum class GermType(val germtype: String) {
 }
 
 enum class CaseType(val basexName: List<String>) {
-    AMBULANT(listOf("A", "AMBULANT")),
-    STATIONAER(listOf("S", "STATIONAER")),
-    TEILSTATIONAER(listOf("TS", "TEILSTATIONAER")),
-    NACHSTATIONAER(listOf("NS", "NACHSTATIONAER"));
-    //TODO: VORSTATIONAER ???
+    AMBULANT(listOf("AMB")),
+    STATIONAER(listOf("IMP")),
+    TEILSTATIONAER(listOf("SS")),
 }
 
 

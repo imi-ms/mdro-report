@@ -169,7 +169,8 @@ class DataProvider(val basexClient: IBaseXClient) {
     }
 
     suspend fun createBaseXOverviewEntry(name: String, query: String, params: Params): OverviewEntry {
-        val result = basexClient.executeXQuery(BaseXQueries.applyParams(query, params))
-        return OverviewEntry(name, BaseXQueries.applyParams(query, params), result)
+        val query = BaseXQueries.applyParams(query, params)
+        val result = basexClient.executeXQuery(query)
+        return OverviewEntry(name, query, result)
     }
 }

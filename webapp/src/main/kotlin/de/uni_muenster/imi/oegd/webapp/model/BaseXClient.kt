@@ -6,6 +6,8 @@ import io.ktor.client.plugins.*
 import io.ktor.client.plugins.auth.*
 import io.ktor.client.plugins.auth.providers.*
 import io.ktor.client.request.*
+import java.io.File
+import kotlin.io.println
 
 /**
  * Common interface for both REST and local BaseX instance
@@ -47,10 +49,32 @@ class RestClient(
         }
     }
 
+    suspend fun uploadTestdata(folder: File) {
+        for (file in folder.listFiles()) {
+            try {
+                println(file.name)
+                client.post("$baseURL/$database") {
+                    basicAuth(username, password)
+                    setBody("<commands><check input='$database'/><put path='${file.nameWithoutExtension}'>${file.readText()}</put></commands>")
+                }.body<String>().also { println(it) }
+            } catch (e: Exception) {
+                println("Error $e!")
+                e.printStackTrace(System.out)
+            }
+        }
+    }
+
 
     override fun close() {
         client.close()
     }
+
     override fun getInfo() = RestConnectionInfo(baseURL, database)
 
+}
+
+
+suspend fun main() {
+    RestClient("https://basex-pseudo.ukmuenster.de/rest", "test", "oehm", "5ZjULwRa2MSMJ82")
+        .uploadTestdata(File("testdata"))
 }

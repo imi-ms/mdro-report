@@ -122,7 +122,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                 id = "inputYear"
                                 min = "2000"
                                 max = LocalDate.now().year.toString()
-                                value = q_?.xquery?.year?.toString() ?: ""
+                                value = if(q_ != null) q_.xquery.year?.toString()  ?: "" else LocalDate.now().year.toString()
                             }
                         }
                         div(classes = "form-group mb-3") {
@@ -131,7 +131,7 @@ fun FlowContent.drawSettingsModal(q: String?) {
                                     checkBoxInput(classes = "form-check-input", name = "caseTypes") {
                                         id = "chk$caseType"
                                         value = "$caseType"
-                                        checked = caseType in q_?.filter?.caseTypes.orEmpty()
+                                        checked = caseType in (q_?.filter?.caseTypes ?: listOf(CaseType.STATIONAER))
                                     }
                                     label(classes = "form-check-label") {
                                         htmlFor = "chk$caseType"

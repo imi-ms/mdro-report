@@ -26,7 +26,13 @@ class LocalBaseXClient(val directory: File) : IBaseXClient {
     }
 
     override suspend fun executeXQuery(xquery: String): String {
-        return XQuery(xquery).execute(context)
+        xquery
+        val result = try {
+            XQuery(xquery).execute(context)
+        }catch (e: Exception) {
+            throw Error("Cannot execute XQuery: $xquery", e)
+        }
+        return result
     }
 
     override fun close() {

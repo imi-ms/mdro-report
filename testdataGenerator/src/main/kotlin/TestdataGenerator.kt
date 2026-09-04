@@ -78,7 +78,9 @@ class TestdataGenerator {
             attribute("id", case.caseId)
             attribute("from", case.startDateTime)
             attribute("till", case.endDateTime)
-            attribute("type", Casetype.STATIONAER.type)  //filters in app are German
+            attribute("encounterClassSystem", "http://terminology.hl7.org/CodeSystem/v3-ActCode")
+            attribute("encounterClassCode", Casetype.STATIONAER.class_en)
+            attribute("encounterClassDisplay", Casetype.STATIONAER.display)
             //TODO: Add AdmissionCause and state
             "location" {
                 attribute("id", case.locationId)
@@ -99,7 +101,10 @@ class TestdataGenerator {
                         "bodySiteDisplay",
                         if (isEnglish) case.bodySite.bodySiteDisplay_en else case.bodySite.bodySiteDisplay
                     )
-                    attribute("display", if (isEnglish) case.bodySite.display_en else case.bodySite.display)
+
+                    attribute("specimenSystem", "http://snomed.info/sct")
+                    attribute("specimenCode", case.bodySite.snomed )
+                    attribute("specimenDisplay", if(isEnglish) case.bodySite.display_en else case.bodySite.display)
                     "comment" {
                         -"No comment"
                     }
@@ -144,27 +149,38 @@ class TestdataGenerator {
                                 }
                             }
                         }
+                        "resistancePhenotype" {
+                            val tmp = when (case.caseScope) {
+                                CaseScope.MRSA -> ResistancePhenotypes.MRSA
+                                CaseScope.VRE -> ResistancePhenotypes.VRE
+                                CaseScope.MRGN3 -> ResistancePhenotypes.`3MRGN`
+                                CaseScope.MRGN4 -> ResistancePhenotypes.`4MRGN`
+                            }
+                            attribute("system", tmp.system)
+                            attribute("code", tmp.code)
+                            attribute("display", tmp.display)
+                        }
                     }
                 }
             }
             if (case.caseScope == CaseScope.MRSA) {
-                "hygiene-message" {
+                "hygieneMessage" {
                     attribute("germ-name", case.germType.display)
                     attribute("nosocomial", "${case.nosocomial}")
                     attribute("infection", "${case.infection}")
                     attribute("MDR-class", case.caseScope)
                 }
             }
-        })
-    }
+    })
+}
 
 
-    fun Node.addPCRMetaNode(k: String, v: Any) {
-        addElement(xml("pcr-meta") {
-            attribute("k", k)
-            attribute("v", v)
-        })
-    }
+fun Node.addPCRMetaNode(k: String, v: Any) {
+    addElement(xml("pcr-meta") {
+        attribute("k", k)
+        attribute("v", v)
+    })
+}
 
 }
 

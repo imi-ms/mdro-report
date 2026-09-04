@@ -7,14 +7,10 @@ enum class CaseScope(val type: String) {
     VRE("VRE")
 }
 
-enum class Casetype(val type: String, val type_en: String) {
-    STATIONAER("STATIONAER", "INPATIENT"),
-    NACHSTATIONAER("NACHSTATIONAER", "POST_INPATIENT"),
-    VORSTATIONAER("VORSTATIONAER", "PRE_INPATIENT"),
-    TEILSTATIONAER("TEILSTATIONAER", "PARTIAL_INPATIENT"),
-    AMBULANT("AMBULANT", "OUTPATIENT"),
-    BEGLEITPERSON("BEGLEITPERSON", "ACCOMPANYING_PERSON"),
-    GEPLANTER_FALL("GEPLANTER_FALL", "PLANNED_CASE")
+enum class Casetype(val class_de: String, val class_en: String, val display: String) {
+    STATIONAER("STATIONAER", "IMP", "inpatient encounter"),
+    AMBULANT("AMBULANT", "AMB",  "ambulatory"),
+    TEILSTATIONAER("TEILSTATIONAER", "SS", "short stay"),
 }
 
 
@@ -31,13 +27,21 @@ enum class Department(val clinic: String, val fa_code: String, val clinic_en: St
     KINDERKLINIK("Kinderklinik, Schulkinder-Stration", "FA_KIALL", "Children's Hospital", "FA_CHILD")
 }
 
-enum class SmearType(val bodySiteDisplay: String, val display: String, val bodySiteDisplay_en: String, val display_en: String) {
-    NASE("Nase", "Abstrich-oberflächlich", "Nose", "Superficial swab"),
-    RACHEN("Rachen", "Abstrich-oberflächlich", "Throat", "Superficial swab"),
-    NASE_RACHEN("Nase und Rachen", "Abstrich-oberflächlich", "Nose and throat", "Superficial swab"),
-    BLUT_PERIPHER("Blut-peripher entnommen", "Blutkultur", "Peripheral blood", "Blood culture"),
-    BLUT_ZENTRAL("Blut-zentral entnommen", "Blutkultur", "Central blood", "Blood culture"),
-    MITTELSTRAHLURIN("Mittelstrahl-Urin", "Mittelstrahl-Urin", "Midstream urine", "Midstream urine")
+//enum class SmearType(val bodySiteDisplay: String, val display: String, val bodySiteDisplay_en: String, val display_en: String) {
+//    NASE("Nase", "Abstrich-oberflächlich", "Nose", "Superficial swab"),
+//    RACHEN("Rachen", "Abstrich-oberflächlich", "Throat", "Superficial swab"),
+//    NASE_RACHEN("Nase und Rachen", "Abstrich-oberflächlich", "Nose and throat", "Superficial swab"),
+//    BLUT_PERIPHER("Blut-peripher entnommen", "Blutkultur", "Peripheral blood", "Blood culture"),
+//    BLUT_ZENTRAL("Blut-zentral entnommen", "Blutkultur", "Central blood", "Blood culture"),
+//    MITTELSTRAHLURIN("Mittelstrahl-Urin", "Mittelstrahl-Urin", "Midstream urine", "Midstream urine")
+//}
+
+enum class SmearType(val snomed: String, val bodySiteDisplay: String, val display: String, val bodySiteDisplay_en: String, val display_en: String) {
+    NASE("445297001", "Nase", "Abstrich-oberflächlich", "Nose", "Swab of internal nose (specimen)"),
+    RACHEN("258529004", "Rachen", "Abstrich-oberflächlich", "Throat", "Throat swab (specimen) "),
+    NASE_RACHEN("309164002", "Nase und Rachen", "Abstrich-oberflächlich", "Nose and throat", "Upper respiratory swab specimen (specimen)"),
+    BLUT_PERIPHER("122551003", "Blut-peripher entnommen", "Blutkultur", "Peripheral blood", "Peripheral blood specimen (specimen)"),
+    BLUT_ZENTRAL("119297000", "Blut-zentral entnommen", "Blutkultur", "Central blood", "Blood specimen (specimen) "),
 }
 
 enum class GermType(val display: String, val SNOMED: String) {
@@ -52,6 +56,15 @@ enum class GermType(val display: String, val SNOMED: String) {
     P_MIRABILIS("Proteus mirabilis", "73457008"),
     K_OXYTOCA("Klebsiella oxytoca", "40886007"),
     A_BAUMANNII("Acinetobacter baumannii", "91288006")
+}
+
+enum class ResistancePhenotypes(val system: String, val code: String, val display: String)  {
+    MRSA("http://snomed.info/sct", "115329001", "Methicillin resistant Staphylococcus aureus"),
+    VRE("http://snomed.info/sct", "113727004", "Vancomycin resistant enterococcus"),
+
+    // https://simplifier.net/medizininformatik-initiative-modul-mikrobiologie/mii-vs-mikrobio-mrgn-klasse-loinc
+    `3MRGN`("http://loinc.org", "LA33215-7", "3MRGN"),
+    `4MRGN`("http://loinc.org", "LA33216-5", "4MRGN"),
 }
 
 enum class AntibioticType(val LOINC: String, val display: String, val display_en: String = display) {

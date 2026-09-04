@@ -5,6 +5,10 @@ import java.io.File
 
 /** helper function for deleting the cache during development **/
 fun main() {
+ clearCache()
+}
+
+fun clearCache() {
     val userCacheDir = System.getenv("mdroreport.cachedir") ?: AppDirsFactory.getInstance()
         .getUserCacheDir("mdroreport", "1.0", "IMI")!!
 

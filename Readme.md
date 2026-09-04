@@ -4,10 +4,9 @@ This tool is used to create the surveillance report according
 to [§ 23 IfSG](https://www.gesetze-im-internet.de/ifsg/__23.html) by running XQuery queries.
 
 MDRO is short for *multidrug-resistant organism*, also known in German as MRE (*Multi-Resistente Erreger*). The
-following
-germs are supported by this tool:
+following germs are supported by this tool:
 
-| abbr | 🇬🇧                                        | 🇩🇪                                          |
+| abbr | 🇬🇧                                          | 🇩🇪                                            |
 |------|---------------------------------------------|-----------------------------------------------|
 | VRE  | Vancomycin-resistant enterococci            | Vancomycin-resistente Enterokokken            |
 | MRGN | Multi-resistant gram-negative pathogens     | Multiresistente gramnegative Erreger          |
@@ -17,8 +16,8 @@ germs are supported by this tool:
 
 ## Download
 
-You can download the pre-built binaries from [GitHub Releases](https://github.com/imi-ms/mdro-report/releases). You
-can decide between a
+You can download the pre-built binaries from [GitHub Releases](https://github.com/imi-ms/mdro-report/releases). You can
+decide between a
 
 * Pre-build executable .jar file (*MDROReport-Full.jar*, requires an installation of the Java Runtime Environment (JRE)
   *version 21* or higher)
@@ -58,8 +57,8 @@ clicking on the gear on the top right.
 Run
 
 * `./gradlew shadowJar` to create an executable .jar file (*MDROReport-Full.jar*).
-* `./gradlew CreateEXE` to create a Windows installer, that will also install JRE. Note you have to
-  use Windows and install [WiX](https://github.com/wixtoolset/wix3) first.
+* `./gradlew CreateEXE` to create a Windows installer, that will also install JRE. Note you have to use Windows and
+  install [WiX](https://github.com/wixtoolset/wix3) first.
 
 If you only want to use the web interface and connect to a separate running BaseX-instance, run:
 
@@ -70,8 +69,8 @@ If you only want to use the web interface and connect to a separate running Base
 
 1. Prerequisite: You need to have installed a BaseX instance, which is constantly fed the data from the ETL process.
 2. Setup Tomcat server, I strongly recommend also installing a reverse proxy with some sort of password protection.
-3. **Either**: Checkout the source code, edit `webapp/src/main/resources/application.conf`,
-   execute `./gradlew :webapp:war`. <br>
+3. **Either**: Checkout the source code, edit `webapp/src/main/resources/application.conf`, execute
+   `./gradlew :webapp:war`. <br>
    **Or**: Download .war file from releases, unzip, edit `WEB-INF/classes/application.conf`, rezip and deploy.
 4. Have fun!
 
@@ -102,9 +101,11 @@ The main tree follows this structure:
                     <antibiotic>
                         <result/>
                     </antibiotic>
+                    <resistancePhenotype/>
                 </germ>
             </sample>
         </labReport>
+        <hygieneMessage/>
     </case>
 </patient>
 ```
@@ -113,9 +114,9 @@ For each of these objects the following attributes are important:
 
 ### patient
 
-- **id** - the id of the patient. This can be any number. The ID has to be unique.
-- **birthYear** - each patient has a birth year. It is a four digit long number YYYY
-- **sex** - The sex of a patient. It can be "F" or "M"
+- **id** – the id of the patient. This can be any number. The ID has to be unique.
+- **birthYear** – each patient has a birth year. It is a four-digit number (YYYY)
+- **sex** – The sex of a patient. It can be "F" (female) or "M" (male)
 
 Example:
 
@@ -129,14 +130,15 @@ Example:
 - **id** - the id of the case. This can be any number. The ID has to be unique.
 - **from** - the start date-time of the case. It follows the ISO-8601 standard.
 - **till** - the end date-time of the case. It follows the ISO-8601 standard.
-- **type** - the type of the case. With this tool only stationary cases are important so any other type than "
-  STATIONAER" will be ignored
+- **type** - the type of the case. IMP = inpatient, AMB = outpatient, SS = short stay ("teilstationaer" in German)
 
 Example:
 
 ```xml
 
-<case id="99814764" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" type="STATIONAER">...</case>
+<case id="99814764" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20"
+      encounterClassSystem="http://terminology.hl7.org/CodeSystem/v3-ActCode" encounterClassCode="IMP">...
+</case>
 ```
 
 ### location
@@ -151,12 +153,12 @@ Example:
 
 ```xml
 
-<location id="8909885" from="2021-04-15T19:14:46" till="2021-05-09T03:14:20" clinic="FA_GYN"/>
+<location id="8909885" from="2026-04-15T19:14:46" till="2026-05-09T03:14:20" clinic="FA_GYN"/>
 ```
 
 ### labReport
 
-- **id** - the id of the lab report. This can be any number. The ID has to be unique.
+- **id** – the id of the lab report. This can be any number. The ID has to be unique.
 - **source** - the source of the labReport data. The labReport is extracted in the ETL-process. This can be any string.
 
 Example:
@@ -180,22 +182,27 @@ Example:
 
 ### sample
 
-- **bodySiteDisplay** - the body site where the sample was taken. This can be any string
-- **display** - the type of sample (i.e. how the sample was taken). This can be any string
 - **from** - the date time when the sample was taken. It follows the ISO-8601 standard.
+- **bodySiteDisplay** - the body site where the sample was taken. This can be any string
+- **specimenSystem** - Codesystem that is used to describe the specimen. Should be SNOMED CT
+- **specimenCode** - Code of the specimen type
+- **specimenDisplay** - textual description of the specimen code
 
 Example:
 
 ```xml
 
-<sample from="2021-04-16T19:14:46" bodySiteDisplay="Nase und Rachen" display="Abstrich-oberflächlich">...</sample>
+<sample from="2021-04-16T19:14:46" bodySiteDisplay="Nose and throat"
+        specimenSystem="http://snomed.info/sct" specimenCode="309164002"
+        specimenDisplay="Upper respiratory swab specimen (specimen)">...
+</sample>
 ```
 
 ### germ
 
 - **id** - the id of the germ. This can be any number. The ID has to be unique.
 - **display** - the type of germ. This can be any string containing the name
-- **SNOMED** - The conceptID of the germ from the SNOMED nomenclature. It can be any string
+- **SNOMED** - The conceptID of the germ from the SNOMED CT nomenclature. It can be any string
 
 Example:
 
@@ -204,18 +211,22 @@ Example:
 <germ id="25403319" SNOMED="3092008" display="Staphylococcus aureus">...</germ>
 ```
 
-### comment
+### resistancePhenotype
 
 This explanation is specific to the comment that is attatched to the germ node.
 
-- **class** - The class of the germ. This can be any String, but only MRSA, MRGN3, MRGN4 and VRE will be processed by
-  this tool. The class information is computed by various conditions during the ETL-Process
+- **system** - Should be `http://snomed.info/sct` (VRE, MRSA) or `http://loinc.org` (3MRGN, 4MRGN)
+- **code** - The class of the germ. This can be any String, but only MRSA, MRGN3, MRGN4 and VRE will be processed by
+  this tool. The class information is computed by various conditions during the ETL process
+  `115329001` (MRSA), `113727004` (VRE), `LA33215-7` (3MRGN) or `LA33216-5` (4MRGN)
+- **display** - textual representation of code
 
 Example:
 
 ```xml
 
-<comment class="MRSA">...</comment>
+<resistancePhenotype system="http://snomed.info/sct" code="115329001"
+                     display="Methicillin resistant Staphylococcus aureus"/>
 ```
 
 ### antibiotic
@@ -233,8 +244,8 @@ Example:
 
 ### result
 
-- **string** - The result string of the Antibiotics test. This can be "R" (Resistant), "S" (Sensible) or "I" (
-  Intermediary)
+- **string** - The result string of the Antibiotics test. This can be "R" (Resistant), "S" (Sensible) or "I"
+  (Intermediary)
 - **LOINC** - The corresponding [LOINC](https://loinc.org/) code for the antibiotics result.
 
 Example:
@@ -249,11 +260,13 @@ Following this structure a valid example for a VRE-case could look like this:
 ```xml
 
 <patient birthYear="1989" sex="M" id="14550404">
-    <case id="25136654" from="2021-03-11T23:33:15" till="2021-03-26T04:39:08" type="S">
+    <case id="25136654" from="2021-03-11T23:33:15" till="2021-03-26T04:39:08"
+          encounterClassSystem="http://terminology.hl7.org/CodeSystem/v3-ActCode" encounterClassCode="IMP">
         <location id="38157576" from="2021-03-11T23:33:15" till="2021-03-26T04:39:08" clinic="FA_ANAES"/>
         <labReport id="93047653" source="MIBI">
-            <request from="2021-03-12T23:33:15" sender="Anästhesie"/>
-            <sample from="2021-03-12T23:33:15" bodySiteDisplay="Blut-zentral entnommen" display="Blutkultur">
+            <request from="2021-03-12T23:33:15" sender="Hematology and Transplant Medicine"/>
+            <sample from="2021-03-12T23:33:15" bodySiteDisplay="Peripheral blood" 
+                    specimenSystem="http://snomed.info/sct" specimenCode="119297000" specimenStandardDisplay="Blood specimen">
                 <comment>
                     No comment
                 </comment>
@@ -276,6 +289,7 @@ Following this structure a valid example for a VRE-case could look like this:
                     <antibiotic LOINC="23640-6" display="Quinupristin/Dalfopristin">
                         <result string="S" LOINC="LA24225-7"/>
                     </antibiotic>
+                  <resistancePhenotype system="http://snomed.info/sct" code="113727004" display="Vancomycin resistant enterococcus"/>
                 </germ>
             </sample>
         </labReport>
@@ -299,7 +313,7 @@ The XML file for MRSA cases have to follow a specific scheme and additionally co
 <pcr-meta k="ClusterType" v="CLUSTER_1550"/>
 ```
 
-- A hygiene message containing information about the infection type. It is attached to the case node.
+- A hygiene message containing information about the infection type captured by hygiene staff. It is attached to the case node.
 
 ```xml
 
@@ -435,21 +449,18 @@ Testdata can be generated by using the provided Generator-Application.
 - To test the functionality of the MDROReport tool to compare the results of different years, a range of years can be
   selected. The generated cases will lie between those years (so the upper year is not included)
 
-Right now the data should only be used to test the MDRO-Report tool.
-The generated data is mostly random, but it has mild logic to create
-semi-realistic cases. For example logic has been implemented to create
-MRGN- and VRE-Antibiograms that could occur in real cases,
-but edge cases are not considered. Some relative frequencies have been
-implemented as well to provide statistics that are close to real data.
+Right now the data should only be used to test the MDRO-Report tool. The generated data is mostly random, but it has
+mild logic to create semi-realistic cases. For example logic has been implemented to create MRGN- and VRE-Antibiograms
+that could occur in real cases, but edge cases are not considered. Some relative frequencies have been implemented as
+well to provide statistics that are close to real data.
 
 **Important note**: Generated IDs are only unique within each generated batch. For new testdata IDs could repeat,
 although it is unlikely.
 
 ## Internationalization
 
-The language is automatically chosen based on your systems settings.
-Add `-Duser.language=en` or `-Duser.language=de` to JVM properties to change language (only German and English are
-supported).
+The language is automatically chosen based on your systems settings. Add `-Duser.language=en` or `-Duser.language=de` to
+JVM properties to change language (only German and English are supported).
 
 ## Contact
 

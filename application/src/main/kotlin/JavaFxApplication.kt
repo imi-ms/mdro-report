@@ -1,6 +1,7 @@
 package de.uni_muenster.imi.oegd.application
 
 import de.uni_muenster.imi.oegd.baseX.LocalBaseXClient
+import de.uni_muenster.imi.oegd.webapp.clearCache
 import de.uni_muenster.imi.oegd.webapp.createServer
 import de.uni_muenster.imi.oegd.webapp.findOpenPortInRange
 import de.uni_muenster.imi.oegd.webapp.model.IBaseXClient
@@ -65,6 +66,22 @@ class JavaFxApplication : Application() {
 
     private fun drawStartDialog(primaryStage: Stage) {
         i18n = ResourceBundle.getBundle("internationalization", language.locale)
+
+        val args = this.parameters.raw
+        if (args.isNotEmpty()) {
+            val basex = if (args[0] == "rest") {
+                RestClient(args[1], args[2], args[3], args[4])
+            } else {
+                LocalBaseXClient(File(args[1]))
+            }
+
+            if("--clear-cache" in args) {
+                clearCache()
+            }
+            startServer(basex, primaryStage)
+            return
+        }
+
         val page = FXMLLoader.load<Parent>(javaClass.getResource("/start-dialog.fxml"), i18n)
         primaryStage.scene = Scene(page)
         primaryStage.title = "MDRO-Report"
