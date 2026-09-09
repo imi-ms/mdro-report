@@ -52,7 +52,7 @@ declare function is-upper-respiratory-swab($sample as element(sample)?) as xs:bo
 };
 
 declare function has-organism($sample as element(sample)?, $snomed as xs:string) as xs:boolean {
-  exists($sample/germ[ @organismSystem = $SNOMED and @organismCode = $snomed ])
+  exists($sample/germ[ @SNOMED = $snomed ])
 };
 
 declare function is-mrsa-germ($germ as element(germ)?) as xs:boolean {

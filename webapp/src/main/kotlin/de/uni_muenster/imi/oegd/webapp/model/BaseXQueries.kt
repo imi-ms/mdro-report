@@ -1,6 +1,8 @@
 package de.uni_muenster.imi.oegd.webapp.model
 
 object BaseXQueries {
+    val lib = readFile("lib.xq")
+
     val MRSA: String = getXQuery("mrsa_excelv3.xq")
     val MRGN: String = getXQuery("mrgn_excelv3.xq")
 //    val MRGNv4: String = getXQuery("mrgn_excelv4.xq")
@@ -21,17 +23,16 @@ object BaseXQueries {
     val VREBK: String = getXQuery("vre_bk.xq")
 
 
-
     private fun getXQuery(filename: String): String {
-        fun readFile(filename: String) = try {
-            javaClass.classLoader
-                .getResourceAsStream("queries_generic/$filename")!!
-                .readBytes().toString(Charsets.UTF_8)
-        } catch (e: Exception) {
-            throw Error("could not read $filename", e)
-        }
+        return lib+"\n\n"+readFile(filename)
+    }
 
-        return readFile("lib.xq")+"\n\n"+readFile(filename)
+    private fun readFile(filename: String) = try {
+        javaClass.classLoader
+            .getResourceAsStream("queries_generic/$filename")!!
+            .readBytes().toString(Charsets.UTF_8)
+    } catch (e: Exception) {
+        throw Error("could not read $filename", e)
     }
 
     fun applyParams(query: String, params: Params): String {

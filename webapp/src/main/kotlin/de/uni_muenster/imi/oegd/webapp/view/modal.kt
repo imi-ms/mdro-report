@@ -2,6 +2,7 @@ package de.uni_muenster.imi.oegd.webapp.view
 
 import de.uni_muenster.imi.oegd.webapp.get
 import de.uni_muenster.imi.oegd.webapp.i18n
+import de.uni_muenster.imi.oegd.webapp.model.BaseXQueries
 import de.uni_muenster.imi.oegd.webapp.model.CaseType
 import de.uni_muenster.imi.oegd.webapp.model.OverviewEntry
 import de.uni_muenster.imi.oegd.webapp.model.Params
@@ -39,7 +40,14 @@ fun FlowContent.drawInfoModal(index: Int, entry: OverviewEntry) {
                     }
                 }
                 div(classes = "modal-body modal-query") {
-                    pre { +(entry.query + "\n\n") }
+                    a(classes = "link-dark",
+                        href = "javascript:$('#lib').toggle()") { +i18n["infopanel.showhidelib"] }
+                    div {
+                        id = "lib"
+                        style = "display: none"
+                        pre { +(BaseXQueries.lib) }
+                    }
+                    pre { +(entry.query.removePrefix(BaseXQueries.lib) + "\n\n") }
                 }
             }
         }

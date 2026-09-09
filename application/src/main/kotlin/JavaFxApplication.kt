@@ -75,7 +75,7 @@ class JavaFxApplication : Application() {
                 LocalBaseXClient(File(args[1]))
             }
 
-            if("--clear-cache" in args) {
+            if ("--clear-cache" in args) {
                 clearCache()
             }
             startServer(basex, primaryStage)

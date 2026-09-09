@@ -12,18 +12,18 @@ object DataProcessor {
     fun countMRGN4Cases(caseList: List<Map<String, String>>) = caseList.count { it["class"] == "4MRGN" }
 
     fun countVREEfaeciumResistant(caseList: List<Map<String, String>>) = caseList.count {
-        it["vancomycin"] == "R" && it["pathogen"] == "Enterococcus faecium"
+        it["vancomycin"] == "R" && "faecium" in it["pathogen"]!!
     }
 
     fun countVREEfaeciumTotal(caseList: List<Map<String, String>>) = caseList.count {
-        (it["vancomycin"] == "R" || it["vancomycin"] == "S") && it["pathogen"] == "Enterococcus faecium"
+        (it["vancomycin"] == "R" || it["vancomycin"] == "S") && "faecium" in it["pathogen"]!!
     }
 
     fun countVREEfaecalisResistant(caseList: List<Map<String, String>>) = caseList.count {
-        it["vancomycin"] == "R" && it["pathogen"] == "Enterococcus faecalis"
+        it["vancomycin"] == "R" && "faecalis" in it["pathogen"]!!
     }
 
     fun countOtherCases(caseList: List<Map<String, String>>) = caseList.count {
-        it["pathogen"] != "Enterococcus faecalis" && it["pathogen"] != "Enterococcus faecium"
+        "faecalis" in it["pathogen"]!! && "faecium" in it["pathogen"]!!
     }
 }
